@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1656753588685418635}
-  - component: {fileID: 1503186187835309796}
   - component: {fileID: 7591847475638086232}
+  - component: {fileID: 2152496736524467072}
   m_Layer: 0
   m_Name: NetworkEntity
   m_TagString: Untagged
@@ -32,18 +32,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1503186187835309796
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4132072328313720944}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a0cdefe01e3c47418318dc580e25d58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7591847475638086232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,3 +49,18 @@ MonoBehaviour:
   PrefabHashGenerator: NetworkEntity
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
+--- !u!114 &2152496736524467072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4132072328313720944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3fe164ddae355846824a3fbe92a04bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clientType: 0
+  tiles: 
+  move: 

@@ -184,19 +184,28 @@ public class MenuManager : MonoBehaviour
     {
         NetworkManager.Singleton.StartClient();
         StatusLabels();
+        gameManager.isNetworked = true;
+        gameManager.networkEntityType = GameManager.CLIENT;
         hideNetworkMenu(false);
+        gameManager.startNetwork();
     }
     public void startHost()
     {
         NetworkManager.Singleton.StartHost();
         StatusLabels();
+        gameManager.isNetworked = true;
+        gameManager.networkEntityType = GameManager.HOST;
         hideNetworkMenu(false);
+        gameManager.startNetwork();
     }
     public void startServer()
     {
         NetworkManager.Singleton.StartServer();
         StatusLabels();
+        gameManager.isNetworked = true;
+        gameManager.networkEntityType = GameManager.SERVER;
         hideNetworkMenu(false);
+        gameManager.startNetwork();
     }
     public void StatusLabels()
     {
@@ -205,6 +214,11 @@ public class MenuManager : MonoBehaviour
 
         networkStatusText.text = ("Transport: " +
             NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name + "\n" + mode);
+        foreach (var v in NetworkManager.Singleton.ConnectedClients.Keys)
+            networkStatusText.text += v.ToString() + "\n";
+        foreach (var v in NetworkManager.Singleton.ConnectedClients.Values)
+            networkStatusText.text += v.ClientId.ToString() + "\n";
+
     }
     public void showSettingsMenu()
     {

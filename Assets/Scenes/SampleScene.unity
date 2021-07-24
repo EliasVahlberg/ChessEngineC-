@@ -3355,6 +3355,10 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   menuManager: {fileID: 0}
   networkManager: {fileID: 0}
+  isNetworked: 0
+  networkEntityType: 0
+  isWhiteColor: 0
+  chessNetClient: {fileID: 0}
   selectedMoveTo: -1
   selectedPiece: -1
   blackForfit: 0
@@ -3438,12 +3442,12 @@ MonoBehaviour:
     - SampleScene
     AllowRuntimeSceneChanges: 0
     NetworkPrefabs:
-    - Prefab: {fileID: 1038241652340190464, guid: bb40b1f0c98632f41a14bc37fd846004, type: 3}
+    - Prefab: {fileID: 4132072328313720944, guid: afe23fde9a7f8b84f88c5d91b84f31a7, type: 3}
       PlayerPrefab: 1
     PlayerPrefabHash:
       id: 0
     CreatePlayerPrefab: 1
-    ReceiveTickrate: 64
+    ReceiveTickrate: 30
     NetworkTickIntervalSec: 0.05
     MaxReceiveEventsPerTickRate: 500
     EventTickrate: 64
@@ -3469,7 +3473,7 @@ MonoBehaviour:
     00000000:
       type: {class: NullableBoolSerializable, ns: MLAPI.Configuration, asm: Unity.Multiplayer.MLAPI.Runtime}
       data:
-        Value: 14990970926230503832
+        Value: 9596016703945700272
 --- !u!114 &1239729846
 MonoBehaviour:
   m_ObjectHideFlags: 0
