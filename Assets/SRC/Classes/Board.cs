@@ -386,7 +386,26 @@ public class Board
     {
         return Moves.Count == 0 && (whiteTurn ? !WhiteInCheck : !BlackInCheck);
     }
-
+    public Move getMove(int from, int to)
+    {
+        List<Move> moves = MoveUtills.generateMovesForThisSquare(from, this);
+        Move move1 = new Move(-1, -1, -1);
+        foreach (Move move in moves)
+            if (move.TargetSquare == to)
+                return move;
+        return move1;
+    }
+    public bool containsMove(Move move)
+    {
+        if (move.TargetSquare >= 0 && move.StartSquare >= 0 && move.moveFlag >= 0)
+        {
+            List<Move> moves = MoveUtills.generateMovesForThisSquare(move.StartSquare, this);
+            foreach (Move m in moves)
+                if (move.Equals(m))
+                    return true;
+        }
+        return false;
+    }
     public bool tryMove(int from, int to)
     {
 

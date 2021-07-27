@@ -19,6 +19,9 @@ public class ClientHandle : MonoBehaviour
         ClientSend.WelcomeReccived();
         NetworkUIManager.instance.connectedTCP = true;
         Client.instance.udp.Connect(((IPEndPoint)Client.instance.tcp.socket.Client.LocalEndPoint).Port);
+        NetworkUIManager.instance.onConnect();
+        NetworkUIManager.instance.connectedUDP = true;  //TODO REMOVE
+
         //TODO send packet back
     }
     public static void Move(Packet _packet)
@@ -26,7 +29,17 @@ public class ClientHandle : MonoBehaviour
         int _id = _packet.ReadInt();
         short _move = _packet.ReadShort();
         Debug.Log($"Move: \n{_move}, From: {_id}");
-        ConsoleHistory.instance.addLogHistory($"<color=blue>  Response to move from server:</color>\n <color=green>\"{_move}\"</color>");
+        ConsoleHistory.instance.addLogHistory($"<color=blue>  Move from server:</color>\n <color=green>\"{_move}\"</color>");
+        NetworkUIManager.instance.ReciveMove(_move);
+        //* DON'T send back
+    }
+    public static void MoveResponse(Packet _packet)
+    {
+        int _id = _packet.ReadInt();
+        bool _accept = _packet.ReadBool();
+        Debug.Log($"MoveResponse: ACCEPT = \n{_accept}, From: {_id}");
+        ConsoleHistory.instance.addLogHistory($"<color=blue>  Response to move from server:</color>\n <color=green>\"{_accept}\"</color>");
+        NetworkUIManager.instance.ReciveMoveResponse(_accept);
         //* DON'T send back
     }
     public static void Fen(Packet _packet)
@@ -35,6 +48,16 @@ public class ClientHandle : MonoBehaviour
         string _fen = _packet.ReadString();
         bool _isWhite = _packet.ReadBool();
         Debug.Log($"Fen: \n{_fen}, From: {_id}, IsWhite: {_isWhite}");
+        NetworkUIManager.instance.ReciveFen(_fen, _isWhite);
+        //* DON'T send back
+    }
+    public static void FenResponse(Packet _packet)
+    {
+        int _id = _packet.ReadInt();
+        bool _accept = _packet.ReadBool();
+        Debug.Log($"FenResponse: ACCEPT = \n{_accept}, From: {_id}");
+        ConsoleHistory.instance.addLogHistory($"<color=blue>  Response to fen from server:</color>\n <color=green>\"{_accept}\"</color>");
+        NetworkUIManager.instance.ReciveFenResponse(_accept);
         //* DON'T send back
     }
     #endregion
@@ -45,6 +68,7 @@ public class ClientHandle : MonoBehaviour
         Debug.Log(_msg);
         ClientSend.UDPConnectReceived();
         NetworkUIManager.instance.connectedUDP = true;
+
     }
     #endregion
 }

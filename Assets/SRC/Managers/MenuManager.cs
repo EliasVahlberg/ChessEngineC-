@@ -14,19 +14,26 @@ public class MenuManager : MonoBehaviour
     private GameManager gameManager;
     [HideInInspector]
     private SettingsManager settingsManager;
+    [Header("Main Menu")]
     public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton, returnMainMenuButton;
     public Text inputText;
     public InputField fenInputFeild;
     public Text inputErrText;
-
-    public Button closeNetworkMenuButton;
-
-    public Text networkStatusText;
-
     public GameObject canvas;
+    [Header("Network Menu")]
     public GameObject networkMenuCanvas;
+    public Text networkStatusText;
+    public Button closeNetworkMenuButton;
+    [Header("Lobby")]
+    public GameObject LobbyCanvas;
+    public InputField fenInputFeildLobby;
+    public Button playDefaultStartLobby, playUsingFenLobby, disconnectButtonLobby, openSettingsMenuButtonLobby;
+    public Toggle playAsWhite;
+    public Text inputErrTextLobby;
+    [Header("State")]
     public bool showing = true;
     public bool showingNetworkMenu = false;
+    public bool isInLobby = false;
     private void Awake()
     {
         if (instance == null)
@@ -39,6 +46,7 @@ public class MenuManager : MonoBehaviour
             Destroy(this);
         }
     }
+
     void Start()
     {
         uiManager = FindObjectOfType<UIManager>();
@@ -65,20 +73,27 @@ public class MenuManager : MonoBehaviour
         showingNetworkMenu = true;
         hideNetworkMenu(false);
         canvas.SetActive(true);
+
+        #region Lobby
+        playDefaultStartLobby.onClick.AddListener(defaultStartLobby);
+        playUsingFenLobby.onClick.AddListener(usingFenLobby);
+        disconnectButtonLobby.onClick.AddListener(disconnectLobby);
+        openSettingsMenuButtonLobby.onClick.AddListener(showSettingsMenuLobby);
+        fenInputFeild.onEndEdit.AddListener(delegate { checkFENLobby(fenInputFeild); });
+        LobbyCanvas.SetActive(false);
+        #endregion
         //hideMenu();
         //showMenu();
 
     }
-    void Update()
-    {
 
-    }
     public void defaultStart()
     {
         Debug.Log("DEFSTART");
         gameManager.resetBoard();
         hideMainMenu();
     }
+
     public void usingFen()
     {
         Debug.Log("FEN");
@@ -96,6 +111,7 @@ public class MenuManager : MonoBehaviour
 
         }
     }
+
     public void checkFEN(InputField fenInput)
     {
         Debug.Log("ENDEDIT");
@@ -116,6 +132,7 @@ public class MenuManager : MonoBehaviour
         }
         inputErrText.text = "Check failed fail type: { " + valFenSections[1] + ", " + FENUtills.failTypeDict[valFenSections[1]] + " } \n Unable to start game.";
     }
+
     public void hideMainMenu()
     {
         if (gameManager.started || showingNetworkMenu || settingsManager.showing)
@@ -125,6 +142,7 @@ public class MenuManager : MonoBehaviour
             showing = false;
         }
     }
+
     public void showMainMenu()
     {
 
@@ -152,14 +170,17 @@ public class MenuManager : MonoBehaviour
         }
         showing = true;
     }
+
     public void resetBoard()
     {
         Debug.Log("RESET");
         gameManager.resetBoard();
         hideMainMenu();
     }
+
     public void onPointerEnter()
     { }
+
     public void forfit()
     {
         //TODO ADD
@@ -173,10 +194,12 @@ public class MenuManager : MonoBehaviour
             gameManager.forfit();
         }
     }
+
     public void quit()
     {
         Application.Quit(0);
     }
+
     public void showNetworkMenu()
     {
 
@@ -187,6 +210,7 @@ public class MenuManager : MonoBehaviour
             hideMainMenu();
         }
     }
+
     public void hideNetworkMenu()
     {
         if (showingNetworkMenu)
@@ -196,6 +220,7 @@ public class MenuManager : MonoBehaviour
             showingNetworkMenu = false;
         }
     }
+
     public void hideNetworkMenu(bool showMainM)
     {
         if (showingNetworkMenu)
@@ -207,9 +232,6 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-
-
-
     public void showSettingsMenu()
     {
         if (!settingsManager.showing)
@@ -218,6 +240,7 @@ public class MenuManager : MonoBehaviour
             hideMainMenu();
         }
     }
+
     public void returnMainMenu()
     {
         gameManager.started = false;
@@ -226,4 +249,67 @@ public class MenuManager : MonoBehaviour
         showMainMenu();
     }
 
+    #region Lobby
+
+    public void showLobby()
+    {
+        isInLobby = true;
+        LobbyCanvas.SetActive(true);
+        hideNetworkMenu(false);
+    }
+
+    public void hideLobby()
+    {
+        LobbyCanvas.SetActive(false);
+    }
+
+    public void defaultStartLobby()
+    {
+        NetworkGameManager.instance.sendStandardFEN(playAsWhite.isOn);
+    }
+
+    public void usingFenLobby()
+    {
+        NetworkGameManager.instance.sendFEN(fenInputFeildLobby.text, playAsWhite.isOn);
+    }
+
+    public void checkFENLobby(InputField fenInput)
+    {
+        Debug.Log("ENDEDIT");
+        string fen = inputText.text;
+        int[] valFenSections = FENUtills.validFen(fen);
+        if (valFenSections[0] >= 2)
+        {
+            string[] sections = fen.Split(' ');
+            string validFEN = "";
+            for (int i = 0; i <= valFenSections[0]; i++)
+                validFEN += (i != 0 ? " " : "") + sections[i];
+
+            if (valFenSections[1] != 0)
+                inputErrText.text = "Check failed fail type: { " + valFenSections[1] + ", " + FENUtills.failTypeDict[valFenSections[1]] + " } \nStill able to start game.";
+            else
+                inputErrText.text = "";
+            return;
+        }
+        inputErrTextLobby.text = "Check failed fail type: { " + valFenSections[1] + ", " + FENUtills.failTypeDict[valFenSections[1]] + " } \n Unable to start game.";
+
+    }
+
+    public void disconnectLobby()
+    {
+        if (isInLobby)
+        {
+            Client.instance.Disconnect();
+            isInLobby = false;
+            hideLobby();
+            showNetworkMenu();
+        }
+    }
+
+    public void showSettingsMenuLobby()
+    {
+        hideLobby();
+        settingsManager.showSettingsMenu();
+    }
+    #endregion
 }

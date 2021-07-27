@@ -262,11 +262,13 @@ public class Client : MonoBehaviour
             {(int)ServerPackets.welcome,ClientHandle.Welcome},
             {(int)ServerPackets.UDPConnect,ClientHandle.UDPConnect},
             {(int)ServerPackets.fen,ClientHandle.Fen},
-            {(int)ServerPackets.move,ClientHandle.Move}
+            {(int)ServerPackets.move,ClientHandle.Move},
+            {(int)ServerPackets.moveResponse,ClientHandle.MoveResponse},
+            {(int)ServerPackets.fenResponse,ClientHandle.FenResponse}
         };
         Debug.Log("Data Initialized");
     }
-    private void Disconnect()
+    public void Disconnect()
     {
         if (isConnected)
         {

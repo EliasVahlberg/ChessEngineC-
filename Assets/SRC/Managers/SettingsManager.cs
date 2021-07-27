@@ -20,12 +20,25 @@ public class SettingsManager : MonoBehaviour
     public bool showing = false;
 
     #endregion
+    public static SettingsManager instance;
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Debug.Log("SAMEINSTACE ");
+            Destroy(this);
+        }
+    }
 
     void Start()
     {
-        uiManager = FindObjectOfType<UIManager>();
-        gameManager = FindObjectOfType<GameManager>();
-        menuManager = FindObjectOfType<MenuManager>();
+        uiManager = UIManager.instance;
+        gameManager = GameManager.instance;
+        menuManager = MenuManager.instance;
         volumeSlider.onValueChanged.AddListener(changeVolume);
         fullscreenToggle.onValueChanged.AddListener(changeFullscreen);
         backButton.onClick.AddListener(hideSettingsMenu);
@@ -58,7 +71,10 @@ public class SettingsManager : MonoBehaviour
         if (showing)
         {
             canvas.SetActive(false);
-            menuManager.showMainMenu();
+            if (menuManager.isInLobby)
+                menuManager.showLobby();
+            else
+                menuManager.showMainMenu();
             showing = false;
         }
     }

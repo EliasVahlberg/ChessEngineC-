@@ -59,13 +59,27 @@ public class UIManager : MonoBehaviour
     #endregion
     private List<int> tintedSquares;
 
+    public static UIManager instance;
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Debug.Log("SAMEINSTACE ");
+            Destroy(this);
+        }
+    }
     void Start()
     {
+        gameManager = GameManager.instance;
         tiles = new Tile[64];
         startPos = new Vector2(-squareSize * 4, -squareSize * 4);
         tintedSquares = new List<int>();
         generateBoardUI();
-        menuManager = FindObjectOfType<MenuManager>();
+        menuManager = MenuManager.instance;
 
     }
 

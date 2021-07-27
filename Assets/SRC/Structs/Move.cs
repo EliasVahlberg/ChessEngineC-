@@ -48,9 +48,31 @@ public readonly struct Move
     {
         get { return moveValue >> 12; }
     }
+
+    public override bool Equals(object obj)
+    {
+
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+        Move m = (Move)obj;
+        return StartSquare == m.StartSquare && TargetSquare == m.TargetSquare && moveFlag == m.moveFlag;
+    }
+    public bool Equals(Move m)
+    {
+        return StartSquare == m.StartSquare && TargetSquare == m.TargetSquare && moveFlag == m.moveFlag;
+    }
+
     public bool isPromotion()
     {
         int moveflag = moveFlag;
         return (moveflag == Flag.PromoteToQueen || moveflag == Flag.PromoteToRook || moveflag == Flag.PromoteToBishop || moveflag == Flag.PromoteToKnight);
     }
+    public short toShort()
+    {
+        short _move = ((short)moveValue);
+        return _move;
+    }
+
 }

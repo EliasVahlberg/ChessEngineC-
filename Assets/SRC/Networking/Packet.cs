@@ -10,7 +10,9 @@ namespace GameClient
         welcome = 1,
         UDPConnect,
         fen,
-        move
+        fenResponse,
+        move,
+        moveResponse
     }
 
     /// <summary>Sent from client to server.</summary>
@@ -19,7 +21,9 @@ namespace GameClient
         welcomeReceived = 1,
         UDPConnectReceived,
         fenSelect,
-        moveRequest
+        fenResponse,
+        moveRequest,
+        moveResponse
     }
 
     public class Packet : IDisposable

@@ -45,6 +45,16 @@ public class ClientSend : MonoBehaviour
             SendTCPData(_packet);
         }
     }
+    public static void ChessMoveResponse(bool _accept)
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.moveResponse))
+        {
+            _packet.Write(Client.instance.myId);
+            _packet.Write(_accept);
+            SendTCPData(_packet);
+        }
+    }
+
     public static void FenSelect(string _fen, bool _isWhite)
     {
         using (Packet _packet = new Packet((int)ClientPackets.fenSelect))
@@ -52,6 +62,16 @@ public class ClientSend : MonoBehaviour
             _packet.Write(Client.instance.myId);
             _packet.Write(_fen);
             _packet.Write(_isWhite);
+            SendTCPData(_packet);
+        }
+    }
+
+    public static void FenSelectResponse(bool _accept)
+    {
+        using (Packet _packet = new Packet((int)ClientPackets.fenResponse))
+        {
+            _packet.Write(Client.instance.myId);
+            _packet.Write(_accept);
             SendTCPData(_packet);
         }
     }
