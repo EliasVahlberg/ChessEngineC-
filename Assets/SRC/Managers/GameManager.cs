@@ -10,13 +10,7 @@ public class GameManager : MonoBehaviour
     public MenuManager menuManager;
     public NetworkManager networkManager;
     public Board board;
-    #region Network    
-    public bool isNetworked = false;
-    public const int CLIENT = 1, HOST = 2, SERVER = 3;
-    public int networkEntityType;
-    public bool isWhiteColor;
-    public ChessNetClient chessNetClient;
-    #endregion
+
 
     //UI interface
     public int selectedMoveTo = -1;
@@ -25,6 +19,7 @@ public class GameManager : MonoBehaviour
     public bool whiteForfit = false;
     public bool started = false;
     //
+    public bool isNetworked = false;
     void Start()
     {
         uiManager = FindObjectOfType<UIManager>();
@@ -102,14 +97,7 @@ public class GameManager : MonoBehaviour
         board.onStart();
     }
 
-    public void startNetwork()
-    {
-        chessNetClient = FindObjectOfType<ChessNetClient>();
-        chessNetClient.submitMoveChangeToServer(new int[] { -1, -1 });
-        chessNetClient.clientType = networkEntityType;
-        chessNetClient.tiles = board.tiles;
-        chessNetClient.move = new int[] { -1, -1 };
-    }
+
     public void forfit()
     {
         if (blackForfit)

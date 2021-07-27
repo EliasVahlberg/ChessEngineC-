@@ -132,8 +132,7 @@ public class UIManager : MonoBehaviour
 
     private void checkMouseInput()
     {
-        if (gameManager.isNetworked)
-            menuManager.StatusLabels();
+
         if (menuManager.showing)
         {
             return;

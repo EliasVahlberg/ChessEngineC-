@@ -17,7 +17,7 @@ public class MenuManager : MonoBehaviour
     public InputField fenInputFeild;
     public Text inputErrText;
 
-    public Button startClientButton, startHostButton, startServerButton, closeNetworkMenuButton;
+    public Button closeNetworkMenuButton;
 
     public Text networkStatusText;
 
@@ -41,9 +41,7 @@ public class MenuManager : MonoBehaviour
         openSettingsMenuButton.onClick.AddListener(showSettingsMenu);
         returnMainMenuButton.onClick.AddListener(returnMainMenu);
 
-        startClientButton.onClick.AddListener(startClient);
-        startHostButton.onClick.AddListener(startHost);
-        startServerButton.onClick.AddListener(startServer);
+
         closeNetworkMenuButton.onClick.AddListener(hideNetworkMenu);
 
 
@@ -193,46 +191,10 @@ public class MenuManager : MonoBehaviour
             showingNetworkMenu = false;
         }
     }
-    public void startClient()
-    {
-        NetworkManager.Singleton.StartClient();
-        StatusLabels();
-        gameManager.isNetworked = true;
-        gameManager.networkEntityType = GameManager.CLIENT;
-        hideNetworkMenu(false);
-        gameManager.startNetwork();
-    }
-    public void startHost()
-    {
-        NetworkManager.Singleton.StartHost();
-        StatusLabels();
-        gameManager.isNetworked = true;
-        gameManager.networkEntityType = GameManager.HOST;
-        hideNetworkMenu(false);
-        gameManager.startNetwork();
-    }
-    public void startServer()
-    {
-        NetworkManager.Singleton.StartServer();
-        StatusLabels();
-        gameManager.isNetworked = true;
-        gameManager.networkEntityType = GameManager.SERVER;
-        hideNetworkMenu(false);
-        gameManager.startNetwork();
-    }
-    public void StatusLabels()
-    {
-        var mode = NetworkManager.Singleton.IsHost ?
-            "Host" : NetworkManager.Singleton.IsServer ? "Server" : "Client";
 
-        networkStatusText.text = ("Transport: " +
-            NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name + "\n" + mode);
-        foreach (var v in NetworkManager.Singleton.ConnectedClients.Keys)
-            networkStatusText.text += v.ToString() + "\n";
-        foreach (var v in NetworkManager.Singleton.ConnectedClients.Values)
-            networkStatusText.text += v.ClientId.ToString() + "\n";
 
-    }
+
+
     public void showSettingsMenu()
     {
         if (!settingsManager.showing)
