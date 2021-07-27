@@ -1137,7 +1137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &380176691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1404,7 +1404,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &461239567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3435,15 +3435,12 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   menuManager: {fileID: 0}
   networkManager: {fileID: 0}
-  isNetworked: 0
-  networkEntityType: 0
-  isWhiteColor: 0
-  chessNetClient: {fileID: 0}
   selectedMoveTo: -1
   selectedPiece: -1
   blackForfit: 0
   whiteForfit: 0
   started: 0
+  isNetworked: 0
 --- !u!114 &1239729843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3467,9 +3464,6 @@ MonoBehaviour:
   inputText: {fileID: 163336132}
   fenInputFeild: {fileID: 522835744}
   inputErrText: {fileID: 96023280}
-  startClientButton: {fileID: 1737322751}
-  startHostButton: {fileID: 1144240262}
-  startServerButton: {fileID: 843414213}
   closeNetworkMenuButton: {fileID: 1191678367}
   networkStatusText: {fileID: 1551596179}
   canvas: {fileID: 380176690}

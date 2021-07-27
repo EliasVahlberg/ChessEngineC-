@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
+    public static MenuManager instance;
+
     [HideInInspector]
     private UIManager uiManager;
     [HideInInspector]
@@ -25,6 +27,18 @@ public class MenuManager : MonoBehaviour
     public GameObject networkMenuCanvas;
     public bool showing = true;
     public bool showingNetworkMenu = false;
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Debug.Log("SAMEINSTACE ");
+            Destroy(this);
+        }
+    }
     void Start()
     {
         uiManager = FindObjectOfType<UIManager>();
@@ -48,7 +62,8 @@ public class MenuManager : MonoBehaviour
         resetButton.gameObject.SetActive(false);
         forfitButton.gameObject.SetActive(false);
         returnMainMenuButton.gameObject.SetActive(false);
-        networkMenuCanvas.SetActive(false);
+        showingNetworkMenu = true;
+        hideNetworkMenu(false);
         canvas.SetActive(true);
         //hideMenu();
         //showMenu();

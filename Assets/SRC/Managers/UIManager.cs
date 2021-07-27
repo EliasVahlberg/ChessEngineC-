@@ -256,6 +256,10 @@ public class UIManager : MonoBehaviour
             else
                 menuManager.showMainMenu();
         }
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            DevConsoleBehaviour.instance.ToggleDevConsole();
+        }
     }
 
     public void showDanger(bool white)
