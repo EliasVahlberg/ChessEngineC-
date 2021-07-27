@@ -172,10 +172,13 @@ public class MoveLegalityUtills
                         if (arr[0] != -1)
                         {
                             Debug.Log("DoubleCheck");
+                            Debug.Log(newPos + ", " + arr[0]);
                             return new int[] { 0, 9, 0 };
                         }
                         arr = new int[] { newPos, dir, dist };
                     }
+                    else
+                        break;
                 }
             }
         }

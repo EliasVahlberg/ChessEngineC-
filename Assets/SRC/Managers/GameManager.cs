@@ -55,27 +55,32 @@ public class GameManager : MonoBehaviour
 
     public void selectPosition()
     {
-        if (selectedPiece == selectedMoveTo)
-            return;
-        if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
-            Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
-        if (board.isCheckMate())
-            uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
-        if (board.isDraw())
-            uiManager.winText.text = "Draw! \n Press \"R\" to restart.";
-        if (blackForfit)
-            uiManager.winText.text = "Black Forfit ! \n Press \"R\" to restart.";
-        if (whiteForfit)
-            uiManager.winText.text = "White Forfit ! \n Press \"R\" to restart.";
+        if (started)
+        {
+            if (selectedPiece == selectedMoveTo)
+                return;
+            if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
+                Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
+            string winMes;
+            if ((winMes = isEndGameCondition()) != "")
+            {
+                uiManager.winText.text = winMes;
+                started = false;
+            }
+        }
+
     }
     public void selectPosition(int from, int to)
     {
-        if (from == to)
-            return;
-        if (!board.tryMove(from, to, uiManager) && !board.isCheckMate())
-            Debug.Log("MOVE FAIL: { from = " + from + ", to = " + to + " }");
-        if (board.isCheckMate())
-            uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
+        if (started)
+        {
+            if (from == to)
+                return;
+            if (!board.tryMove(from, to, uiManager) && !board.isCheckMate())
+                Debug.Log("MOVE FAIL: { from = " + from + ", to = " + to + " }");
+            if (board.isCheckMate())
+                uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
+        }
     }
     public void resetBoard()
     {
@@ -104,6 +109,34 @@ public class GameManager : MonoBehaviour
         chessNetClient.clientType = networkEntityType;
         chessNetClient.tiles = board.tiles;
         chessNetClient.move = new int[] { -1, -1 };
+    }
+    public void forfit()
+    {
+        if (blackForfit)
+        {
+            uiManager.winText.text = "Black Forfit ! \n Press \"R\" to restart.";
+            started = false;
+        }
+        else if (whiteForfit)
+        {
+            uiManager.winText.text = "White Forfit ! \n Press \"R\" to restart.";
+            started = false;
+        }
+    }
+    public string isEndGameCondition()
+    {
+        string mes = "";
+
+        if (board.isCheckMate())
+            mes = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
+        else if (board.isDraw())
+            mes = "Draw! \n Press \"R\" to restart.";
+        else if (blackForfit)
+            mes = "Black Forfit ! \n Press \"R\" to restart.";
+        else if (whiteForfit)
+            mes = "White Forfit ! \n Press \"R\" to restart.";
+        return mes;
+
     }
 
 }

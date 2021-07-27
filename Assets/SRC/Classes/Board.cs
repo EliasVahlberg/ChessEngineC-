@@ -300,6 +300,7 @@ public class Board
                     fiftyCount++;
                 else
                     fiftyCount = 0;
+
                 switch (move.moveFlag)
                 {
                     case Move.Flag.PawnTwoForward:

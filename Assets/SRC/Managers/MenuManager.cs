@@ -12,7 +12,7 @@ public class MenuManager : MonoBehaviour
     private GameManager gameManager;
     [HideInInspector]
     private SettingsManager settingsManager;
-    public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton;
+    public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton, returnMainMenuButton;
     public Text inputText;
     public InputField fenInputFeild;
     public Text inputErrText;
@@ -38,16 +38,18 @@ public class MenuManager : MonoBehaviour
         openNetworkMenuButton.onClick.AddListener(showNetworkMenu);
         quitButton.onClick.AddListener(quit);
         forfitButton.onClick.AddListener(forfit);
+        openSettingsMenuButton.onClick.AddListener(showSettingsMenu);
+        returnMainMenuButton.onClick.AddListener(returnMainMenu);
 
         startClientButton.onClick.AddListener(startClient);
         startHostButton.onClick.AddListener(startHost);
         startServerButton.onClick.AddListener(startServer);
         closeNetworkMenuButton.onClick.AddListener(hideNetworkMenu);
-        openSettingsMenuButton.onClick.AddListener(showSettingsMenu);
 
 
         resetButton.gameObject.SetActive(false);
         forfitButton.gameObject.SetActive(false);
+        returnMainMenuButton.gameObject.SetActive(false);
         networkMenuCanvas.SetActive(false);
         canvas.SetActive(true);
         //hideMenu();
@@ -103,7 +105,7 @@ public class MenuManager : MonoBehaviour
     }
     public void hideMainMenu()
     {
-        if (true)// (gameManager.started)
+        if (gameManager.started || showingNetworkMenu || settingsManager.showing)
         {
             canvas.SetActive(false);
             resetButton.gameObject.SetActive(false);
@@ -121,6 +123,8 @@ public class MenuManager : MonoBehaviour
             forfitButton.gameObject.SetActive(true);
             openNetworkMenuButton.gameObject.SetActive(false);
             openSettingsMenuButton.gameObject.SetActive(false);
+            quitButton.gameObject.SetActive(false);
+            returnMainMenuButton.gameObject.SetActive(true);
             fenInputFeild.interactable = true;
             fenInputFeild.text =
             gameManager.board.boardToFEN();
@@ -146,6 +150,15 @@ public class MenuManager : MonoBehaviour
     public void forfit()
     {
         //TODO ADD
+        if (!gameManager.isNetworked)
+        {
+            if (gameManager.board.whiteTurn)
+                gameManager.whiteForfit = true;
+            else
+                gameManager.blackForfit = true;
+            hideMainMenu();
+            gameManager.forfit();
+        }
     }
     public void quit()
     {
@@ -157,8 +170,8 @@ public class MenuManager : MonoBehaviour
         if (!showingNetworkMenu)
         {
             networkMenuCanvas.SetActive(true);
-            hideMainMenu();
             showingNetworkMenu = true;
+            hideMainMenu();
         }
     }
     public void hideNetworkMenu()
@@ -227,6 +240,13 @@ public class MenuManager : MonoBehaviour
             settingsManager.showSettingsMenu();
             hideMainMenu();
         }
+    }
+    public void returnMainMenu()
+    {
+        gameManager.started = false;
+        uiManager.hideBoard();
+        hideMainMenu();
+        showMainMenu();
     }
 
 }

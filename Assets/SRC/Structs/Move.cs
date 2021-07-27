@@ -48,4 +48,9 @@ public readonly struct Move
     {
         get { return moveValue >> 12; }
     }
+    public bool isPromotion()
+    {
+        int moveflag = moveFlag;
+        return (moveflag == Flag.PromoteToQueen || moveflag == Flag.PromoteToRook || moveflag == Flag.PromoteToBishop || moveflag == Flag.PromoteToKnight);
+    }
 }

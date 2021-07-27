@@ -81,16 +81,17 @@ public class UIManager : MonoBehaviour
             tiles[i] = obj.AddComponent<Tile>();
             tiles[i].uiManager = this;
             tiles[i].setPosition(i);
-            tiles[i].gameObject.SetActive(false);
+            //tiles[i].gameObject.SetActive(false);
         }
+        boardContainer.SetActive(false);
     }
     public void generatePieceUI()
     {
         int[] pices = gameManager.board.tiles;
         int[] nameCounter = new int[12];
+        boardContainer.SetActive(true);
         for (int i = 0; i < 64; i++)
         {
-            tiles[i].gameObject.SetActive(true);
             if (pieceUI[i] != null)
             {
                 pieceUI[i].Destroy();
@@ -397,6 +398,15 @@ public class UIManager : MonoBehaviour
         audioSource.Play();
     }
 
-
+    public void hideBoard()
+    {
+        if (!gameManager.started)
+        {
+            boardContainer.SetActive(false);
+            foreach (PieceUI pUI in pieceUI)
+                if (pUI != null)
+                    pUI.Destroy();
+        }
+    }
 
 }
