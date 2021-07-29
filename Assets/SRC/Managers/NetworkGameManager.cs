@@ -5,7 +5,7 @@ using UnityEngine;
 public class NetworkGameManager : MonoBehaviour
 {
     public static NetworkGameManager instance;
-    public bool myTurn = false;
+    public bool myTurn { get { return (NetworkUIManager.instance.IsConnected() && GameManager.instance.myColor == GameManager.instance.board.ColorTurn); } }
     private void Awake()
     {
         if (instance == null)
@@ -24,11 +24,13 @@ public class NetworkGameManager : MonoBehaviour
     {
         bool accepted = GameManager.instance.ReciveMove(move);
         NetworkUIManager.instance.SendMoveResponse(accepted);
+        Debug.Log("Sending Move response: ACCEPTED = " + accepted);
     }
 
     public bool sendMove(Move move)
     {
         NetworkUIManager.instance.SendMove(move);
+        GameManager.instance.moveSent = true;
         return true;
     }
 
@@ -38,6 +40,7 @@ public class NetworkGameManager : MonoBehaviour
             GameManager.instance.UpdateBoard();
         else
             GameManager.instance.resetSentMove();
+        GameManager.instance.moveSent = false;
     }
     #endregion
     #region FEN
@@ -47,10 +50,6 @@ public class NetworkGameManager : MonoBehaviour
     {
         bool accepted = GameManager.instance.ReciveFEN(fen, isBlack);
         NetworkUIManager.instance.SendFenResponse(accepted);
-        if (accepted)
-        {
-
-        }
     }
 
     public bool sendFEN(string fen, bool isWhite)
@@ -61,6 +60,8 @@ public class NetworkGameManager : MonoBehaviour
             NetworkUIManager.instance.SendFen(fen, isWhite);
             GameManager.instance.sentFen = fen;
             GameManager.instance.sentIsWhite = isWhite;
+            GameManager.instance.fenSent = true;
+
             return true;
         }
 
@@ -73,6 +74,7 @@ public class NetworkGameManager : MonoBehaviour
         GameManager.instance.sentFen = fen;
         GameManager.instance.sentIsWhite = isWhite;
         NetworkUIManager.instance.SendFen(fen, isWhite);
+        GameManager.instance.fenSent = true;
 
         return true;
     }
@@ -81,16 +83,22 @@ public class NetworkGameManager : MonoBehaviour
     {
         if (accepted)
         {
-            GameManager.instance.createBoard(GameManager.instance.sentFen);
+            Debug.Log("ACCEPTED, Game starting");
+            GameManager.instance.resetBoard(GameManager.instance.sentFen);
             GameManager.instance.myColor = GameManager.instance.sentIsWhite ? Piece.WHITE : Piece.BLACK;
-            GameManager.instance.myColor = GameManager.instance.sentIsWhite ? Piece.WHITE : Piece.BLACK;
-        }
-        else
-        {
+            MenuManager.instance.hideLobby();
             GameManager.instance.sentFen = null;
             GameManager.instance.sentIsWhite = false;
         }
+        else
+        {
+            Debug.Log("DECLINED, Game not starting");
+            GameManager.instance.sentFen = null;
+            GameManager.instance.sentIsWhite = false;
+        }
+        GameManager.instance.fenSent = true;
     }
+
     #endregion
 
 }

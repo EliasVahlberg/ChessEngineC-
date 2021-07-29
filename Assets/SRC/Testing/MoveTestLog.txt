@@ -1,0 +1,193 @@
+->a2a3: 380 a2a3: 380
+->a2a4: 420 a2a4: 420
+->b1a3: 400 b1a3: 400
+->b1c3: 440 b1c3: 440
+->b2b3: 420 b2b3: 420
+->b2b4: 421 b2b4: 421
+->c2c3: 420 c2c3: 420
+->c2c4: 441 c2c4: 441
+->d2d3: 539 d2d3: 539
+->d2d4: 560 d2d4: 560
+->e2e3: 599 e2e3: 599
+->e2e4: 600 e2e4: 600
+->f2f3: 380 f2f3: 380
+->f2f4: 401 f2f4: 401
+->g1f3: 440 g1f3: 440
+->g1h3: 400 g1h3: 400
+->g2g3: 420 g2g3: 420
+->g2g4: 421 g2g4: 421
+->h2h3: 380 h2h3: 380
+##*
+->h2h4: 421 h2h4: 420
+*##
+
+
+//Stockfish
+Checkers:
+go perft 3
+a2a3: 380
+b2b3: 420
+c2c3: 420
+d2d3: 539
+e2e3: 599
+f2f3: 380
+g2g3: 420
+h2h3: 380
+a2a4: 420
+b2b4: 421
+c2c4: 441
+d2d4: 560
+e2e4: 600
+f2f4: 401
+g2g4: 421
+h2h4: 420
+b1a3: 400
+b1c3: 440
+g1f3: 440
+g1h3: 400
+
+Nodes searched: 8902
+
+
+go perft 4
+a2a3: 8457
+b2b3: 9345
+c2c3: 9272
+d2d3: 11959
+e2e3: 13134
+f2f3: 8457
+g2g3: 9345
+h2h3: 8457
+a2a4: 9329
+b2b4: 9332
+c2c4: 9744
+d2d4: 12435
+e2e4: 13160
+f2f4: 8929
+g2g4: 9328
+h2h4: 9329
+b1a3: 8885
+b1c3: 9755
+g1f3: 9748
+g1h3: 8881
+
+Nodes searched: 197281
+
+
+
+
+
+
+a2a3: 1
+b2b3: 1
+c2c3: 1
+d2d3: 1
+e2e3: 1
+f2f3: 1
+g2g3: 1
+h2h3: 1
+a2a4: 1
+b2b4: 1
+c2c4: 1
+d2d4: 1
+e2e4: 1
+f2f4: 1
+g2g4: 1
+h2h4: 1
+b1a3: 1
+b1c3: 1
+g1f3: 1
+g1h3: 1
+
+a2a3: g8h6->a1b1: LEAF
+
+
+b2b3: g8h6->g1f3: LEAF    
+c2c3: g8h6->g1h3: LEAF    
+d2d3: g8h6->b2b3: LEAF    
+e2e3: g8h6->b2b4: LEAF    
+f2f3: g8h6->c2c3: LEAF    
+g2g3: g8h6->c2c4: LEAF    
+h2h3: g8h6->d2d3: LEAF    
+a2a4: g8h6->d2d4: LEAF    
+b2b4: g8h6->e2e3: LEAF    
+c2c4: g8h6->e2e4: LEAF    
+d2d4: g8h6->f2f3: LEAF    
+e2e4: g8h6->f2f4: LEAF    
+f2f4: g8h6->g2g3: LEAF    
+g2g4: g8h6->g2g4: LEAF    
+h2h4: g8h6->h2h3: LEAF    
+b1a3: g8h6->h2h4: LEAF    
+b1c3: g8h6->a3b5: LEAF    
+g1f3: g8h6->a3b1: LEAF    
+g1h3: g8h6->a3c4: LEAF    
+a7a6: 1
+b7b6: 1
+c7c6: 1
+d7d6: 1
+e7e6: 1
+f7f6: 1
+g7g6: 1
+h7h6: 1
+a7a5: 1
+b7b5: 1
+c7c5: 1
+d7d5: 1
+e7e5: 1
+f7f5: 1
+g7g5: 1
+h7h5: 1
+b8a6: 1
+b8c6: 1
+g8f6: 1
+g8h6: 1
+
+#*-> a7a5:    ,a7a5:{22, 21}*#
+  -> a7a6:    ,a7a6:{21, 21} 
+  -> b7b5:    ,b7b5:{21, 21} 
+  -> b7b6:    ,b7b6:{21, 21} 
+  -> b8a6:    ,b8a6:{21, 21} 
+  -> b8c6:    ,b8c6:{21, 21} 
+  -> c7c5:    ,c7c5:{21, 21} 
+  -> c7c6:    ,c7c6:{21, 21} 
+  -> d7d5:    ,d7d5:{21, 21} 
+  -> d7d6:    ,d7d6:{21, 21} 
+  -> e7e5:    ,e7e5:{21, 21} 
+  -> e7e6:    ,e7e6:{21, 21} 
+  -> f7f5:    ,f7f5:{21, 21} 
+  -> f7f6:    ,f7f6:{21, 21} 
+  -> g7g5:    ,g7g5:{22, 22} 
+  -> g7g6:    ,g7g6:{21, 21} 
+  -> g8f6:    ,g8f6:{21, 21} 
+  -> g8h6:    ,g8h6:{21, 21} 
+  -> h7h5:    ,h7h5:{20, 20} 
+  -> h7h6:    ,h7h6:{21, 21} 
+
+
+
+
+
+
+
+     -> a7a5->b1a3: LEAF
+	 -> a7a5->b1c3: LEAF
+	 -> a7a5->g1f3: LEAF
+	 -> a7a5->g1h3: LEAF
+	 -> a7a5->h1h2: LEAF
+	 -> a7a5->h1h3: LEAF
+	 -> a7a5->a2a3: LEAF
+	 -> a7a5->a2a4: LEAF
+	 -> a7a5->b2b3: LEAF
+	 -> a7a5->b2b4: LEAF
+	 -> a7a5->c2c3: LEAF
+	 -> a7a5->c2c4: LEAF
+	 -> a7a5->d2d3: LEAF
+	 -> a7a5->d2d4: LEAF
+	 -> a7a5->e2e3: LEAF
+	 -> a7a5->e2e4: LEAF
+	 -> a7a5->f2f3: LEAF
+	 -> a7a5->f2f4: LEAF
+	 -> a7a5->g2g3: LEAF
+	 -> a7a5->g2g4: LEAF
+	 -> a7a5->h4h5: LEAF
+	 -> a7a5->h4a6: LEAF

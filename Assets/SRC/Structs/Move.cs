@@ -69,6 +69,8 @@ public readonly struct Move
         int moveflag = moveFlag;
         return (moveflag == Flag.PromoteToQueen || moveflag == Flag.PromoteToRook || moveflag == Flag.PromoteToBishop || moveflag == Flag.PromoteToKnight);
     }
+    public ushort MoveValue { get { return moveValue; } }
+    //!DEPRECATED
     public short toShort()
     {
         short _move = ((short)moveValue);

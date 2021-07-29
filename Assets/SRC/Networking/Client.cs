@@ -165,6 +165,7 @@ public class Client : MonoBehaviour
         }
         private void Disconnect()
         {
+            ConsoleHistory.instance.addLogHistory($"<color=red>     <b>TCP Disconnected!</b> </color>");
             instance.Disconnect();
             stream = null;
             reccievePacket = null;
@@ -248,7 +249,8 @@ public class Client : MonoBehaviour
         }
         private void Disconnect()
         {
-            instance.Disconnect();
+            ConsoleHistory.instance.addLogHistory($"<color=red>     <b>UDP Disconnected!</b> </color>");
+            //instance.Disconnect();
             endPoint = null;
             socket = null;
         }

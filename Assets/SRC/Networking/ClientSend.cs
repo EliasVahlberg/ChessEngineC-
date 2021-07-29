@@ -36,7 +36,11 @@ public class ClientSend : MonoBehaviour
             SendTCPData(_packet);
         }
     }
-    public static void ChessMove(short _move)
+
+    #region MOVE
+
+
+    public static void ChessMove(ushort _move)
     {
         using (Packet _packet = new Packet((int)ClientPackets.moveRequest))
         {
@@ -45,6 +49,7 @@ public class ClientSend : MonoBehaviour
             SendTCPData(_packet);
         }
     }
+
     public static void ChessMoveResponse(bool _accept)
     {
         using (Packet _packet = new Packet((int)ClientPackets.moveResponse))
@@ -54,7 +59,9 @@ public class ClientSend : MonoBehaviour
             SendTCPData(_packet);
         }
     }
+    #endregion
 
+    #region FEN
     public static void FenSelect(string _fen, bool _isWhite)
     {
         using (Packet _packet = new Packet((int)ClientPackets.fenSelect))
@@ -75,6 +82,8 @@ public class ClientSend : MonoBehaviour
             SendTCPData(_packet);
         }
     }
+    #endregion
+
     #endregion
     #region UDP_PACKETS
     public static void UDPConnectReceived()

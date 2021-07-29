@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ChessAI;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -25,8 +26,15 @@ public class GameManager : MonoBehaviour
     public bool sentIsWhite = false;
     public bool fenSent = false;
     #endregion
-
-
+    #region AI
+    public List<IAI> aiList;
+    public IAI ai1;
+    public IAI ai2;
+    public bool ai1Playing = false;
+    public bool ai2Playing = false;
+    public int ai1Color = 0;
+    public int ai2Color = 0;
+    #endregion
     //UI interface
     public int selectedMoveTo = -1;
     public int selectedPiece = -1;
@@ -35,7 +43,7 @@ public class GameManager : MonoBehaviour
     public bool started = false;
     public bool isNetworked
     {
-        get { return networkUIManager.connectedTCP && networkUIManager.connectedUDP; }
+        get { return NetworkUIManager.instance.IsConnected(); }
     }
     //
     public static GameManager instance;
@@ -142,36 +150,46 @@ public class GameManager : MonoBehaviour
                 uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
         }
     }
+    #region Network
+
     public void resetSentMove()
     {
         sentMove = new Move(-1, -1, -1);
         moveSent = false;
     }
+
     public void UpdateBoard()
     {
-        if (networkGameManager.myTurn)
+        if (myColor == board.ColorTurn)
         {
-            if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
+            if (!board.useMove(sentMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
             moveSent = false;
         }
         else
         {
-            if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
-                Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
+            if (!board.useMove(recivedMove, uiManager) && !board.isCheckMate())
+                Debug.Log("MOVE FAIL: { from = " + recivedMove.StartSquare + ", to = " + recivedMove.TargetSquare + " }");
         }
     }
+
     public bool ReciveMove(Move move)
     {
+        if (myColor == board.ColorTurn)
+        {
+            Debug.Log("OPPONENT TURN MISSMATCH!");
+            return false;
+        }
         if (board.containsMove(move))
         {
             recivedMove = move;
-            GameManager.instance.UpdateBoard();
+            UpdateBoard();
             return true;
         }
         else
             return false;
     }
+
     public bool ReciveFEN(string fen, bool isBlack)
     {
         //TODO CHECK FEN
@@ -187,10 +205,13 @@ public class GameManager : MonoBehaviour
 
             resetBoard(validFEN);
             MenuManager.instance.hideLobby();
-
+            Debug.Log("FEN ACCEPTED");
+            return true;
         }
-        return true;
+        Debug.Log("FEN NOT ACCEPTED");
+        return false;
     }
+
     public void UseSentFen()
     {
         if (fenSent)
@@ -207,11 +228,14 @@ public class GameManager : MonoBehaviour
 
                 resetBoard(validFEN);
                 MenuManager.instance.hideLobby();
-
+                Debug.Log("SENT FEN USED");
+                return;
             }
-
+            Debug.Log("SENT FEN FAIL");
         }
+        Debug.Log("FEN NOT SENT");
     }
+    #endregion
     public void resetBoard()
     {
         board = createBoard();
@@ -222,6 +246,7 @@ public class GameManager : MonoBehaviour
         board.onStart();
 
     }
+
     public void resetBoard(string fen)
     {
         board = createBoard(fen);
@@ -231,7 +256,6 @@ public class GameManager : MonoBehaviour
         uiManager.winText.text = "";
         board.onStart();
     }
-
 
     public void forfit()
     {
@@ -246,6 +270,7 @@ public class GameManager : MonoBehaviour
             started = false;
         }
     }
+
     public string isEndGameCondition()
     {
         string mes = "";
@@ -262,4 +287,16 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public Move getAIMove()
+    {
+        if (ai1Playing && (ai1Color == board.ColorTurn))
+        {
+            return ai1.SelectMove(board);
+        }
+        else if (ai2Playing && (ai2Color == board.ColorTurn))
+        {
+            return ai2.SelectMove(board);
+        }
+        return new Move(0);
+    }
 }

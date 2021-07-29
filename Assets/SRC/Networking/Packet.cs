@@ -136,6 +136,13 @@ namespace GameClient
         {
             buffer.AddRange(BitConverter.GetBytes(_value));
         }
+        /// <summary>Adds a unsigned short to the packet.</summary>
+        /// <param name="_value">The short to add.</param>
+        //* ADDED BY EV
+        public void Write(ushort _value)
+        {
+            buffer.AddRange(BitConverter.GetBytes(_value));
+        }
         /// <summary>Adds an int to the packet.</summary>
         /// <param name="_value">The int to add.</param>
         public void Write(int _value)
@@ -213,6 +220,9 @@ namespace GameClient
             }
         }
 
+
+
+
         /// <summary>Reads a short from the packet.</summary>
         /// <param name="_moveReadPos">Whether or not to move the buffer's read position.</param>
         public short ReadShort(bool _moveReadPos = true)
@@ -221,6 +231,28 @@ namespace GameClient
             {
                 // If there are unread bytes
                 short _value = BitConverter.ToInt16(readableBuffer, readPos); // Convert the bytes to a short
+                if (_moveReadPos)
+                {
+                    // If _moveReadPos is true and there are unread bytes
+                    readPos += 2; // Increase readPos by 2
+                }
+                return _value; // Return the short
+            }
+            else
+            {
+                throw new Exception("Could not read value of type 'short'!");
+            }
+        }
+
+        /// <summary>Reads an unsigned short from the packet.</summary>
+        /// <param name="_moveReadPos">Whether or not to move the buffer's read position.</param>
+        //* ADDED BY EV
+        public ushort ReadUShort(bool _moveReadPos = true)
+        {
+            if (buffer.Count > readPos)
+            {
+                // If there are unread bytes
+                ushort _value = BitConverter.ToUInt16(readableBuffer, readPos); // Convert the bytes to a short
                 if (_moveReadPos)
                 {
                     // If _moveReadPos is true and there are unread bytes

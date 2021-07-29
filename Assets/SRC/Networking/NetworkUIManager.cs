@@ -11,6 +11,7 @@ public class NetworkUIManager : MonoBehaviour
     public InputField ipField;
     public bool connectedTCP = false;
     public bool connectedUDP = false;
+    public bool IsConnected() => connectedTCP || connectedUDP;
     // * SINGELTON IMPLEMENTATION
     private void Awake()
     {
@@ -27,9 +28,6 @@ public class NetworkUIManager : MonoBehaviour
 
     public void ConnectToServer()
     {
-        startMenu.SetActive(false);
-        userNameField.interactable = false;
-        ipField.interactable = false;
         Client.instance.ConnectToServer();
 
     }
@@ -41,38 +39,45 @@ public class NetworkUIManager : MonoBehaviour
 
     public void ConnectToServer(string ip)
     {
-        startMenu.SetActive(false);
-        userNameField.interactable = false;
-        ipField.interactable = false;
+
         Client.instance.ConnectToServer(ip);
-        MenuManager.instance.hideNetworkMenu(false);
+        //MenuManager.instance.hideNetworkMenu(false);
     }
     public void onConnect()
     {
+        startMenu.SetActive(false);
+        userNameField.interactable = false;
+        ipField.interactable = false;
         MenuManager.instance.showLobby();
     }
     public void onDisconnect()
     {
         MenuManager.instance.showNetworkMenu();
     }
-
+    public void Disconnect()
+    {
+        Client.instance.Disconnect();
+    }
     #region Move
     public void SendMove(Move move)
     {
-        ClientSend.ChessMove(move.toShort());
+        ClientSend.ChessMove(move.MoveValue);
     }
-    public void ReciveMove(short move)
+    public void ReciveMove(ushort move)
     {
-        NetworkGameManager.instance.onRecieveMove(new Move(((ushort)move)));
+        NetworkGameManager.instance.onRecieveMove(new Move(move));
     }
+
     public void SendMoveResponse(bool accepted)
     {
         ClientSend.ChessMoveResponse(accepted);
     }
+
     public void ReciveMoveResponse(bool accepted)
     {
         NetworkGameManager.instance.sentMoveResponse(accepted);
     }
+
     #endregion
 
     #region FEN

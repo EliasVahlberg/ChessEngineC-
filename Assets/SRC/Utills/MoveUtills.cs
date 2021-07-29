@@ -233,11 +233,14 @@ public class MoveUtills
                     pawnMoveL.Add(new Move(position, target));
             }
         }
-        if (board.enPassantAble == position - 1 || board.enPassantAble == position + 1)
+        if ((board.enPassantAble == position - 1 && numSquaresToEdge[position][WEST_I] != 0) || (board.enPassantAble == position + 1 && numSquaresToEdge[position][EAST_I] != 0))
         {
             if (MoveLegalityUtills.IsLegal(position, target, board))
             {
                 //TODO FIX
+                //!FUCK THIS COMMENT
+                //*Was previously :(board.enPassantAble == position - 1  || board.enPassantAble == position + 1)
+                //! *MASSIVE BLUNDER*
                 pawnMoveL.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
             }
         }

@@ -35,7 +35,7 @@ namespace Command
                     return "FAIL! PARSEFAIL for arg 2";
                 if (!int.TryParse(args[3], out a3))
                     return "FAIL! PARSEFAIL for arg 3";
-                short _move = (short)((a1 & (0b111111)) | ((a2 << 6) & 0b111111000000) | (a3 >> 12) & 0b111000000000000);
+                ushort _move = (ushort)((a1 & (0b111111)) | ((a2 << 6) & 0b111111000000) | (a3 >> 12) & 0b111000000000000);
                 ClientSend.ChessMove(_move);
                 return "Move sent to server:\" " + _move + " \"";
             }

@@ -12,7 +12,7 @@ public class DevConsoleBehaviour : MonoBehaviour
     [SerializeField] private ConsoleCommand[] commands = new ConsoleCommand[0];
 
     [Header("UI")]
-    [SerializeField] private GameObject uiCanvas = null;
+    [SerializeField] public GameObject uiCanvas = null;
     [SerializeField] private TMP_InputField inputField = null;
     [Header("LogHistory")]
     [SerializeField] private int i1 = 0x4100FF;
@@ -37,7 +37,7 @@ public class DevConsoleBehaviour : MonoBehaviour
     //0x 36A83C : 0x36, 0xA8, 0x3C  :   ResponseCol
     //0x FF3232 : 0xFF, 0x32, 0x32  :   ReturnedResponseCol
 
-
+    public bool active = false;
     private float pausTimeScale; //USED WITH TIMESCALE
     public static DevConsoleBehaviour instance; //* SINGELTON
     private DevConsole devConsole;
@@ -57,6 +57,7 @@ public class DevConsoleBehaviour : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        active = uiCanvas.activeSelf;
         instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -64,15 +65,17 @@ public class DevConsoleBehaviour : MonoBehaviour
     {
         if (uiCanvas.activeSelf)
         {
-            Time.timeScale = pausTimeScale;
+            //Time.timeScale = pausTimeScale;
             uiCanvas.SetActive(false);
+            active = false;
         }
         else
         {
-            pausTimeScale = Time.timeScale;
-            Time.timeScale = 0;
+            //pausTimeScale = Time.timeScale;
+            //Time.timeScale = 0;
             uiCanvas.SetActive(true);
             inputField.ActivateInputField();
+            active = true;
         }
 
     }

@@ -223,6 +223,7 @@ public class Board
     {
         tiles = new int[64];
     }
+
     public Board(string fen)
     {
         tiles = new int[64];
@@ -247,6 +248,7 @@ public class Board
             i++;
         }
     }
+
     public string boardToFEN()
     {
         FENUtills.GameStateInfo gameStateInfo = new FENUtills.GameStateInfo();
@@ -264,7 +266,7 @@ public class Board
 
         return FENUtills.generateFEN(gameStateInfo);
     }
-
+    //!DEPRECATED (I think at leas)
     public Board copy()
     {
         Board copy = new Board();
@@ -284,6 +286,187 @@ public class Board
         copy.enPassantAble = enPassantAble;
         return copy;
 
+    }
+    public Board Clone()
+    {
+        Board copy = new Board();
+        copy.tiles = new int[64];
+        Array.Copy(tiles, copy.tiles, 64);
+        copy.turn = turn;
+        copy.whiteCastleKingside = whiteCastleKingside;
+        copy.whiteCastleQueenside = whiteCastleQueenside;
+        copy.blackCastleKingside = blackCastleKingside;
+        copy.blackCastleQueenside = blackCastleQueenside;
+        copy.whiteTurn = whiteTurn;
+        copy.enPassantAble = enPassantAble;
+        copy.lastTurnGenerated = -1;
+        copy.lastTurnGeneratedMoveMap = -1;
+        copy.lastTurnGeneratedOpo = -1;
+        copy.lastGeneratedWhiteCaptureable = -1;
+        copy.lastGeneratedBlackCaptureable = -1;
+        copy.lastGeneratedPinnedWhite = -1;
+        copy.lastGeneratedPinnedBlack = -1;
+        return copy;
+
+    }
+
+    public bool useMove(Move move, UIManager uiManager)
+    {
+        try
+        {
+            int from = move.StartSquare;
+            int to = move.TargetSquare;
+            if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
+                enPassantAble = -1;
+            if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
+                fiftyCount++;
+            else
+                fiftyCount = 0;
+
+            switch (move.moveFlag)
+            {
+                case Move.Flag.PawnTwoForward:
+                    enPassantAble = to;
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    break;
+                case Move.Flag.EnPassantCapture:
+                    tiles[enPassantAble] = 0;
+
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+
+                    uiManager.destroyPiece(enPassantAble);
+                    enPassantAble = -1;
+                    break;
+                case Move.Flag.Castling:
+                    castelMove(move, uiManager);
+                    break;
+                case Move.Flag.PromoteToQueen:
+                    tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToRook:
+                    tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToBishop:
+                    tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToKnight:
+                    tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                default:
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+                    uiManager.movePiece(from, to);
+                    break;
+            }
+
+            updateCasteling(from, to);
+            if (IsType(tiles[to], KING))
+            {
+                if (whiteTurn)
+                    whiteKingPos = to;
+                else
+                    blackKingPos = to;
+            }
+            Turn++;
+            whiteTurn = !whiteTurn;
+            string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
+            uiManager.gameText.text = s;
+            isCheckMate();
+            return true;
+        }
+        catch (Exception _ex)
+        {
+            Debug.Log("EXCEPTION DURING useMove, ex:" + _ex.ToString());
+            return false;
+        }
+    }
+
+    public bool useMove(Move move)
+    {
+        try
+        {
+            int from = move.StartSquare;
+            int to = move.TargetSquare;
+            if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
+                enPassantAble = -1;
+            if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
+                fiftyCount++;
+            else
+                fiftyCount = 0;
+
+            switch (move.moveFlag)
+            {
+                case Move.Flag.PawnTwoForward:
+                    enPassantAble = to;
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+                    break;
+                case Move.Flag.EnPassantCapture:
+                    tiles[enPassantAble] = 0;
+
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+
+                    enPassantAble = -1;
+                    break;
+                case Move.Flag.Castling:
+                    castelMove(move);
+                    break;
+                case Move.Flag.PromoteToQueen:
+                    tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    break;
+                case Move.Flag.PromoteToRook:
+                    tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    break;
+                case Move.Flag.PromoteToBishop:
+                    tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    break;
+                case Move.Flag.PromoteToKnight:
+                    tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
+                    tiles[from] = 0;
+                    break;
+                default:
+                    tiles[to] = tiles[from];
+                    tiles[from] = 0;
+                    break;
+            }
+
+            updateCasteling(from, to);
+            if (IsType(tiles[to], KING))
+            {
+                if (whiteTurn)
+                    whiteKingPos = to;
+                else
+                    blackKingPos = to;
+            }
+            Turn++;
+            whiteTurn = !whiteTurn;
+            return true;
+        }
+        catch (Exception _ex)
+        {
+            Debug.Log("EXCEPTION DURING useMove, ex:" + _ex.ToString());
+            return false;
+        }
     }
 
     public bool tryMove(int from, int to, UIManager uiManager)
@@ -372,20 +555,24 @@ public class Board
         }
         return false;
     }
+
     public bool isCheckMate()
     {
         if (Moves.Count == 0)
             Debug.Log("CheckMate, winner :" + (whiteTurn ? "BLACK" : "WHITE"));
         return Moves.Count == 0 && (whiteTurn ? WhiteInCheck : BlackInCheck);
     }
+
     public bool isDraw()
     {
         return fiftyCount == 50;
     }
+
     public bool isStalemate()
     {
         return Moves.Count == 0 && (whiteTurn ? !WhiteInCheck : !BlackInCheck);
     }
+
     public Move getMove(int from, int to)
     {
         List<Move> moves = MoveUtills.generateMovesForThisSquare(from, this);
@@ -395,6 +582,7 @@ public class Board
                 return move;
         return move1;
     }
+
     public bool containsMove(Move move)
     {
         if (move.TargetSquare >= 0 && move.StartSquare >= 0 && move.moveFlag >= 0)
@@ -406,6 +594,7 @@ public class Board
         }
         return false;
     }
+
     public bool tryMove(int from, int to)
     {
 

@@ -72,6 +72,7 @@ public class UIManager : MonoBehaviour
             Destroy(this);
         }
     }
+
     void Start()
     {
         gameManager = GameManager.instance;
@@ -99,6 +100,7 @@ public class UIManager : MonoBehaviour
         }
         boardContainer.SetActive(false);
     }
+
     public void generatePieceUI()
     {
         int[] pices = gameManager.board.tiles;
@@ -133,6 +135,7 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+
     void Update()
     {
         checkMouseInput();
@@ -246,6 +249,12 @@ public class UIManager : MonoBehaviour
     private bool isFlipped = false;
     private void checkKeyInput()
     {
+        if (DevConsoleBehaviour.instance.active)
+        {
+            if (Input.GetKeyDown(KeyCode.F1))
+                DevConsoleBehaviour.instance.ToggleDevConsole();
+            return;
+        }
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             showDanger(true);
@@ -278,6 +287,9 @@ public class UIManager : MonoBehaviour
 
     public void showDanger(bool white)
     {
+        if (!gameManager.started)
+            return;
+
         bool dangerTinted = white ? dangerTintedW : dangerTintedB;
         List<int> dangerTintedList = white ? dangerTintedListW : dangerTintedListB;
         if (dangerTinted)
@@ -320,6 +332,7 @@ public class UIManager : MonoBehaviour
                 dangerTintedList = dangerTintedListB;
             }
         }
+
     }
 
     public void flipCamera()
@@ -346,6 +359,8 @@ public class UIManager : MonoBehaviour
 
     public void showAvailableMoves(int pos)
     {
+        if (!gameManager.started)
+            return;
         if (tintedSquares.Count != 0)
         {
             foreach (int target in tintedSquares)
@@ -371,6 +386,8 @@ public class UIManager : MonoBehaviour
 
     public void hideAvailableMoves()
     {
+        if (!gameManager.started)
+            return;
         if (tintedSquares.Count != 0)
             foreach (int target in tintedSquares)
             {

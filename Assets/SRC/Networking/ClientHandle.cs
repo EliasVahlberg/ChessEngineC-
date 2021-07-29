@@ -24,15 +24,17 @@ public class ClientHandle : MonoBehaviour
 
         //TODO send packet back
     }
+
     public static void Move(Packet _packet)
     {
         int _id = _packet.ReadInt();
-        short _move = _packet.ReadShort();
+        ushort _move = _packet.ReadUShort();
         Debug.Log($"Move: \n{_move}, From: {_id}");
         ConsoleHistory.instance.addLogHistory($"<color=blue>  Move from server:</color>\n <color=green>\"{_move}\"</color>");
         NetworkUIManager.instance.ReciveMove(_move);
         //* DON'T send back
     }
+
     public static void MoveResponse(Packet _packet)
     {
         int _id = _packet.ReadInt();
@@ -42,6 +44,7 @@ public class ClientHandle : MonoBehaviour
         NetworkUIManager.instance.ReciveMoveResponse(_accept);
         //* DON'T send back
     }
+
     public static void Fen(Packet _packet)
     {
         int _id = _packet.ReadInt();
@@ -51,6 +54,7 @@ public class ClientHandle : MonoBehaviour
         NetworkUIManager.instance.ReciveFen(_fen, _isWhite);
         //* DON'T send back
     }
+
     public static void FenResponse(Packet _packet)
     {
         int _id = _packet.ReadInt();

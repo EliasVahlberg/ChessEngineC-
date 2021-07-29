@@ -15,7 +15,7 @@ public class MenuManager : MonoBehaviour
     [HideInInspector]
     private SettingsManager settingsManager;
     [Header("Main Menu")]
-    public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton, returnMainMenuButton;
+    public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton, returnMainMenuButton, inGameDisconnectButton;
     public Text inputText;
     public InputField fenInputFeild;
     public Text inputErrText;
@@ -62,11 +62,12 @@ public class MenuManager : MonoBehaviour
         forfitButton.onClick.AddListener(forfit);
         openSettingsMenuButton.onClick.AddListener(showSettingsMenu);
         returnMainMenuButton.onClick.AddListener(returnMainMenu);
+        inGameDisconnectButton.onClick.AddListener(disconnectLobby);
 
 
         closeNetworkMenuButton.onClick.AddListener(hideNetworkMenu);
 
-
+        inGameDisconnectButton.gameObject.SetActive(false);
         resetButton.gameObject.SetActive(false);
         forfitButton.gameObject.SetActive(false);
         returnMainMenuButton.gameObject.SetActive(false);
@@ -149,19 +150,30 @@ public class MenuManager : MonoBehaviour
         canvas.SetActive(true);
         if (gameManager.started)
         {
+            if (isInLobby)
+            {
+                inGameDisconnectButton.gameObject.SetActive(true);
+                returnMainMenuButton.gameObject.SetActive(false);
+            }
+            else
+            {
+                returnMainMenuButton.gameObject.SetActive(true);
+                inGameDisconnectButton.gameObject.SetActive(false);
+            }
             playDefaultStart.gameObject.SetActive(false);
             resetButton.gameObject.SetActive(true);
             forfitButton.gameObject.SetActive(true);
             openNetworkMenuButton.gameObject.SetActive(false);
             openSettingsMenuButton.gameObject.SetActive(false);
             quitButton.gameObject.SetActive(false);
-            returnMainMenuButton.gameObject.SetActive(true);
             fenInputFeild.interactable = true;
             fenInputFeild.text =
             gameManager.board.boardToFEN();
         }
         else
         {
+            returnMainMenuButton.gameObject.SetActive(false);
+            inGameDisconnectButton.gameObject.SetActive(false);
             forfitButton.gameObject.SetActive(false);
             resetButton.gameObject.SetActive(false);
             openSettingsMenuButton.gameObject.SetActive(true);
@@ -299,10 +311,17 @@ public class MenuManager : MonoBehaviour
     {
         if (isInLobby)
         {
-            Client.instance.Disconnect();
+            if (showing)
+                hideMainMenu();
+            NetworkUIManager.instance.Disconnect();
             isInLobby = false;
             hideLobby();
             showNetworkMenu();
+            if (GameManager.instance.started)
+            {
+                gameManager.started = false;
+                uiManager.hideBoard();
+            }
         }
     }
 
