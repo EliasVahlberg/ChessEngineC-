@@ -107,7 +107,7 @@ public class Board
     public int blackKingPos;
 
     private List<Move> moves = new List<Move>();
-    public int lastTurnGenerated = -1;
+    private int lastTurnGenerated = -1;
     public List<Move> Moves
     {
         get
@@ -218,7 +218,13 @@ public class Board
     {
         get { return (whiteTurn) ? BlackCap[whiteKingPos] : WhiteCap[blackKingPos]; }
     }
+
+
     public Move lastMove;
+    public bool lastMoveWasCapture = false;
+    public int lastMoveCaptured = 0;
+
+
     public Board()
     {
         tiles = new int[64];
@@ -329,7 +335,8 @@ public class Board
                 fiftyCount = 0;
             if (IsType(tiles[to], ROOK))
                 updateCasteRook(to);
-
+            lastMoveWasCapture = tiles[to] != 0;
+            lastMoveCaptured = tiles[to];
             switch (move.moveFlag)
             {
                 case Move.Flag.PawnTwoForward:
@@ -421,6 +428,8 @@ public class Board
             if (IsType(tiles[to], ROOK))
                 updateCasteRook(to);
 
+            lastMoveWasCapture = tiles[to] != 0;
+            lastMoveCaptured = tiles[to];
             switch (move.moveFlag)
             {
                 case Move.Flag.PawnTwoForward:
@@ -504,6 +513,9 @@ public class Board
                     fiftyCount = 0;
                 if (IsType(tiles[to], ROOK))
                     updateCasteRook(to);
+
+                lastMoveWasCapture = tiles[to] != 0;
+                lastMoveCaptured = tiles[to];
 
                 switch (move.moveFlag)
                 {
@@ -633,7 +645,8 @@ public class Board
                     fiftyCount = 0;
                 if (IsType(tiles[to], ROOK))
                     updateCasteRook(to);
-                updateCasteRook(to);
+                lastMoveWasCapture = tiles[to] != 0;
+                lastMoveCaptured = tiles[to];
                 switch (move.moveFlag)
                 {
                     case Move.Flag.PawnTwoForward:

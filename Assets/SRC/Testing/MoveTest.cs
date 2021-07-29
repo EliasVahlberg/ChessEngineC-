@@ -146,8 +146,6 @@ public class MoveTest
         if (board.Moves.Count == 0)
         {
             Debug.Log("CM: " + move);
-            Debug.Log("CM: " + board.lastTurnGenerated);
-            Debug.Log("CM: " + board.Moves.Count);
             Debug.Log(board.boardToFEN());
         }
         long before = 0;

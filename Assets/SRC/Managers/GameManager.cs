@@ -93,7 +93,8 @@ public class GameManager : MonoBehaviour
                     return;
                 if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
                     Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
-                onNewTurn(board.lastMove, !board.whiteTurn);
+                else
+                    onNewTurn(board.lastMove, !board.whiteTurn);
                 string winMes;
                 if ((winMes = isEndGameCondition()) != "")
                 {
@@ -160,14 +161,16 @@ public class GameManager : MonoBehaviour
         {
             if (!board.useMove(sentMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
+            else
+                onNewTurn(board.lastMove, !board.whiteTurn);
             moveSent = false;
-            onNewTurn(board.lastMove, !board.whiteTurn);
         }
         else
         {
             if (!board.useMove(recivedMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + recivedMove.StartSquare + ", to = " + recivedMove.TargetSquare + " }");
-            onNewTurn(board.lastMove, !board.whiteTurn);
+            else
+                onNewTurn(board.lastMove, !board.whiteTurn);
         }
     }
 
@@ -298,9 +301,12 @@ public class GameManager : MonoBehaviour
         return new Move(0);
     }
 
-    public void onNewTurn(Move move, bool isWhite)
+    public void onNewTurn(Move move, bool wasWhite)
     {
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
+        if (!GameHistoryPanel.instance.showing)
+            GameHistoryPanel.instance.activate();
+        GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
 
         uiManager.hideDanger();
     }
