@@ -239,6 +239,7 @@ public class MoveUtills
             {
                 //TODO FIX
                 //!FUCK THIS COMMENT
+                //*Fixed now but
                 //*Was previously :(board.enPassantAble == position - 1  || board.enPassantAble == position + 1)
                 //! *MASSIVE BLUNDER*
                 pawnMoveL.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));

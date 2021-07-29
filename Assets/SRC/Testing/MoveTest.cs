@@ -62,7 +62,6 @@ public class MoveTest
         try
         {
 
-            Debug.Log(ply);
             //File.Create(logFilePath).Close();
             outputList = new List<string>();
             leafList = new List<List<string>>();
@@ -73,7 +72,6 @@ public class MoveTest
             stockfishResult.Sort();
             fs = File.Open(logFilePath, FileMode.Truncate, FileAccess.Write);
             sw = new StreamWriter(fs);
-            Debug.Log("COUNT :" + outputList.Count + ", " + stockfishResult.Count + ", " + leafList.Count);
             string str = " ";
             for (int i = 0; i < outputList.Count; i++)//Math.Max(outputList.Count, stockfishResult.Count); i++)
             {
@@ -93,7 +91,6 @@ public class MoveTest
                 {
                     str += "," + stockfishResult[i];
                 }
-                Debug.Log(str);
                 sw.WriteLine(str);
                 str = " ";
             }
@@ -118,7 +115,6 @@ public class MoveTest
         long before = 0;
         if (currentPly == plyDepth - 1)
         {
-            Debug.Log("Leaf :" + currentPly);
             if (listMoves)
             {
                 foreach (Move nextMove in board.Moves)
@@ -165,7 +161,6 @@ public class MoveTest
     {
         string str = (move + ": " + nMoves);
         outputList.Add(str);
-        Debug.Log(str);
     }
     public static string MoveStringRepresentation(Move move)
     {
@@ -179,5 +174,36 @@ public class MoveTest
         if (leafList[leafListCounter] == null)
             leafList[leafListCounter] = new List<string>();
         leafList[leafListCounter].Add(str);
+    }
+
+
+
+
+
+
+    public static long[] StandardMoveTestNoLog(int fen)
+    {
+        return StandardMoveTest(fen, STANDARD_PLY, false);
+    }
+    public static long[] StandardMoveTestNoLog(int fen, int ply)
+    {
+        Board board = new Board(TestFen[fen]);
+        long[] nMoves = new long[ply];
+        standardMoveTestRecursiveNoLog(board, 0, ply, nMoves);
+        return nMoves;
+    }
+    public static void standardMoveTestRecursiveNoLog(Board board, int currentPly, int plyDepth, long[] nMoves)
+    {
+        nMoves[currentPly] += board.Moves.Count;
+        if (currentPly == plyDepth - 1)
+            return;
+        foreach (Move nextMove in board.Moves)
+        {
+            Board newBoard = board.Clone();
+            newBoard.useMove(nextMove);
+
+            standardMoveTestRecursiveNoLog(newBoard, currentPly + 1, plyDepth, nMoves);
+
+        }
     }
 }
