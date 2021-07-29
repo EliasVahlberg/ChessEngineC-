@@ -218,7 +218,7 @@ public class Board
     {
         get { return (whiteTurn) ? BlackCap[whiteKingPos] : WhiteCap[blackKingPos]; }
     }
-
+    public Move lastMove;
     public Board()
     {
         tiles = new int[64];
@@ -318,6 +318,7 @@ public class Board
     {
         try
         {
+
             int from = move.StartSquare;
             int to = move.TargetSquare;
             if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
@@ -326,6 +327,8 @@ public class Board
                 fiftyCount++;
             else
                 fiftyCount = 0;
+            if (IsType(tiles[to], ROOK))
+                updateCasteRook(to);
 
             switch (move.moveFlag)
             {
@@ -392,6 +395,7 @@ public class Board
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
             isCheckMate();
+            lastMove = move;
             return true;
         }
         catch (Exception _ex)
@@ -567,6 +571,7 @@ public class Board
                 string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
                 uiManager.gameText.text = s;
                 isCheckMate();
+                lastMove = move;
                 return true;
             }
         }
@@ -679,6 +684,7 @@ public class Board
                 }
                 Turn++;
                 whiteTurn = !whiteTurn;
+                lastMove = move;
                 return true;
             }
         }
@@ -719,6 +725,7 @@ public class Board
             }
         }
     }
+
     public void updateCasteRook(int to)
     {
         int r1 = whiteTurn ? 7 : 63;
@@ -738,6 +745,7 @@ public class Board
                 whiteCastleQueenside = false;
         }
     }
+
     public void castelMove(Move move, UIManager uiManager)
     {
         int from = move.StartSquare;
@@ -803,6 +811,7 @@ public class Board
         else
             return null;
     }
+
     public void onStart()
     {
         blackCaptureable = MoveLegalityUtills.updateCapturable(this, false);
@@ -810,6 +819,7 @@ public class Board
         pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
         pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
     }
+
     public void refreshMoveMap()
     {
         moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);

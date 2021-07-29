@@ -30,6 +30,7 @@ public class UIManager : MonoBehaviour
     public Color darkColor = Color.black;
     public Color tintOffset = new Color(0, 100, 0);
     public Color dangerTintOffset = new Color(100, 0, 0);
+    public Color lastMoveTintOffset = new Color(100, 0, 100);
     static readonly char[] ranksIndecies = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
     public Dictionary<int, int> pieceTypeToSprite = new Dictionary<int, int>()
     {
@@ -335,6 +336,34 @@ public class UIManager : MonoBehaviour
 
     }
 
+    public void hideDanger()
+    {
+        bool dangerTinted = dangerTintedW || dangerTintedB;
+        if (dangerTinted)
+        {
+            if (dangerTintedW)
+            {
+
+                foreach (int n in dangerTintedListW)
+                {
+                    tiles[n].revertDangerTint();
+                }
+                dangerTintedW = false;
+                dangerTintedListW.Clear();
+            }
+            if (dangerTintedB)
+            {
+
+                foreach (int n in dangerTintedListB)
+                {
+                    tiles[n].revertDangerTint();
+                }
+
+                dangerTintedB = false;
+                dangerTintedListB.Clear();
+            }
+        }
+    }
     public void flipCamera()
     {
         if (isFlipped)
@@ -442,5 +471,18 @@ public class UIManager : MonoBehaviour
                     pUI.Destroy();
         }
     }
-
+    public int lastMoveStart = -1;
+    public int lastMoveTarget = -1;
+    public void LastMoveTint(int from, int to)
+    {
+        if (lastMoveStart != -1 || lastMoveTarget != -1)
+        {
+            tiles[lastMoveStart].revertLastMoveTint();
+            tiles[lastMoveTarget].revertLastMoveTint();
+        }
+        lastMoveStart = from;
+        lastMoveTarget = to;
+        tiles[lastMoveStart].lastMoveTint();
+        tiles[lastMoveTarget].lastMoveTint();
+    }
 }

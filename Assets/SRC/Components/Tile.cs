@@ -10,6 +10,7 @@ public class Tile : MonoBehaviour
     public BoxCollider2D collider;
     bool tinted = false;
     bool dangerTinted = false;
+    bool lastMoveTinted = false;
     void Start()
     {
         spriteRen = gameObject.GetComponent<SpriteRenderer>();
@@ -60,4 +61,21 @@ public class Tile : MonoBehaviour
             dangerTinted = false;
         }
     }
+    public void lastMoveTint()
+    {
+        if (!lastMoveTinted)
+        {
+            spriteRen.color += uiManager.lastMoveTintOffset;
+            lastMoveTinted = true;
+        }
+    }
+    public void revertLastMoveTint()
+    {
+        if (lastMoveTinted)
+        {
+            spriteRen.color -= uiManager.lastMoveTintOffset;
+            lastMoveTinted = false;
+        }
+    }
 }
+

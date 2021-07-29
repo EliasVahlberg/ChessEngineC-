@@ -71,11 +71,6 @@ public class GameManager : MonoBehaviour
     }
 
 
-    void Update()
-    {
-
-    }
-
     public Board createBoard()
     {
         return createBoard(FENUtills.DEFAULT_START_FEN); ;
@@ -98,6 +93,7 @@ public class GameManager : MonoBehaviour
                     return;
                 if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
                     Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
+                onNewTurn(board.lastMove, !board.whiteTurn);
                 string winMes;
                 if ((winMes = isEndGameCondition()) != "")
                 {
@@ -138,18 +134,18 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public void selectPosition(int from, int to)
-    {
-        if (started)
-        {
-            if (from == to)
-                return;
-            if (!board.tryMove(from, to, uiManager) && !board.isCheckMate())
-                Debug.Log("MOVE FAIL: { from = " + from + ", to = " + to + " }");
-            if (board.isCheckMate())
-                uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
-        }
-    }
+    // public void selectPosition(int from, int to)
+    // {
+    //     if (started)
+    //     {
+    //         if (from == to)
+    //             return;
+    //         if (!board.tryMove(from, to, uiManager) && !board.isCheckMate())
+    //             Debug.Log("MOVE FAIL: { from = " + from + ", to = " + to + " }");
+    //         if (board.isCheckMate())
+    //             uiManager.winText.text = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
+    //     }
+    // }
     #region Network
 
     public void resetSentMove()
@@ -165,11 +161,13 @@ public class GameManager : MonoBehaviour
             if (!board.useMove(sentMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
             moveSent = false;
+            onNewTurn(board.lastMove, !board.whiteTurn);
         }
         else
         {
             if (!board.useMove(recivedMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + recivedMove.StartSquare + ", to = " + recivedMove.TargetSquare + " }");
+            onNewTurn(board.lastMove, !board.whiteTurn);
         }
     }
 
@@ -298,5 +296,12 @@ public class GameManager : MonoBehaviour
             return ai2.SelectMove(board);
         }
         return new Move(0);
+    }
+
+    public void onNewTurn(Move move, bool isWhite)
+    {
+        uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
+
+        uiManager.hideDanger();
     }
 }
