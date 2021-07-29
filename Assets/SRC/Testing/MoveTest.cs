@@ -10,26 +10,52 @@ public class MoveTest
 {
     //* INPUT HERE TO COMPARE
     public static List<string> stockfishResult = new List<string>(new string[]{
-        "a7a6: 21",
-        "b7b6: 21",
-        "c7c6: 21",
-        "d7d6: 21",
-        "e7e6: 21",
-        "f7f6: 21",
-        "g7g6: 21",
-        "h7h6: 21",
-        "a7a5: 21",
-        "b7b5: 21",
-        "c7c5: 21",
-        "d7d5: 21",
-        "e7e5: 21",
-        "f7f5: 21",
-        "g7g5: 22",
-        "h7h5: 20",
-        "b8a6: 21",
-        "b8c6: 21",
-        "g8f6: 21",
-        "g8h6: 21"
+"b2b3: 46",
+"g2g3: 46",
+"h2h3: 46",
+"a3a4: 46",
+"d3d4: 45",
+"b2b4: 45",
+"h2h4: 46",
+"c3b1: 46",
+"c3d1: 46",
+"c3a2: 46",
+"c3a4: 46",
+"c3b5: 46",
+"c3d5: 45",
+"f3e1: 47",
+"f3d2: 47",
+"f3d4: 46",
+"f3h4: 47",
+"f3e5: 50",
+"c4a2: 46",
+"c4b3: 46",
+"c4b5: 46",
+"c4d5: 45",
+"c4a6: 47",
+"c4e6: 45",
+"c4f7: 4",
+"g5c1: 47",
+"g5d2: 47",
+"g5e3: 46",
+"g5f4: 48",
+"g5h4: 47",
+"g5f6: 44",
+"g5h6: 46",
+"a1b1: 46",
+"a1c1: 46",
+"a1d1: 46",
+"a1e1: 46",
+"a1a2: 46",
+"f1b1: 46",
+"f1c1: 46",
+"f1d1: 46",
+"f1e1: 46",
+"e2d1: 46",
+"e2e1: 46",
+"e2d2: 46",
+"e2e3: 45",
+"g1h1: 46"
         });
     public static string[] PositionRepresentation = {
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
@@ -43,7 +69,12 @@ public class MoveTest
     public static string[] TestFen = new string[]{
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
-        "rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b - - 0 1",""
+        "rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b - - 0 1",
+        "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1",
+        "rnbqkbnr/ppppppp1/8/7p/8/P7/1PPPPPPP/RNBQKBNR w KQkq h5 0 2",
+        "rnbqkbnr/ppppppp1/7p/8/8/P7/RPPPPPPP/1NBQKBNR b Kkq - 1 2",
+        "rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 "
         };
     static List<List<string>> leafList = new List<List<string>>();
     static List<string> outputList;
@@ -112,6 +143,13 @@ public class MoveTest
     public static void standardMoveTestRecursive(Board board, int currentPly, int plyDepth, long[] nMoves, string move, List<string> outputList, bool listMoves)
     {
         nMoves[currentPly] += board.Moves.Count;
+        if (board.Moves.Count == 0)
+        {
+            Debug.Log("CM: " + move);
+            Debug.Log("CM: " + board.lastTurnGenerated);
+            Debug.Log("CM: " + board.Moves.Count);
+            Debug.Log(board.boardToFEN());
+        }
         long before = 0;
         if (currentPly == plyDepth - 1)
         {
@@ -139,7 +177,7 @@ public class MoveTest
         {
             Board newBoard = board.Clone();
             newBoard.useMove(nextMove);
-
+            Debug.Log(move + " -> " + MoveStringRepresentation(nextMove));
             standardMoveTestRecursive(newBoard, currentPly + 1, plyDepth, nMoves, move + " -> " + MoveStringRepresentation(nextMove), outputList, listMoves);
 
         }
@@ -151,7 +189,7 @@ public class MoveTest
             delta += nMoves[i];
         }
         delta -= before;
-        if (currentPly != 0)
+        if (currentPly == 1)
             writeResultSync(delta, move, outputList);
 
     }

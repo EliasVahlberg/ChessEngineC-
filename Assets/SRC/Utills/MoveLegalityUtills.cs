@@ -20,8 +20,8 @@ public class MoveLegalityUtills
             int[] pinnedPosDir = board.Pin(pos);
             if (pinnedPosDir != null)
             {
-                Debug.Log(board.PinnedWhite.Count);
-                Debug.Log("PINNNNN : " + pinnedPosDir[0]);
+                //Debug.Log(board.PinnedWhite.Count);
+                //Debug.Log("PINNNNN : " + pinnedPosDir[0]);
                 int kingPos = color == WHITE ? board.whiteKingPos : board.blackKingPos;
                 for (int dist = 1; dist <= pinnedPosDir[3]; dist++)
                 {
@@ -169,10 +169,11 @@ public class MoveLegalityUtills
                     canCheck |= (CanSlideInDirection(piece, dir));
                     if (canCheck)
                     {
+                        //Debug.Log("Check by :" + newPos + " Turn: " + color + " Dir: " + dir + "Dist: " + dist + "Piece :" + PieceType(piece) + "KP: " + position);
                         if (arr[0] != -1)
                         {
-                            Debug.Log("DoubleCheck");
-                            Debug.Log(newPos + ", " + arr[0]);
+                            //Debug.Log("DoubleCheck");
+                            //Debug.Log(newPos + ", " + arr[0]);
                             return new int[] { 0, 9, 0 };
                         }
                         arr = new int[] { newPos, dir, dist };
@@ -187,7 +188,7 @@ public class MoveLegalityUtills
             {
                 if (arr[0] != -1)
                 {
-                    Debug.Log("DoubleCheck");
+                    //Debug.Log("DoubleCheck");
                     return new int[] { 0, 9, 0 };
                 }
                 return new int[] { newPos, 8, 1 };

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d9e9f905a8892c41bdd054f72b3f800, type: 3}
   m_Name: RunFastTest
   m_EditorClassIdentifier: 
-  commandWord: 
+  commandWord: fasttest

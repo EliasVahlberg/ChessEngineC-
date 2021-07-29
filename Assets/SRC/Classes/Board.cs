@@ -107,7 +107,7 @@ public class Board
     public int blackKingPos;
 
     private List<Move> moves = new List<Move>();
-    private int lastTurnGenerated = -1;
+    public int lastTurnGenerated = -1;
     public List<Move> Moves
     {
         get
@@ -234,6 +234,8 @@ public class Board
         whiteCastleQueenside = gameStateInfo.whiteCastleQueenside;
         blackCastleKingside = gameStateInfo.blackCastleKingside;
         blackCastleQueenside = gameStateInfo.blackCastleQueenside;
+        turn = ((gameStateInfo.plyCount - 1) * 2);
+        fiftyCount = gameStateInfo.fiftyCount;
         int i = 0;
         foreach (int piece in tiles)
         {
@@ -261,8 +263,8 @@ public class Board
         if (enPassantAble != -1)
             gameStateInfo.epindex = enPassantAble;
 
-        gameStateInfo.plyCount = fiftyCount;
-        gameStateInfo.plyCount = Turn / 2;
+        gameStateInfo.fiftyCount = fiftyCount;
+        gameStateInfo.plyCount = Turn / 2 + 1;
 
         return FENUtills.generateFEN(gameStateInfo);
     }
@@ -299,6 +301,8 @@ public class Board
         copy.blackCastleQueenside = blackCastleQueenside;
         copy.whiteTurn = whiteTurn;
         copy.enPassantAble = enPassantAble;
+        copy.whiteKingPos = whiteKingPos;
+        copy.blackKingPos = blackKingPos;
         copy.lastTurnGenerated = -1;
         copy.lastTurnGeneratedMoveMap = -1;
         copy.lastTurnGeneratedOpo = -1;
@@ -410,6 +414,9 @@ public class Board
             else
                 fiftyCount = 0;
 
+            if (IsType(tiles[to], ROOK))
+                updateCasteRook(to);
+
             switch (move.moveFlag)
             {
                 case Move.Flag.PawnTwoForward:
@@ -454,9 +461,17 @@ public class Board
             if (IsType(tiles[to], KING))
             {
                 if (whiteTurn)
+                {
                     whiteKingPos = to;
+                    whiteCastleQueenside = false;
+                    whiteCastleKingside = false;
+                }
                 else
+                {
                     blackKingPos = to;
+                    blackCastleQueenside = false;
+                    blackCastleKingside = false;
+                }
             }
             Turn++;
             whiteTurn = !whiteTurn;
@@ -483,6 +498,8 @@ public class Board
                     fiftyCount++;
                 else
                     fiftyCount = 0;
+                if (IsType(tiles[to], ROOK))
+                    updateCasteRook(to);
 
                 switch (move.moveFlag)
                 {
@@ -603,8 +620,15 @@ public class Board
         {
             if (move.TargetSquare == to)
             {
-                if (move.moveFlag != Move.Flag.EnPassantCapture)
+                if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
                     enPassantAble = -1;
+                if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
+                    fiftyCount++;
+                else
+                    fiftyCount = 0;
+                if (IsType(tiles[to], ROOK))
+                    updateCasteRook(to);
+                updateCasteRook(to);
                 switch (move.moveFlag)
                 {
                     case Move.Flag.PawnTwoForward:
@@ -695,7 +719,25 @@ public class Board
             }
         }
     }
-
+    public void updateCasteRook(int to)
+    {
+        int r1 = whiteTurn ? 7 : 63;
+        int r2 = whiteTurn ? 0 : 56;
+        if (to == r1)
+        {
+            if (whiteTurn)
+                blackCastleKingside = false;
+            else
+                whiteCastleKingside = false;
+        }
+        else if (to == r2)
+        {
+            if (whiteTurn)
+                blackCastleQueenside = false;
+            else
+                whiteCastleQueenside = false;
+        }
+    }
     public void castelMove(Move move, UIManager uiManager)
     {
         int from = move.StartSquare;

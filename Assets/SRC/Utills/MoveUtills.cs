@@ -123,7 +123,6 @@ public class MoveUtills
             if (!IsColour(board.tiles[target], board.ColorTurn))
                 if (MoveLegalityUtills.IsLegal(position, target, board))
                     kingMoveL.Add(new Move(position, target));
-
         kingMoveL.AddRange(generateCastelingMoves(position, board));
         return kingMoveL;
     }
@@ -131,62 +130,48 @@ public class MoveUtills
     public static List<Move> generateCastelingMoves(int position, Board board)
     {
         List<Move> castelMoves = new List<Move>();
-        if (board.whiteTurn)
+        bool isWhite = Colour(board.tiles[position]) == WHITE;
+        bool[] castleRights = isWhite ?
+            new bool[] { board.whiteCastleKingside, board.whiteCastleQueenside } :
+            new bool[] { board.blackCastleKingside, board.blackCastleQueenside };
+        int[][] squaresBetween = isWhite ?
+            new int[][] { new int[] { 5, 6 }, new int[] { 1, 2, 3 } } :
+            new int[][] { new int[] { 61, 62 }, new int[] { 57, 58, 59 } };
+        int[] rookPos = isWhite ?
+            new int[] { 7, 0 } :
+            new int[] { 63, 56 };
+
+        bool cas1 =
+        castleRights[0] &&
+        board.tiles[squaresBetween[0][0]] == 0 &&
+        board.tiles[squaresBetween[0][1]] == 0 &&
+        (isSafePosition(squaresBetween[0][0], board)) &&
+        (isSafePosition(squaresBetween[0][1], board)) &&
+        (IsType(board.tiles[rookPos[0]], ROOK)) &&
+        (IsColour(board.tiles[rookPos[0]], WHITE)) &&
+        (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
+
+        bool cas2 =
+        castleRights[1] &&
+        board.tiles[squaresBetween[1][0]] == 0 &&
+        board.tiles[squaresBetween[1][1]] == 0 &&
+        board.tiles[squaresBetween[1][2]] == 0 &&
+        (isSafePosition(squaresBetween[1][0], board)) &&
+        (isSafePosition(squaresBetween[1][1], board)) &&
+        (isSafePosition(squaresBetween[1][2], board)) &&
+        (IsType(board.tiles[rookPos[1]], ROOK)) &&
+        (IsColour(board.tiles[rookPos[1]], WHITE)) &&
+        (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
+
+        if (cas1)
         {
-            bool whiteCastleKingside = board.whiteCastleKingside &&
-            (board.tiles[position + 1] == 0) &&
-            (board.tiles[position + 2] == 0) &&
-            (IsType(board.tiles[position + 3], ROOK)) &&
-            (IsColour(board.tiles[position + 3], WHITE)) &&
-            (!board.WhiteInCheck) &&
-            (isSafePosition(position + 2, board));
-
-            bool whiteCastleQueenside = board.whiteCastleQueenside &&
-            (board.tiles[position - 1] == 0) &&
-            (board.tiles[position - 2] == 0) &&
-            (board.tiles[position - 3] == 0) &&
-            (IsType(board.tiles[position - 4], ROOK)) &&
-            (IsColour(board.tiles[position - 4], WHITE)) &&
-            (!board.WhiteInCheck) &&
-            (isSafePosition(position - 2, board));
-
-            if (whiteCastleKingside)
-            {
-                castelMoves.Add(new Move(position, position + 2, Move.Flag.Castling));
-            }
-            if (whiteCastleQueenside)
-            {
-                castelMoves.Add(new Move(position, position - 2, Move.Flag.Castling));
-            }
+            castelMoves.Add(new Move(position, squaresBetween[0][1], Move.Flag.Castling));
         }
-        else
+        if (cas2)
         {
-            bool blackCastleKingside = board.blackCastleKingside &&
-            (board.tiles[position + 1] == 0) &&
-            (board.tiles[position + 2] == 0) &&
-            (IsType(board.tiles[position + 3], ROOK)) &&
-            (IsColour(board.tiles[position + 3], BLACK)) &&
-            (!board.BlackInCheck) &&
-            (isSafePosition(position + 2, board));
-
-            bool blackCastleQueenside = board.blackCastleQueenside &&
-            (board.tiles[position - 1] == 0) &&
-            (board.tiles[position - 2] == 0) &&
-            (board.tiles[position - 3] == 0) &&
-            (IsType(board.tiles[position - 4], ROOK)) &&
-            (IsColour(board.tiles[position - 4], BLACK)) &&
-            (!board.BlackInCheck) &&
-            (isSafePosition(position - 2, board));
-
-            if (blackCastleKingside)
-            {
-                castelMoves.Add(new Move(position, position + 2, Move.Flag.Castling));
-            }
-            if (blackCastleQueenside)
-            {
-                castelMoves.Add(new Move(position, position - 2, Move.Flag.Castling));
-            }
+            castelMoves.Add(new Move(position, squaresBetween[1][1], Move.Flag.Castling));
         }
+
         return castelMoves;
     }
 
@@ -298,7 +283,7 @@ public class MoveUtills
         return moveL;
     }
 
-    //DEPRECATED 
+    //!DEPRECATED 
     private static bool isSafePosition(int position, Board board)
     {
         return !(board.whiteTurn ? board.BlackCap[position] : board.WhiteCap[position]);
@@ -312,7 +297,7 @@ public class MoveUtills
     }
 
 
-    //DEPRECATED 
+    //!DEPRECATED 
     public static void updateCapturable(Board board, List<Move> moveList)
     {
         if (moveList == null)
