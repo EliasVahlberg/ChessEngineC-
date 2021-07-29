@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
-    public class RandAI : ScriptableObject, IAI
+    [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/RandAI")]
+    public class RandAI : IAIObject
     {
-        public Move SelectMove(Board board)
+        public override Move SelectMove(Board board)
         {
             return board.Moves[Random.Range(0, board.Moves.Count)];
         }

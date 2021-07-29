@@ -28,12 +28,13 @@ public class GameManager : MonoBehaviour
     #endregion
     #region AI
     public List<IAI> aiList;
-    public IAI ai1;
-    public IAI ai2;
-    public bool ai1Playing = false;
-    public bool ai2Playing = false;
-    public int ai1Color = 0;
-    public int ai2Color = 0;
+    public IAIObject wAI;
+    public IAIObject bAI;
+    public bool whiteAIPlaying = false;
+    public bool blackAIPlaying = false;
+    public bool useAIDelay = true;
+    public long aiDelayMs = 0;
+    public DateTime aiDelayStart;
     #endregion
     //UI interface
     public int selectedMoveTo = -1;
@@ -79,6 +80,7 @@ public class GameManager : MonoBehaviour
     public Board createBoard(string fen)
     {
         started = true;
+        onStartingGame();
         return new Board(fen);
     }
 
@@ -290,24 +292,62 @@ public class GameManager : MonoBehaviour
 
     public Move getAIMove()
     {
-        if (ai1Playing && (ai1Color == board.ColorTurn))
+        if (whiteAIPlaying && board.whiteTurn)
         {
-            return ai1.SelectMove(board);
+            if (board.Moves.Count == 0)
+            {
+                Debug.Log("White AI Lost");
+            }
+            return wAI.SelectMove(board);
         }
-        else if (ai2Playing && (ai2Color == board.ColorTurn))
+        else if (blackAIPlaying && !board.whiteTurn)
         {
-            return ai2.SelectMove(board);
+            if (board.Moves.Count == 0)
+            {
+                Debug.Log("Black AI Lost");
+            }
+            return bAI.SelectMove(board);
         }
         return new Move(0);
     }
+    public bool playAIMove()
+    {
+        if (useAIDelay && aiDelayStart == null)
+            aiDelayStart = DateTime.Now;
+        if (useAIDelay && (((TimeSpan)(DateTime.Now - aiDelayStart)).TotalMilliseconds < aiDelayMs))
+            return false;
+        else aiDelayStart = DateTime.Now;
+        Move move = getAIMove();
+        if (move.StartSquare == 0 && move.TargetSquare == 0)
+        {
+            return false;
+        }
+        board.useMove(move, uiManager);
+        onNewTurn(board.lastMove, !board.whiteTurn);
 
+        return true;
+    }
     public void onNewTurn(Move move, bool wasWhite)
     {
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
         if (!GameHistoryPanel.instance.showing)
             GameHistoryPanel.instance.activate();
         GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
+        if (whiteAIPlaying && !wasWhite || blackAIPlaying && wasWhite)
+            playAIMove();
+
 
         uiManager.hideDanger();
+    }
+    public void onStartingGame()
+    {
+        AIManager.instance.showAIMenu();
+
+    }
+    private void Update()
+    {
+        if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
+            if (useAIDelay)
+                playAIMove();
     }
 }
