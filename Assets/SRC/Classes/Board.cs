@@ -320,99 +320,64 @@ public class Board
 
     }
 
-    public bool useMove(Move move, UIManager uiManager)
+    private bool MoveInner(Move move, UIManager uiManager)
     {
         try
         {
-
-            int from = move.StartSquare;
-            int to = move.TargetSquare;
-            if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
-                enPassantAble = -1;
-            if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
-                fiftyCount++;
-            else
-                fiftyCount = 0;
-            if (IsType(tiles[to], ROOK))
-                updateCasteRook(to);
-            lastMoveWasCapture = tiles[to] != 0;
-            lastMoveCaptured = tiles[to];
+            int from = move.StartSquare, to = move.TargetSquare;
+            int enPas = -1;
+            if (move.moveFlag == Move.Flag.EnPassantCapture)
+                enPas = enPassantAble;
+            if (!MoveInner(move))
+                return false;
             switch (move.moveFlag)
             {
-                case Move.Flag.PawnTwoForward:
-                    enPassantAble = to;
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
-                    uiManager.movePiece(from, to);
-                    break;
                 case Move.Flag.EnPassantCapture:
-                    tiles[enPassantAble] = 0;
-
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
                     uiManager.movePiece(from, to);
-
-                    uiManager.destroyPiece(enPassantAble);
-                    enPassantAble = -1;
+                    uiManager.destroyPiece(enPas);
                     break;
                 case Move.Flag.Castling:
-                    castelMove(move, uiManager);
+                    uiManager.movePiece(from, to);
+                    if (from < to)
+                        uiManager.movePiece(from + 3, from + 1);
+                    else
+                        uiManager.movePiece(from - 4, from - 1);
                     break;
                 case Move.Flag.PromoteToQueen:
-                    tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
+
                     uiManager.movePiece(from, to);
                     uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
                     break;
                 case Move.Flag.PromoteToRook:
-                    tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
                     uiManager.movePiece(from, to);
                     uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
                     break;
                 case Move.Flag.PromoteToBishop:
-                    tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
                     uiManager.movePiece(from, to);
                     uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
                     break;
                 case Move.Flag.PromoteToKnight:
-                    tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
                     uiManager.movePiece(from, to);
                     uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
                     break;
                 default:
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
                     uiManager.movePiece(from, to);
                     break;
             }
 
-            updateCasteling(from, to);
-            if (IsType(tiles[to], KING))
-            {
-                if (whiteTurn)
-                    whiteKingPos = to;
-                else
-                    blackKingPos = to;
-            }
-            Turn++;
-            whiteTurn = !whiteTurn;
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
-            isCheckMate();
             lastMove = move;
             return true;
         }
         catch (Exception _ex)
         {
-            Debug.Log("EXCEPTION DURING useMove, ex:" + _ex.ToString());
+            Debug.Log("EXCEPTION DURING MoveInnerUI, ex:" + _ex.ToString());
             return false;
         }
     }
 
-    public bool useMove(Move move)
+    private bool MoveInner(Move move)
     {
         try
         {
@@ -424,10 +389,8 @@ public class Board
                 fiftyCount++;
             else
                 fiftyCount = 0;
-
             if (IsType(tiles[to], ROOK))
                 updateCasteRook(to);
-
             lastMoveWasCapture = tiles[to] != 0;
             lastMoveCaptured = tiles[to];
             switch (move.moveFlag)
@@ -442,7 +405,6 @@ public class Board
 
                     tiles[to] = tiles[from];
                     tiles[from] = 0;
-
                     enPassantAble = -1;
                     break;
                 case Move.Flag.Castling:
@@ -474,27 +436,31 @@ public class Board
             if (IsType(tiles[to], KING))
             {
                 if (whiteTurn)
-                {
                     whiteKingPos = to;
-                    whiteCastleQueenside = false;
-                    whiteCastleKingside = false;
-                }
                 else
-                {
                     blackKingPos = to;
-                    blackCastleQueenside = false;
-                    blackCastleKingside = false;
-                }
             }
             Turn++;
             whiteTurn = !whiteTurn;
+            isCheckMate();
+            lastMove = move;
             return true;
         }
         catch (Exception _ex)
         {
-            Debug.Log("EXCEPTION DURING useMove, ex:" + _ex.ToString());
+            Debug.Log("EXCEPTION DURING MoveInner, ex:" + _ex.ToString());
             return false;
         }
+    }
+
+    public bool useMove(Move move, UIManager uiManager)
+    {
+        return MoveInner(move, uiManager);
+    }
+
+    public bool useMove(Move move)
+    {
+        return MoveInner(move);
     }
 
     public bool tryMove(int from, int to, UIManager uiManager)
@@ -505,86 +471,21 @@ public class Board
         {
             if (move.TargetSquare == to)
             {
-                if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
-                    enPassantAble = -1;
-                if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
-                    fiftyCount++;
-                else
-                    fiftyCount = 0;
-                if (IsType(tiles[to], ROOK))
-                    updateCasteRook(to);
+                return MoveInner(move, uiManager);
+            }
+        }
+        return false;
+    }
 
-                lastMoveWasCapture = tiles[to] != 0;
-                lastMoveCaptured = tiles[to];
+    public bool tryMove(int from, int to)
+    {
 
-                switch (move.moveFlag)
-                {
-                    case Move.Flag.PawnTwoForward:
-                        enPassantAble = to;
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        break;
-                    case Move.Flag.EnPassantCapture:
-                        tiles[enPassantAble] = 0;
-
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-
-                        uiManager.destroyPiece(enPassantAble);
-                        enPassantAble = -1;
-                        break;
-                    case Move.Flag.Castling:
-                        castelMove(move, uiManager);
-                        break;
-                    case Move.Flag.PromoteToQueen:
-                        tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
-                        break;
-                    case Move.Flag.PromoteToRook:
-                        tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
-                        break;
-                    case Move.Flag.PromoteToBishop:
-                        tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
-                        break;
-                    case Move.Flag.PromoteToKnight:
-                        tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
-                        break;
-                    default:
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        uiManager.movePiece(from, to);
-                        break;
-                }
-
-                updateCasteling(from, to);
-                //MoveUtills.updateCapturable(this);
-                if (IsType(tiles[to], KING))
-                {
-                    if (whiteTurn)
-                        whiteKingPos = to;
-                    else
-                        blackKingPos = to;
-                }
-                Turn++;
-                whiteTurn = !whiteTurn;
-                string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
-                uiManager.gameText.text = s;
-                isCheckMate();
-                lastMove = move;
-                return true;
+        List<Move> moves = MoveUtills.generateMovesForThisSquare(from, this);
+        foreach (Move move in moves)
+        {
+            if (move.TargetSquare == to)
+            {
+                return MoveInner(move);
             }
         }
         return false;
@@ -629,80 +530,7 @@ public class Board
         return false;
     }
 
-    public bool tryMove(int from, int to)
-    {
 
-        List<Move> moves = MoveUtills.generateMovesForThisSquare(from, this);
-        foreach (Move move in moves)
-        {
-            if (move.TargetSquare == to)
-            {
-                if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
-                    enPassantAble = -1;
-                if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
-                    fiftyCount++;
-                else
-                    fiftyCount = 0;
-                if (IsType(tiles[to], ROOK))
-                    updateCasteRook(to);
-                lastMoveWasCapture = tiles[to] != 0;
-                lastMoveCaptured = tiles[to];
-                switch (move.moveFlag)
-                {
-                    case Move.Flag.PawnTwoForward:
-                        enPassantAble = to;
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        break;
-                    case Move.Flag.EnPassantCapture:
-                        tiles[enPassantAble] = 0;
-
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        enPassantAble = -1;
-                        break;
-                    case Move.Flag.Castling:
-                        castelMove(move);
-                        break;
-                    case Move.Flag.PromoteToQueen:
-                        tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        break;
-                    case Move.Flag.PromoteToRook:
-                        tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        break;
-                    case Move.Flag.PromoteToBishop:
-                        tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        break;
-                    case Move.Flag.PromoteToKnight:
-                        tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
-                        tiles[from] = 0;
-                        break;
-                    default:
-                        tiles[to] = tiles[from];
-                        tiles[from] = 0;
-                        break;
-                }
-
-                updateCasteling(from, to);
-                //MoveUtills.updateCapturable(this);
-                if (IsType(tiles[to], KING))
-                {
-                    if (whiteTurn)
-                        whiteKingPos = to;
-                    else
-                        blackKingPos = to;
-                }
-                Turn++;
-                whiteTurn = !whiteTurn;
-                lastMove = move;
-                return true;
-            }
-        }
-        return false;
-    }
 
     public void updateCasteling(int from, int to)
     {
@@ -759,29 +587,11 @@ public class Board
         }
     }
 
-    public void castelMove(Move move, UIManager uiManager)
-    {
-        int from = move.StartSquare;
-        int to = move.TargetSquare;
-        if (from < to)
-        {
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            uiManager.movePiece(from, to);
-            tiles[from + 1] = tiles[from + 3];
-            tiles[from + 3] = 0;
-            uiManager.movePiece(from + 3, from + 1);
-        }
-        else
-        {
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            uiManager.movePiece(from, to);
-            tiles[from - 1] = tiles[from - 4];
-            tiles[from - 4] = 0;
-            uiManager.movePiece(from - 4, from - 1);
-        }
-    }
+    //uiManager.movePiece(from, to);
+    //if (from < to)
+    //uiManager.movePiece(from + 3, from + 1);
+    //else
+    //uiManager.movePiece(from - 4, from - 1);
 
     public void castelMove(Move move)
     {

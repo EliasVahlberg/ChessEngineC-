@@ -12,6 +12,7 @@ namespace ChessAI
         [HideInInspector] public static AIManager instance;
         [Header("UI")]
         [SerializeField] private IAIObject[] aIs = new IAIObject[0];
+        [HideInInspector] public IAIObject[] AIs { get { return aIs; } }
         public bool showing = false;
         public bool isBlackAIActive = false;
         public bool isWhiteAIActive = false;
@@ -106,7 +107,9 @@ namespace ChessAI
         {
             timeID = TimeUtills.Instance.startMeasurement();
             Move move = ai.SelectMove(board);
-            Debug.Log(ai.Name + " took :" + TimeUtills.Instance.stopMeasurementMillis(timeID) + "ms");
+            long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
+            Debug.Log(ai.Name + " took :" + td + "ms");
+            ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");
             return move;
         }
     }

@@ -25,6 +25,7 @@ namespace Utills
             if (measurements.TryGetValue(measurementID, out prev))
             {
                 delta = (long)((TimeSpan)(DateTime.Now - prev)).TotalMilliseconds;
+                measurements.Remove(measurementID);
             }
             return delta;
         }

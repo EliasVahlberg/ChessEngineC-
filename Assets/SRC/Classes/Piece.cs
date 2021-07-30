@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public static class Piece
 {
     public static string[] PositionRepresentation = {
@@ -9,6 +11,17 @@ public static class Piece
     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
+
+    public static Dictionary<int, int> PieceValueDictionary = new Dictionary<int, int>(){
+            {NONE,0},
+            {KING,0},
+            {PAWN,1},
+            {KNIGHT, 3},
+            {BISHOP, 3},
+            {ROOK, 5},
+            {QUEEN, 9}
+            };
+
     public const int NONE = 0;
     public const int KING = 1;
     public const int PAWN = 2;

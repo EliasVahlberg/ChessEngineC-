@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Testing;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -58,6 +59,12 @@ public class UIManager : MonoBehaviour
     private int internalAudioCounter1 = 0;
     private int internalAudioCounter2 = 0;
     #endregion
+    private int whitePointCounter = 0;
+    public Text whitePointText;
+    private int blackPointCounter = 0;
+    public Text blackPointText;
+    public GameObject pointsCanvas;
+
     private List<int> tintedSquares;
 
     public static UIManager instance;
@@ -142,6 +149,7 @@ public class UIManager : MonoBehaviour
         checkMouseInput();
         checkKeyInput();
     }
+
 
     [HideInInspector]
     public bool dragging = false;
@@ -250,11 +258,19 @@ public class UIManager : MonoBehaviour
     private bool isFlipped = false;
     private void checkKeyInput()
     {
+
         if (DevConsoleBehaviour.instance.active)
         {
             if (Input.GetKeyDown(KeyCode.F1))
                 DevConsoleBehaviour.instance.ToggleDevConsole();
             return;
+        }
+        if (!gameManager.started && Input.GetKeyDown(KeyCode.Alpha9) && Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            if (TestingMenu.instance.showing)
+                TestingMenu.instance.Deactivate();
+            else
+                TestingMenu.instance.Activate();
         }
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
@@ -284,6 +300,7 @@ public class UIManager : MonoBehaviour
         {
             DevConsoleBehaviour.instance.ToggleDevConsole();
         }
+
     }
 
     public void showDanger(bool white)
@@ -484,5 +501,31 @@ public class UIManager : MonoBehaviour
         lastMoveTarget = to;
         tiles[lastMoveStart].lastMoveTint();
         tiles[lastMoveTarget].lastMoveTint();
+    }
+    public void updateScore(int value, bool isWhite)
+    {
+        if (isWhite)
+        {
+            whitePointCounter += value;
+            whitePointText.text = "White: " + whitePointCounter;
+        }
+        else
+        {
+            blackPointCounter += value;
+            blackPointText.text = "Black: " + blackPointCounter;
+        }
+    }
+    public void HideScore()
+    {
+        pointsCanvas.SetActive(false);
+    }
+    public void ShowScore()
+    {
+        pointsCanvas.SetActive(true);
+    }
+    public void ResetScore()
+    {
+        whitePointCounter = 0;
+        blackPointCounter = 0;
     }
 }

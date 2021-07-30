@@ -242,6 +242,8 @@ public class GameManager : MonoBehaviour
     #endregion
     public void resetBoard()
     {
+        if (started == true)
+            onStoppingGame();
         board = createBoard();
         uiManager.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
@@ -253,6 +255,8 @@ public class GameManager : MonoBehaviour
 
     public void resetBoard(string fen)
     {
+        if (started == true)
+            onStoppingGame();
         board = createBoard(fen);
         uiManager.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
@@ -263,6 +267,7 @@ public class GameManager : MonoBehaviour
 
     public void forfit()
     {
+        onStoppingGame();
         if (blackForfit)
         {
             uiManager.winText.text = "Black Forfit ! \n Press \"R\" to restart.";
@@ -369,6 +374,8 @@ public class GameManager : MonoBehaviour
         if (!GameHistoryPanel.instance.showing)
             GameHistoryPanel.instance.activate();
         GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
+        if (board.lastMoveWasCapture)
+            uiManager.updateScore(Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)], wasWhite);
         if (whiteAIPlaying && !wasWhite || blackAIPlaying && wasWhite)
         {
             AIManager.instance.letAIPlayButton.gameObject.SetActive(false);
@@ -389,7 +396,14 @@ public class GameManager : MonoBehaviour
     public void onStartingGame()
     {
         AIManager.instance.showAIMenu();
+        UIManager.instance.ShowScore();
 
+    }
+    //TODO IMPLEMENT
+    public void onStoppingGame()
+    {
+        uiManager.ResetScore();
+        uiManager.HideScore();
     }
 
     private void Update()
