@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     public bool whiteAIPlaying = false;
     public bool blackAIPlaying = false;
     public bool useAIDelay = true;
+    public bool isAIPaused = false;
     public long aiDelayMs = 0;
     public DateTime aiDelayStart;
     #endregion
@@ -290,7 +291,7 @@ public class GameManager : MonoBehaviour
 
     }
 
-    public Move getAIMove()
+    private Move getAIMove()
     {
         if (whiteAIPlaying && board.whiteTurn)
         {
@@ -298,7 +299,8 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("White AI Lost");
             }
-            return wAI.SelectMove(board);
+            Debug.Log("White AI:" + wAI.Name);
+            return AIManager.instance.SelectMove(wAI, board);
         }
         else if (blackAIPlaying && !board.whiteTurn)
         {
@@ -306,12 +308,16 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("Black AI Lost");
             }
-            return bAI.SelectMove(board);
+            Debug.Log("Black AI:" + bAI.Name);
+            return AIManager.instance.SelectMove(bAI, board);
         }
         return new Move(0);
     }
+
     public bool playAIMove()
     {
+        if (isAIPaused)
+            return false;
         if (useAIDelay && aiDelayStart == null)
             aiDelayStart = DateTime.Now;
         if (useAIDelay && (((TimeSpan)(DateTime.Now - aiDelayStart)).TotalMilliseconds < aiDelayMs))
@@ -324,30 +330,73 @@ public class GameManager : MonoBehaviour
         }
         board.useMove(move, uiManager);
         onNewTurn(board.lastMove, !board.whiteTurn);
-
+        string winMes;
+        if ((winMes = isEndGameCondition()) != "")
+        {
+            uiManager.winText.text = winMes;
+            AIManager.instance.toggleAIPaus();
+            started = false;
+        }
         return true;
+    }
+
+    private void pausAI()
+    {
+        if (blackAIPlaying || whiteAIPlaying)
+            isAIPaused = true;
+    }
+    private void resumeAI()
+    {
+        if (blackAIPlaying || whiteAIPlaying)
+            isAIPaused = false;
+        playAIMove();
+    }
+    public void toggleAIPaus()
+    {
+        if (isAIPaused)
+            resumeAI();
+        else
+            pausAI();
+
     }
     public void onNewTurn(Move move, bool wasWhite)
     {
+        if (!started)
+        {
+            return;
+        }
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
         if (!GameHistoryPanel.instance.showing)
             GameHistoryPanel.instance.activate();
         GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
         if (whiteAIPlaying && !wasWhite || blackAIPlaying && wasWhite)
+        {
+            AIManager.instance.letAIPlayButton.gameObject.SetActive(false);
+            AIManager.instance.aiSelect.gameObject.SetActive(false);
+            AIManager.instance.toggleAIPausButton.gameObject.SetActive(true);
             playAIMove();
-
+        }
+        else
+        {
+            AIManager.instance.toggleAIPausButton.gameObject.SetActive(false);
+            AIManager.instance.aiSelect.gameObject.SetActive(true);
+            AIManager.instance.letAIPlayButton.gameObject.SetActive(true);
+        }
 
         uiManager.hideDanger();
     }
+
     public void onStartingGame()
     {
         AIManager.instance.showAIMenu();
 
     }
+
     private void Update()
     {
         if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
             if (useAIDelay)
                 playAIMove();
     }
+
 }

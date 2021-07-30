@@ -11,6 +11,9 @@ public class MoveLegalityUtills
         int color = Colour(piece);
         if (IsType(piece, KING))
         {
+            if (color == WHITE && board.WhiteInCheck || color == BLACK && board.BlackInCheck)
+                return IsSafePositionDuringCheck(pos, target, board, color);
+
             return IsSafePosition(target, board, color);
         }
         else if (color == WHITE && board.WhiteInCheck || color == BLACK && board.BlackInCheck)
@@ -244,6 +247,81 @@ public class MoveLegalityUtills
         return pinnedList;
 
     }
+    //{pos,dir,dist}
+    public static int[] getALLCheckingPieces(Board board, int color)
+    {
+        int position = (color == WHITE) ? board.whiteKingPos : board.blackKingPos;
+        int opoCol = (color == WHITE) ? BLACK : WHITE;
+        if ((color == WHITE) ? !board.WhiteInCheck : !board.BlackInCheck)
+            return new int[] { -1, -1, -1 };
+        int[] arr = new int[] { -1, -1, -1 }; ;
+        for (int dir = 0; dir < 8; dir++)
+        {
+            //May cause issues idk
+            for (int dist = 1; dist <= numSquaresToEdge[position][dir]; dist++)
+            {
+                int newPos = position + directionOffsets[dir] * dist;
+                int piece = board.tiles[newPos];
+                if (piece != 0)
+                {
+                    if (IsColour(piece, color))
+                        break;
+                    bool canCheck = (dist == 1 && IsType(piece, PAWN) && IsPawnAttackDirection(Colour(piece), dir));
+                    canCheck |= (CanSlideInDirection(piece, dir));
+                    if (canCheck)
+                    {
+                        if (arr[0] != -1)
+                        {
+                            arr[3] = newPos; arr[4] = dir; arr[5] = dist;
+                            return arr; //CAN ONLY BE CHECK OR DOUBLE CHECK
+                        }
+                        arr = new int[] { newPos, dir, dist };
+                    }
+                    else
+                        break;
+                }
+            }
+        }
+        foreach (int newPos in getKnightMoves(position))
+            if (IsColour(board.tiles[newPos], opoCol) && IsType(board.tiles[newPos], KNIGHT))
+            {
+                if (arr[0] != -1)
+                {
+                    arr[3] = newPos; arr[4] = 8; arr[5] = 1;
+                    return arr;//CAN ONLY BE CHECK OR DOUBLE CHECK
+                }
+                return new int[] { newPos, 8, 1 };
+            }
+        if (arr[0] == -1)
+            Debug.LogError("getCheckingPiece FAILED!");
+        return arr;
 
+    }
+    //* Is kind poo-poo, but hey sue me
+    public static bool IsSafePositionDuringCheck(int pos, int target, Board board, int color)
+    {
+        if (!IsSafePosition(target, board))
+            return false;
 
+        int[] checkingPiceInfo = getCheckingPiece(board, color);
+        if (checkingPiceInfo[0] == -1)
+        {
+            Debug.Log("FAILED TO GET CHECKING PIECE IN IsSafePositionDuringCheck");
+            return true;
+        }
+        if (IsType(board.tiles[checkingPiceInfo[0]], KNIGHT) || !IsSlidingPiece(board.tiles[checkingPiceInfo[0]]))
+            return true;
+        int dir = 0;
+        if (!offsetDirDictionary.TryGetValue(target - pos, out dir))
+        {
+            Debug.Log("FAILED TO GET DIRECTION VALUE IN IsSafePositionDuringCheck");
+            return true;
+        }
+        if (offsetDirCounterpartDict[checkingPiceInfo[1]] == dir)
+            return false;
+        if (checkingPiceInfo.Length == 6 && checkingPiceInfo[4] > 8 && offsetDirCounterpartDict[checkingPiceInfo[4]] == dir)
+            return false;
+        return true;
+
+    }
 }

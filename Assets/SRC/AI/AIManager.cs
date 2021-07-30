@@ -1,5 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using Utills;
+using static UnityEngine.UI.Dropdown;
+
 namespace ChessAI
 {
     public class AIManager : MonoBehaviour
@@ -13,6 +17,13 @@ namespace ChessAI
         public bool isWhiteAIActive = false;
         public IAIObject activeBlackAI = null;
         public IAIObject activeWhiteAI = null;
+        public Button letAIPlayButton;
+        public Button toggleAIPausButton;
+        public Text wAINameDisplay;
+        public Text bAINameDisplay;
+        public Dropdown aiSelect;
+        private List<OptionData> aiOptions = new List<OptionData>();
+        private int timeID = 0;
         private void Awake()
         {
             if (instance == null)
@@ -26,6 +37,17 @@ namespace ChessAI
                 Destroy(this);
             }
         }
+        private void Start()
+        {
+            int ii = 0;
+            foreach (IAIObject ai in aIs)
+            {
+                string str = "AI [" + ii + "] :" + ai.Name;
+                aiOptions.Add(new OptionData(str));
+                ii++;
+            }
+            aiSelect.options = aiOptions;
+        }
         public void showAIMenu()
         {
             instance.gameObject.SetActive(true);
@@ -36,33 +58,56 @@ namespace ChessAI
         }
         public void letAITakeOver(int index)
         {
-
-        }
-        public void letAITakeOver()
-        {
             GameManager gameManager = GameManager.instance;
             if (gameManager.started)
             {
                 if (gameManager.board.whiteTurn)
                 {
-                    activeWhiteAI = aIs[0];
+                    activeWhiteAI = aIs[index];
                     isWhiteAIActive = true;
                     gameManager.wAI = activeWhiteAI;
                     gameManager.whiteAIPlaying = true;
+                    wAINameDisplay.text = "<color=cyan><b>White AI: " + gameManager.wAI.Name + "</b></color>";
+
+
+                    wAINameDisplay.gameObject.SetActive(true);
                     gameManager.playAIMove();
 
                 }
                 else
                 {
-                    activeBlackAI = aIs[0];
+                    activeBlackAI = aIs[index];
                     isBlackAIActive = true;
                     gameManager.bAI = activeBlackAI;
                     gameManager.blackAIPlaying = true;
+                    bAINameDisplay.text = "<color=green><b>Black AI: " + gameManager.bAI.Name + "</b></color>";
+                    bAINameDisplay.gameObject.SetActive(true);
                     gameManager.playAIMove();
                 }
             }
             else
                 Debug.Log("Can't let AI play the game has not started!");
+        }
+        public void letAITakeOver()
+        {
+            letAITakeOver(aiSelect.value);
+        }
+
+        public void toggleAIPaus()
+        {
+            GameManager.instance.toggleAIPaus();
+            if (GameManager.instance.isAIPaused)
+                toggleAIPausButton.GetComponentInChildren<Text>().text = "<color=blue><b>Resume AI</b></color>";
+            else
+                toggleAIPausButton.GetComponentInChildren<Text>().text = "<color=blue><b>Paus AI</b></color>";
+
+        }
+        public Move SelectMove(IAIObject ai, Board board)
+        {
+            timeID = TimeUtills.Instance.startMeasurement();
+            Move move = ai.SelectMove(board);
+            Debug.Log(ai.Name + " took :" + TimeUtills.Instance.stopMeasurementMillis(timeID) + "ms");
+            return move;
         }
     }
 }

@@ -11,7 +11,26 @@ public static class MoveData
             new int[] { 7, 9 },
             new int[] {-9 ,-7}
         }; //NE NW, SE, SW
-
+    public static readonly Dictionary<int, int> offsetDirDictionary = new Dictionary<int, int>(){
+        {8,NORTH_I},
+        {-8,SOUTH_I},
+        {-1,WEST_I},
+        {1,EAST_I},
+        {7,NORTHWEST_I},
+        {-7,SOUTHEAST_I},
+        {9,NORTHEAST_I},
+        {-9,SOUTHWEST_I}
+         };
+    public static readonly Dictionary<int, int> offsetDirCounterpartDict = new Dictionary<int, int>(){
+        {NORTH_I,SOUTH_I},
+        {SOUTH_I,NORTH_I},
+        {WEST_I,EAST_I},
+        {EAST_I,WEST_I},
+        {NORTHWEST_I,SOUTHEAST_I},
+        {SOUTHEAST_I,NORTHWEST_I},
+        {NORTHEAST_I,SOUTHWEST_I},
+        {SOUTHWEST_I,NORTHEAST_I}
+         };
     public static readonly int[][] numSquaresToEdge;
     public static readonly byte[] knightMoves;
     public static readonly byte[] kingMoves;

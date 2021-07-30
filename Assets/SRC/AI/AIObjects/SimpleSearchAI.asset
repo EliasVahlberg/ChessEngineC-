@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d9001b8a604d68458bf683db271cf74, type: 3}
-  m_Name: RandAIObj
+  m_Script: {fileID: 11500000, guid: b9ade773dacfee74f934b54b20ecaa65, type: 3}
+  m_Name: SimpleSearchAI
   m_EditorClassIdentifier: 
-  AIName: Randy
+  AIName: Christoffer
