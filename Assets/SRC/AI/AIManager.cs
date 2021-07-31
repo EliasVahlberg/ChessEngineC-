@@ -30,7 +30,7 @@ namespace ChessAI
             if (instance == null)
             {
                 instance = this;
-                instance.gameObject.SetActive(false);
+                //instance.gameObject.SetActive(false);
             }
             else if (instance != this)
             {

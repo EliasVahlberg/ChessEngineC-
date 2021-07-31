@@ -94,7 +94,7 @@ namespace Testing
             lastMoveFen = board.boardToFEN();
             return new PreformanceTestResult(
             time,
-            moves,
+            nMoves,
             wPoints,
             bPoints,
             avrageTimePerTurn,

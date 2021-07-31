@@ -20,10 +20,10 @@ namespace ChessAI
             int maxI = -1;
             int maxV = int.MinValue;
             int val = 0;
-            int ii = 0;
             BoardScoreGenerator bsGen = AIUtillsManager.instance.BoardScoreGen;
-            foreach (Move move in board.Moves)
+            for (int ii = 0; ii < board.Moves.Count; ii++)
             {
+                Move move = board.Moves[ii];
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
                 val = -bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn);
@@ -47,9 +47,9 @@ namespace ChessAI
             int maxI = -1;
             int maxV = int.MinValue;
             int val = 0;
-            int ii = 0;
-            foreach (Move move in board.Moves)
+            for (int ii = 0; ii < board.Moves.Count; ii++)
             {
+                Move move = board.Moves[ii];
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
                 val = bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn) * (otherPlayer ? 1 : -1);

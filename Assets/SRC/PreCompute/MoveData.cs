@@ -34,6 +34,8 @@ public static class MoveData
     public static readonly int[][] numSquaresToEdge;
     public static readonly byte[] knightMoves;
     public static readonly byte[] kingMoves;
+    public static readonly int[][] kingMovesMap;
+    public static readonly int[][] knightMovesMap;
 
 
 
@@ -42,6 +44,8 @@ public static class MoveData
         numSquaresToEdge = new int[64][];
         knightMoves = new byte[64];
         kingMoves = new byte[64];
+        knightMovesMap = new int[64][];
+        kingMovesMap = new int[64][];
         for (int squareIndex = 0; squareIndex < 64; squareIndex++)
         {
 
@@ -50,6 +54,8 @@ public static class MoveData
             numSquaresToEdge[squareIndex] = genSquaresToEdge(squareIndex);
             knightMoves[squareIndex] = genKnightMoves(squareIndex);
             kingMoves[squareIndex] = genKingMoves(squareIndex);
+            knightMovesMap[squareIndex] = genKnightMovesMap(squareIndex);
+            kingMovesMap[squareIndex] = genKingMovesMap(squareIndex);
 
 
         }
@@ -104,6 +110,28 @@ public static class MoveData
         return kMoves;
     }
 
+    static int[] genKnightMovesMap(int squareIndex)
+    {
+        List<int> kMoves = new List<int>();
+        int y = squareIndex / 8;
+        int x = squareIndex - y * 8;
+        foreach (int posDelta in allKnightJumps)
+        {
+            int pos = squareIndex + posDelta;
+            if (IsOnBoard(pos))
+            {
+                int newY = pos / 8;
+                int newX = pos - newY * 8;
+                int maxDeltaXY = System.Math.Max(System.Math.Abs(x - newX), System.Math.Abs(y - newY));
+                if (maxDeltaXY == 2)
+                    kMoves.Add((byte)pos);
+
+            }
+
+        }
+        return kMoves.ToArray();
+    }
+
     static byte genKingMoves(int squareIndex)
     {
         int kMoves = 0;
@@ -128,28 +156,38 @@ public static class MoveData
         return kMovesByte;
     }
 
+    static int[] genKingMovesMap(int squareIndex)
+    {
+        List<int> kMoves = new List<int>();
+        int y = squareIndex / 8;
+        int x = squareIndex - y * 8;
+        int i = 0;
+        foreach (int posDelta in directionOffsets)
+        {
+            int pos = squareIndex + posDelta;
+            if (IsOnBoard(pos))
+            {
+                int newY = pos / 8;
+                int newX = pos - newY * 8;
+                int maxDeltaXY = System.Math.Max(System.Math.Abs(x - newX), System.Math.Abs(y - newY));
+                if (maxDeltaXY == 1)
+                    kMoves.Add(pos);
+            }
+            i++;
+
+        }
+        return kMoves.ToArray();
+    }
+
+
     public static int[] getKnightMoves(int squareIndex)
     {
-        List<int> knightMoveList = new List<int>();
-        byte knightByte = knightMoves[squareIndex];
-        for (int i = 0; i < 8; i++)
-        {
-            if (((knightByte >> i) & 1) == 1)
-                knightMoveList.Add(squareIndex + allKnightJumps[i]);
-        }
-        return knightMoveList.ToArray();
+        return knightMovesMap[squareIndex];
     }
 
     public static int[] getKingMoves(int squareIndex)
     {
-        List<int> kingMoveList = new List<int>();
-        byte kingByte = kingMoves[squareIndex];
-        for (int i = 0; i < 8; i++)
-        {
-            if (((kingByte >> i) & 1) == 1)
-                kingMoveList.Add(squareIndex + directionOffsets[i]);
-        }
-        return kingMoveList.ToArray();
+        return kingMovesMap[squareIndex];
     }
 
     public static bool IsOnBoard(int pos)

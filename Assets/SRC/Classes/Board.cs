@@ -8,41 +8,104 @@ public class Board
 {
     public int[] tiles;
 
+    private List<int> blackPieces;
+    public List<int> BlackPieces
+    {
+        get
+        {
+            if (blackPieces == null)
+            {
+                blackPieces = new List<int>();
+                for (int ii = 0; ii < 64; ii++)
+                    if (Piece.IsBlack(tiles[ii]))
+                        blackPieces.Add(ii);
+
+            }
+            return blackPieces;
+        }
+    }
+    private List<int> whitePieces;
+    public List<int> WhitePieces
+    {
+        get
+        {
+            if (whitePieces == null)
+            {
+                whitePieces = new List<int>();
+                for (int ii = 0; ii < 64; ii++)
+                    if (Piece.IsWhite(tiles[ii]))
+                        whitePieces.Add(ii);
+
+            }
+            return whitePieces;
+        }
+    }
+
     private int lastGeneratedPinnedBlack = -1;
-    private List<int[]> pinnedBlack;
-    public List<int[]> PinnedBlack
+    private int[][] pinnedMapBlack = new int[64][];
+    private int[][] PinnedMapBlack
     {
         get
         {
             if (lastGeneratedPinnedBlack != turn)
             {
-
-                pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
+                MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
                 lastGeneratedPinnedBlack = turn;
             }
-            return pinnedBlack;
+            return pinnedMapBlack;
         }
     }
 
     private int lastGeneratedPinnedWhite = -1;
-    private List<int[]> pinnedWhite;
-    public List<int[]> PinnedWhite
+    private int[][] pinnedMapWhite = new int[64][];
+    public int[][] PinnedMapWhite
     {
         get
         {
             if (lastGeneratedPinnedWhite != turn)
             {
-                pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
+                MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapWhite);
                 lastGeneratedPinnedWhite = turn;
             }
-            return pinnedWhite;
+            return pinnedMapWhite;
         }
     }
+
+
+    //private List<int[]> pinnedBlack;
+    //public List<int[]> PinnedBlack
+    //{
+    //    get
+    //    {
+    //        if (lastGeneratedPinnedBlack != turn)
+    //        {
+
+    //            pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
+    //            lastGeneratedPinnedBlack = turn;
+    //        }
+    //        return pinnedBlack;
+    //    }
+    //}
+
+
+    //private List<int[]> pinnedWhite;
+    //public List<int[]> PinnedWhite
+    //{
+    //    get
+    //    {
+    //        if (lastGeneratedPinnedWhite != turn)
+    //        {
+    //            pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
+    //            lastGeneratedPinnedWhite = turn;
+    //        }
+    //        return pinnedWhite;
+    //    }
+    //}
 
     private int lastGeneratedWhiteCaptureable = -1;
     private bool[] whiteCaptureable = new bool[64];
     private List<int>[] whiteCapturableMapList = new List<int>[64];
-
+    //* is Somehow 0% called much less (Never not equals turn)
     public bool[] WhiteCap
     {
         get
@@ -74,14 +137,14 @@ public class Board
     private int lastGeneratedBlackCaptureable = -1;
     private bool[] blackCaptureable = new bool[64];
     private List<int>[] blackCapturableMapList = new List<int>[64];
-
+    //TODO OPTIMIZE 1.2% (Self = 0%)
     public bool[] BlackCap
     {
         get
         {
             if (lastGeneratedBlackCaptureable != turn)
             {
-                blackCaptureable = MoveLegalityUtills.updateCapturable(this, false);
+                blackCaptureable = MoveLegalityUtills.updateCapturable(this, false); //TODO OPTIMIZE 1.2%
                 lastGeneratedBlackCaptureable = turn;
             }
             return blackCaptureable;
@@ -228,6 +291,12 @@ public class Board
     public Board()
     {
         tiles = new int[64];
+        for (int ii = 0; ii < 64; ii++)
+        {
+            pinnedMapBlack[ii] = new int[3] { -1, -1, -1 };
+            pinnedMapWhite[ii] = new int[3] { -1, -1, -1 };
+        }
+
     }
 
     public Board(string fen)
@@ -254,6 +323,11 @@ public class Board
 
             }
             i++;
+        }
+        for (int ii = 0; ii < 64; ii++)
+        {
+            pinnedMapBlack[ii] = new int[3] { -1, -1, -1 };
+            pinnedMapWhite[ii] = new int[3] { -1, -1, -1 };
         }
     }
 
@@ -392,8 +466,25 @@ public class Board
                 fiftyCount = 0;
             if (IsType(tiles[to], ROOK))
                 updateCasteRook(to);
-            lastMoveWasCapture = tiles[to] != 0;
-            lastMoveCaptured = tiles[to];
+            if (tiles[to] != 0)
+            {
+                lastMoveWasCapture = true;
+                lastMoveCaptured = tiles[to];
+                if (whiteTurn)
+                    BlackPieces.Remove(to);
+                else
+                    WhitePieces.Remove(to);
+            }
+            if (move.moveFlag == Move.Flag.EnPassantCapture)
+            {
+                if (whiteTurn)
+                    BlackPieces.Remove(enPassantAble);
+                else
+                    WhitePieces.Remove(enPassantAble);
+            }
+            else
+                lastMoveWasCapture = false;
+
             switch (move.moveFlag)
             {
                 case Move.Flag.PawnTwoForward:
@@ -441,6 +532,19 @@ public class Board
                 else
                     blackKingPos = to;
             }
+            if (whiteTurn)
+            {
+                for (int ii = 0; ii < WhitePieces.Count; ii++)
+                    if (WhitePieces[ii] == from)
+                    { WhitePieces[ii] = to; break; }
+            }
+            else
+            {
+                for (int ii = 0; ii < BlackPieces.Count; ii++)
+                    if (BlackPieces[ii] == from)
+                    { BlackPieces[ii] = to; break; }
+            }
+
             Turn++;
             whiteTurn = !whiteTurn;
             isCheckMate();
@@ -494,8 +598,8 @@ public class Board
 
     public bool isCheckMate()
     {
-        if (Moves.Count == 0)
-            Debug.Log("CheckMate, winner :" + (whiteTurn ? "BLACK" : "WHITE"));
+        //if (Moves.Count == 0)
+        //    Debug.Log("CheckMate, winner :" + (whiteTurn ? "BLACK" : "WHITE"));
         return Moves.Count == 0 && (whiteTurn ? WhiteInCheck : BlackInCheck);
     }
 
@@ -604,6 +708,10 @@ public class Board
             tiles[from] = 0;
             tiles[from + 1] = tiles[from + 3];
             tiles[from + 3] = 0;
+            if (whiteTurn)
+                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
+            else
+                WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
         }
         else
         {
@@ -611,25 +719,43 @@ public class Board
             tiles[from] = 0;
             tiles[from - 1] = tiles[from - 4];
             tiles[from - 4] = 0;
+            if (whiteTurn)
+                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
+            else
+                WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
         }
     }
 
+    public bool isPinned(int pos)
+    {
+        int piece = tiles[pos];
+        if (IsWhite(piece)) return PinnedMapWhite[pos][0] != -1;
+        else if (IsBlack(piece)) return PinnedMapBlack[pos][0] != -1;
+        else return false;
+    }
+    //TODO Fix for each
+    //TODO OPTIMIZE 
+    //*
     public int[] Pin(int pos)
     {
         int piece = tiles[pos];
         if (IsWhite(piece))
         {
-            foreach (int[] pinnedPosDir in PinnedWhite)
-                if (pinnedPosDir[0] == pos)
-                { Debug.Log("POS " + pos); return pinnedPosDir; }
+
+            if (PinnedMapWhite[pos][0] != -1)
+                return PinnedMapWhite[pos];
+            //foreach (int[] pinnedPosDir in PinnedWhite)
+            //    if (pinnedPosDir[0] == pos)
+            //        return pinnedPosDir;
             return null;
         }
         else if (IsBlack(piece))
         {
-
-            foreach (int[] pinnedPosDir in PinnedBlack)
-                if (pinnedPosDir[0] == pos)
-                    return pinnedPosDir;
+            if (PinnedMapBlack[pos][0] != -1)
+                return PinnedMapBlack[pos];
+            //foreach (int[] pinnedPosDir in PinnedBlack)
+            //    if (pinnedPosDir[0] == pos)
+            //        return pinnedPosDir;
             return null;
         }
         else
@@ -640,8 +766,11 @@ public class Board
     {
         blackCaptureable = MoveLegalityUtills.updateCapturable(this, false);
         MoveLegalityUtills.updateCapturable(this, true);
-        pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
-        pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
+        MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
+        MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapWhite);
+        //pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
+        //pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
+
     }
 
     public void refreshMoveMap()

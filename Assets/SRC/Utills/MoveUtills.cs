@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static MoveData;
 using static Piece;
@@ -15,10 +16,11 @@ public class MoveUtills
         moves = new List<Move>();
     }
 
-    //TODO Optimize
+    //TODO Optimize 96.8%
+    //TODO REMOVE FOREACH, SELF = 9.6%
     public static List<Move> GenerateMoves(Board board)
     {
-        List<Move> moves = new List<Move>();
+        List<Move> moves = new List<Move>();    //TODO Make sure it is Linked list
         for (int pos = 0; pos < 64; pos++)
         {
             int piece = board.tiles[pos];
@@ -26,19 +28,19 @@ public class MoveUtills
             {
                 if (IsSlidingPiece(piece))
                 {
-                    generateSlidingMoves(pos, piece, board).ForEach(move => moves.Add(move));
+                    generateSlidingMoves(pos, piece, board, moves);
                 }
                 switch (PieceType(piece))
                 {
                     case PAWN:
-                        generatePawnMoves(pos, board).ForEach(move => moves.Add(move));
+                        generatePawnMoves(pos, board, moves);
                         break;
                     case KNIGHT:
-                        generateKnightMoves(pos, board).ForEach(move => moves.Add(move));
+                        generateKnightMoves(pos, board, moves);
                         //moves.AddRange(generateKnightMoves(pos, board));
                         break;
                     case KING:
-                        generateKingMoves(pos, board).ForEach(move => moves.Add(move));
+                        generateKingMoves(pos, board, moves);
                         break;
 
                     default: break;
@@ -48,6 +50,7 @@ public class MoveUtills
         return moves;
     }
 
+    //!DEPRECATED
     public static List<Move> GenerateMovesExceptKings(Board board)
     {
         Debug.Log("KingLess");
@@ -59,15 +62,15 @@ public class MoveUtills
             {
                 if (IsSlidingPiece(piece))
                 {
-                    generateSlidingMoves(pos, piece, board).ForEach(move => list.Add(move));
+                    generateSlidingMoves(pos, piece, board, list);
                 }
                 switch (PieceType(piece))
                 {
                     case PAWN:
-                        generatePawnMoves(pos, board).ForEach(move => list.Add(move));
+                        generatePawnMoves(pos, board, list);
                         break;
                     case KNIGHT:
-                        generateKnightMoves(pos, board).ForEach(move => list.Add(move));
+                        generateKnightMoves(pos, board, list);
                         break;
 
                     default: break;
@@ -77,59 +80,63 @@ public class MoveUtills
         return list;
     }
 
-    public static List<Move> generateSlidingMoves(int position, int type, Board board)
+    // TODO OPTIMIZE 46%
+    //*
+    public static void generateSlidingMoves(int position, int type, Board board, List<Move> moveList)
     {
         int startDir = (IsType(type, BISHOP)) ? 4 : 0;
         int endDir = (IsType(type, ROOK)) ? 4 : 8;
-        List<Move> slidingMoveL = new List<Move>();
         int opoColor = board.whiteTurn ? BLACK : WHITE;
         for (int direction = startDir; direction < endDir; direction++)
         {
-            for (int n = 0; n < numSquaresToEdge[position][direction]; n++)
+            for (int n = 0; n < numSquaresToEdge[position][direction]; n++) //TODO Optimize save pice pos
             {
                 int target = position + directionOffsets[direction] * (n + 1);
                 int pieceOnTarget = board.tiles[target];
-                if (IsColour(pieceOnTarget, board.ColorTurn)) //Friendly
+                if (IsColour(pieceOnTarget, board.ColorTurn)) //Friendly //TODO OPTIMIZE Make var for color turn
                     break;
-                if (MoveLegalityUtills.IsLegal(position, target, board))
-                    slidingMoveL.Add(new Move(position, target));
-                if (IsColour(pieceOnTarget, opoColor)) //Oponent
+                if (MoveLegalityUtills.IsLegal(position, target, board)) //TODO OPTIMZE 32.6%
+                    moveList.Add(new Move(position, target));   //TODO OPTIMZE 2.8%
+                if (IsColour(pieceOnTarget, opoColor)) //Oponent    //TODO OPTIMIZE 1.5%
                     break;
             }
         }
-
-
-        return slidingMoveL;
     }
 
-    public static List<Move> generateKnightMoves(int position, Board board)
+    //TODO OPTIMIZE 10%,
+    //*
+    public static void generateKnightMoves(int position, Board board, List<Move> moveList)
     {
-        List<Move> knightMoveL = new List<Move>();
         int[] arr = getKnightMoves(position);
-        foreach (int target in arr)
+        for (int ii = 0; ii < arr.Length; ii++)
         {
+            int target = arr[ii];
             if (IsColour(board.tiles[target], board.ColorTurn))
                 continue;
-            if (MoveLegalityUtills.IsLegal(position, target, board))
-                knightMoveL.Add(new Move(position, target));
+            if (MoveLegalityUtills.IsLegal(position, target, board)) //TODO OPTIMIZE 6.7%
+                moveList.Add(new Move(position, target));
         }
-        return knightMoveL;
     }
 
-    public static List<Move> generateKingMoves(int position, Board board)
+    //TODO OPTIMIZE 5.4%, SELF = 0.7%
+    //*
+    public static void generateKingMoves(int position, Board board, List<Move> moveList)
     {
-        List<Move> kingMoveL = new List<Move>();
-        foreach (int target in getKingMoves(position))
+        int[] arr = getKingMoves(position);
+        for (int ii = 0; ii < arr.Length; ii++)
+        {
+            int target = arr[ii];
             if (!IsColour(board.tiles[target], board.ColorTurn))
-                if (MoveLegalityUtills.IsLegal(position, target, board))
-                    kingMoveL.Add(new Move(position, target));
-        kingMoveL.AddRange(generateCastelingMoves(position, board));
-        return kingMoveL;
+                if (MoveLegalityUtills.IsLegal(position, target, board)) //TODO OPTIMIZE 2.1%
+                    moveList.Add(new Move(position, target));
+        }
+        generateCastelingMoves(position, board, moveList);
     }
 
-    public static List<Move> generateCastelingMoves(int position, Board board)
+    //TODO OPTIMIZE 1.6% (Is kinda optimzed)
+    //*
+    public static void generateCastelingMoves(int position, Board board, List<Move> moveList)
     {
-        List<Move> castelMoves = new List<Move>();
         bool isWhite = Colour(board.tiles[position]) == WHITE;
         bool[] castleRights = isWhite ?
             new bool[] { board.whiteCastleKingside, board.whiteCastleQueenside } :
@@ -165,19 +172,20 @@ public class MoveUtills
 
         if (cas1)
         {
-            castelMoves.Add(new Move(position, squaresBetween[0][1], Move.Flag.Castling));
+            moveList.Add(new Move(position, squaresBetween[0][1], Move.Flag.Castling));
         }
         if (cas2)
         {
-            castelMoves.Add(new Move(position, squaresBetween[1][1], Move.Flag.Castling));
+            moveList.Add(new Move(position, squaresBetween[1][1], Move.Flag.Castling));
         }
 
-        return castelMoves;
     }
 
-    public static List<Move> generatePawnMoves(int position, Board board)
+    // TODO OPTIMIZE 17.6%, SELF = 1.8%
+    //*
+    // TODO OPTIMIZE 18.8%, SELF = 1.6%
+    public static void generatePawnMoves(int position, Board board, List<Move> moveList)
     {
-        List<Move> pawnMoveL = new List<Move>();
         int moveDir = (board.whiteTurn) ? directionOffsets[NORTH_I] : directionOffsets[SOUTH_I];
         int[] attackDir = (board.whiteTurn) ? pawnAttackDirections[0] : pawnAttackDirections[1];
         bool isInStarting = ((board.whiteTurn && (position / 8 == 1)) || ((!board.whiteTurn) && (position / 8 == 6)));
@@ -185,15 +193,15 @@ public class MoveUtills
         int target = position + moveDir;
         bool willUpgrade = (target / 8 == 7 || target / 8 == 0);
         if ((board.tiles[target] == 0) && willUpgrade)
-            pawnMoveL.AddRange(generatePawnUpgrade(position, target));
+            moveList.AddRange(generatePawnUpgrade(position, target));
         else if (board.tiles[target] == 0)
         {
             if (MoveLegalityUtills.IsLegal(position, target, board))
-                pawnMoveL.Add(new Move(position, target));
+                moveList.Add(new Move(position, target));
 
             if (isInStarting && board.tiles[(target += moveDir)] == 0)
                 if (MoveLegalityUtills.IsLegal(position, target, board))
-                    pawnMoveL.Add(new Move(position, target, Move.Flag.PawnTwoForward));
+                    moveList.Add(new Move(position, target, Move.Flag.PawnTwoForward));
         }
 
         target = position + attackDir[0];
@@ -202,9 +210,9 @@ public class MoveUtills
             if (MoveLegalityUtills.IsLegal(position, target, board))
             {
                 if (willUpgrade)
-                    pawnMoveL.AddRange(generatePawnUpgrade(position, target));
+                    moveList.AddRange(generatePawnUpgrade(position, target));
                 else
-                    pawnMoveL.Add(new Move(position, target));
+                    moveList.Add(new Move(position, target));
             }
         }
         target = position + attackDir[1];
@@ -213,9 +221,9 @@ public class MoveUtills
             if (MoveLegalityUtills.IsLegal(position, target, board))
             {
                 if (willUpgrade)
-                    pawnMoveL.AddRange(generatePawnUpgrade(position, target));
+                    moveList.AddRange(generatePawnUpgrade(position, target));
                 else
-                    pawnMoveL.Add(new Move(position, target));
+                    moveList.Add(new Move(position, target));
             }
         }
         if ((board.enPassantAble == position - 1 && numSquaresToEdge[position][WEST_I] != 0) || (board.enPassantAble == position + 1 && numSquaresToEdge[position][EAST_I] != 0))
@@ -227,12 +235,9 @@ public class MoveUtills
                 //*Fixed now but
                 //*Was previously :(board.enPassantAble == position - 1  || board.enPassantAble == position + 1)
                 //! *MASSIVE BLUNDER*
-                pawnMoveL.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
+                moveList.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
             }
         }
-
-
-        return pawnMoveL;
     }
 
     private static List<Move> generatePawnUpgrade(int position, int target)
@@ -245,29 +250,30 @@ public class MoveUtills
         return upgradeMoves;
     }
 
+    //TODO Make this //!DEPRECATED 
     public static List<Move> generateMovesForThisSquare(int pos, Board board)
     {
-        List<Move> moveL;
+        List<Move> moveL = new List<Move>();
 
         int piece = board.tiles[pos];
         if (IsColour(piece, board.ColorTurn))
         {
             if (IsSlidingPiece(piece))
             {
-                moveL = generateSlidingMoves(pos, piece, board);
+                generateSlidingMoves(pos, piece, board, moveL);
             }
             else
             {
                 switch (PieceType(piece))
                 {
                     case PAWN:
-                        moveL = generatePawnMoves(pos, board);
+                        generatePawnMoves(pos, board, moveL);
                         break;
                     case KNIGHT:
-                        moveL = generateKnightMoves(pos, board);
+                        generateKnightMoves(pos, board, moveL);
                         break;
                     case KING:
-                        moveL = generateKingMoves(pos, board);
+                        generateKingMoves(pos, board, moveL);
                         break;
 
                     default:
@@ -375,24 +381,26 @@ public class MoveUtills
         }
         return moveGrid;
     }
-
+    //TODO OPTIMIZE 0.4%, SELF = 0.2%
     public static List<int> getPieces(Board board, int color)
     {
+        return (color == WHITE) ? board.WhitePieces : board.BlackPieces;
         //TODO Optimize
-        List<int> pieces = new List<int>();
-        for (int pos = 0; pos < 64; pos++)
-            if (IsColour(board.tiles[pos], color))
-                pieces.Add(pos);
-        return pieces;
+        //List<int> pieces = new List<int>();
+        //for (int pos = 0; pos < 64; pos++)
+        //    if (IsColour(board.tiles[pos], color)) //TODO OPTIMIZE 0.1%
+        //        pieces.Add(pos);                    ////TODO OPTIMIZE 0.1%
+        //return pieces;
     }
     public static List<int> getSlidingPieces(Board board, int color)
     {
         //TODO Optimize
-        List<int> pieces = new List<int>();
-        for (int pos = 0; pos < 64; pos++)
-            if (IsColour(board.tiles[pos], color) && IsSlidingPiece(board.tiles[pos]))
-                pieces.Add(pos);
-        return pieces;
+        List<int> allpieces = (color == WHITE) ? board.WhitePieces : board.BlackPieces;
+        return allpieces.Where(n => IsSlidingPiece(board.tiles[n])).ToList<int>();
+        //for (int pos = 0; pos < 64; pos++)
+        //    if (IsColour(board.tiles[pos], color) && IsSlidingPiece(board.tiles[pos]))
+        //        pieces.Add(pos);
+        //return pieces;
     }
 
 }

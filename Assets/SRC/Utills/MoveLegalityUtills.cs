@@ -26,9 +26,9 @@ public class MoveLegalityUtills
                 //Debug.Log(board.PinnedWhite.Count);
                 //Debug.Log("PINNNNN : " + pinnedPosDir[0]);
                 int kingPos = color == WHITE ? board.whiteKingPos : board.blackKingPos;
-                for (int dist = 1; dist <= pinnedPosDir[3]; dist++)
+                for (int dist = 1; dist <= pinnedPosDir[2]; dist++)
                 {
-                    int newPos = kingPos + directionOffsets[pinnedPosDir[1]] * dist;
+                    int newPos = kingPos + directionOffsets[pinnedPosDir[0]] * dist;
                     if (newPos == target)
                         return true;
                 }
@@ -45,17 +45,20 @@ public class MoveLegalityUtills
     {
         return !(color == WHITE ? board.BlackCap[position] : board.WhiteCap[position]);
     }
+
+    //TODO OPTIMIZE 1.2%
     public static bool[] updateCapturable(Board board, bool checkWhite)
     {
         bool[] attacked = new bool[64];
         return getAttackedSquares(board, attacked, checkWhite ? WHITE : BLACK);
     }
-
+    //TODO OPTIMIZE 1.2%, SELF = 0.1%
+    //TODO OPTIMIZE 7.6%, SELF = 0.6%
     private static bool[] getAttackedSquares(Board board, bool[] attacked, int color)
     {
-        List<int> pieces = MoveUtills.getPieces(board, color);
+        List<int> pieces = MoveUtills.getPieces(board, color); //TODO OPTIMIZE 3.1%
         foreach (int pos in pieces)
-            getAttackedByThisSquare(board, attacked, pos);
+            getAttackedByThisSquare(board, attacked, pos); //TODO OPTIMIZE 0.5%
         return attacked;
 
     }
@@ -130,9 +133,10 @@ public class MoveLegalityUtills
         }
         if (checkInfo[1] == 9)
             return false;
-        foreach (int[] pinnedPosDir in (isWhite) ? board.PinnedWhite : board.PinnedBlack)
-            if (pinnedPosDir != null && pinnedPosDir[0] == pos)
-                return false;
+        //foreach (int[] pinnedPosDir in (isWhite) ? board.PinnedWhite : board.PinnedBlack)
+        //if (pinnedPosDir != null && pinnedPosDir[0] == pos)
+        if (board.isPinned(pos))
+            return false;
 
         if (checkInfo[1] == 8)
             return target == checkInfo[0];
@@ -201,26 +205,85 @@ public class MoveLegalityUtills
         return arr;
 
     }
+
     //{pos,dir,dist,dist to attacker}
-    public static List<int[]> checkPinned(Board board, int color)
+    //* ONLY 0.5% it seems
+
+    // public static List<int[]> checkPinned(Board board, int color)
+    // {
+    //     List<int[]> pinnedList = new List<int[]>();
+    //     int opoCol = color == WHITE ? BLACK : WHITE;
+    //     int position = color == WHITE ? board.whiteKingPos : board.blackKingPos;
+    //     bool[] canBeCaptured = color == WHITE ? board.BlackCap : board.WhiteCap;
+    //     int pinPos = -1;
+    //     int pinDist = -1;
+    //     for (int dir = 0; dir < 8; dir++)
+    //     {
+    //         for (int dist = 1; dist <= numSquaresToEdge[position][dir]; dist++)
+    //         {
+
+    //             int newPos = position + directionOffsets[dir] * dist;
+    //             int piece = board.tiles[newPos];
+    //             if (piece != 0)
+    //             {
+    //                 if (pinPos != -1 && IsColour(piece, color))
+    //                 { break; Debug.Log("SAMECOL"); }
+    //                 else if (IsColour(piece, color) && canBeCaptured[newPos])
+    //                 {
+    //                     pinPos = newPos;
+    //                     pinDist = dist;
+    //                 }
+    //                 else if (IsColour(piece, opoCol))
+    //                 {
+    //                     if (pinPos == -1)
+    //                         break;
+    //                     if (CanSlideInDirection(piece, dir))
+    //                     {
+    //                         pinnedList.Add(new int[] { pinPos, dir, pinDist, dist });
+    //                         //Debug.Log("PINNED:" + "{" + pinPos + ", " + dir + ", " + pinDist + ", " + dist + "}");
+    //                     }
+    //                     break;
+    //                 }
+    //                 else
+    //                     break;
+    //             }
+    //         }
+    //         pinPos = -1;
+    //         pinDist = -1;
+    //     }
+    //     return pinnedList;
+
+    // }
+
+    //* Will Probally speed up stuff since no list
+
+    public static void genPinnedMap(Board board, int color, int[][] pinnedMap)
     {
-        List<int[]> pinnedList = new List<int[]>();
+        //List<int[]> pinnedList = new List<int[]>();
+        for (int ii = 0; ii < 64; ii++)
+        {
+            pinnedMap[ii][0] = -1;
+            pinnedMap[ii][1] = -1;
+            pinnedMap[ii][2] = -1;
+        }
         int opoCol = color == WHITE ? BLACK : WHITE;
         int position = color == WHITE ? board.whiteKingPos : board.blackKingPos;
         bool[] canBeCaptured = color == WHITE ? board.BlackCap : board.WhiteCap;
         int pinPos = -1;
         int pinDist = -1;
+        int newPos;
+        int piece;
         for (int dir = 0; dir < 8; dir++)
         {
             for (int dist = 1; dist <= numSquaresToEdge[position][dir]; dist++)
             {
 
-                int newPos = position + directionOffsets[dir] * dist;
-                int piece = board.tiles[newPos];
+                newPos = position + directionOffsets[dir] * dist;
+                piece = board.tiles[newPos];
                 if (piece != 0)
                 {
                     if (pinPos != -1 && IsColour(piece, color))
-                    { break; Debug.Log("SAMECOL"); }
+                        break;
                     else if (IsColour(piece, color) && canBeCaptured[newPos])
                     {
                         pinPos = newPos;
@@ -232,8 +295,10 @@ public class MoveLegalityUtills
                             break;
                         if (CanSlideInDirection(piece, dir))
                         {
-                            pinnedList.Add(new int[] { pinPos, dir, pinDist, dist });
-                            Debug.Log("PINNED:" + "{" + pinPos + ", " + dir + ", " + pinDist + ", " + dist + "}");
+                            pinnedMap[pinPos][0] = dir;
+                            pinnedMap[pinPos][1] = pinDist;
+                            pinnedMap[pinPos][2] = dist;
+                            //Debug.Log("PINNED:" + "{" + pinPos + ", " + dir + ", " + pinDist + ", " + dist + "}");
                         }
                         break;
                     }
@@ -244,7 +309,6 @@ public class MoveLegalityUtills
             pinPos = -1;
             pinDist = -1;
         }
-        return pinnedList;
 
     }
     //{pos,dir,dist}
@@ -272,8 +336,8 @@ public class MoveLegalityUtills
                     {
                         if (arr[0] != -1)
                         {
-                            arr[3] = newPos; arr[4] = dir; arr[5] = dist;
-                            return arr; //CAN ONLY BE CHECK OR DOUBLE CHECK
+                            int[] arr2 = new int[6] { arr[0], arr[1], arr[2], newPos, dir, dist };
+                            return arr2; //CAN ONLY BE CHECK OR DOUBLE CHECK
                         }
                         arr = new int[] { newPos, dir, dist };
                     }
@@ -287,8 +351,8 @@ public class MoveLegalityUtills
             {
                 if (arr[0] != -1)
                 {
-                    arr[3] = newPos; arr[4] = 8; arr[5] = 1;
-                    return arr;//CAN ONLY BE CHECK OR DOUBLE CHECK
+                    int[] arr2 = new int[6] { arr[0], arr[1], arr[2], newPos, 8, 1 };
+                    return arr2;//CAN ONLY BE CHECK OR DOUBLE CHECK
                 }
                 return new int[] { newPos, 8, 1 };
             }
@@ -303,7 +367,7 @@ public class MoveLegalityUtills
         if (!IsSafePosition(target, board))
             return false;
 
-        int[] checkingPiceInfo = getCheckingPiece(board, color);
+        int[] checkingPiceInfo = getALLCheckingPieces(board, color);
         if (checkingPiceInfo[0] == -1)
         {
             Debug.Log("FAILED TO GET CHECKING PIECE IN IsSafePositionDuringCheck");
