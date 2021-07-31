@@ -82,7 +82,7 @@ public class MoveTest
     public static int STANDARD_PLY = 4;
     static FileStream fs;
     static StreamWriter sw;
-
+    //TODO maby fix for mac and Linux
     public static string logFilePath = System.Environment.GetEnvironmentVariable("USERPROFILE") + "\\ChessPerftLogs\\MoveTestLog.txt";
     public static long[] StandardMoveTest(int fen)
     {

@@ -295,6 +295,7 @@ public class Board
         return copy;
 
     }
+
     public Board Clone()
     {
         Board copy = new Board();
