@@ -117,9 +117,9 @@ namespace Testing
             int nTotalMoves = 0;
             float avrageTimePerItteration = 0;
             int memoryUsed = 0;
-            UnityEngine.Debug.Log("Enginetest : {nMoves = " + numMoves + ", nItter = " + itterations + ",fen = " + fen + "}");
+            //UnityEngine.Debug.Log("Enginetest : {nMoves = " + numMoves + ", nItter = " + itterations + ",fen = " + fen + "}");
             GenerateMoveSequence(numMoves);
-            UnityEngine.Debug.Log("Enginetest : {nMoves = " + numMoves + ", nItter = " + itterations + ",fen = " + fen + "}");
+            //UnityEngine.Debug.Log("Enginetest : {nMoves = " + numMoves + ", nItter = " + itterations + ",fen = " + fen + "}");
             Move[] moves = GetMoveSequence();
             Board board;
             int measureID = TimeUtills.Instance.startMeasurement();
@@ -172,7 +172,7 @@ namespace Testing
                     break;
                 }
             }
-            UnityEngine.Debug.Log("Final fen: " + board.boardToFEN());
+            //UnityEngine.Debug.Log("Final fen: " + board.boardToFEN());
             using (FileStream fs = File.Open(MoveSequenceFilePath, FileMode.Truncate, FileAccess.Write))
             {
                 using (StreamWriter sw = new StreamWriter(fs))

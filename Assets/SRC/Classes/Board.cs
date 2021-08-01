@@ -8,7 +8,7 @@ public class Board
 {
     public int[] tiles;
 
-    private List<int> blackPieces;
+    private List<int> blackPieces = null;
     public List<int> BlackPieces
     {
         get
@@ -24,7 +24,7 @@ public class Board
             return blackPieces;
         }
     }
-    private List<int> whitePieces;
+    private List<int> whitePieces = null;
     public List<int> WhitePieces
     {
         get
@@ -47,10 +47,12 @@ public class Board
     {
         get
         {
-            if (lastGeneratedPinnedBlack != turn)
+            if (lastGeneratedPinnedBlack != turn || turn == 0)
             {
                 MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
                 lastGeneratedPinnedBlack = turn;
+                //GENPIN
+                Debug.Log("GENPINB");
             }
             return pinnedMapBlack;
         }
@@ -62,9 +64,9 @@ public class Board
     {
         get
         {
-            if (lastGeneratedPinnedWhite != turn)
+            if (lastGeneratedPinnedWhite != turn || turn == 0)
             {
-                MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapWhite);
+                MoveLegalityUtills.genPinnedMap(this, WHITE, pinnedMapWhite);
                 lastGeneratedPinnedWhite = turn;
             }
             return pinnedMapWhite;
@@ -110,7 +112,7 @@ public class Board
     {
         get
         {
-            if (lastGeneratedWhiteCaptureable != turn)
+            if (lastGeneratedWhiteCaptureable != turn || turn == 0)
             {
                 whiteCaptureable = MoveLegalityUtills.updateCapturable(this, true);
                 lastGeneratedWhiteCaptureable = turn;
@@ -142,7 +144,7 @@ public class Board
     {
         get
         {
-            if (lastGeneratedBlackCaptureable != turn)
+            if (lastGeneratedBlackCaptureable != turn || turn == 0)
             {
                 blackCaptureable = MoveLegalityUtills.updateCapturable(this, false); //TODO OPTIMIZE 1.2%
                 lastGeneratedBlackCaptureable = turn;
@@ -175,7 +177,7 @@ public class Board
     {
         get
         {
-            if (lastTurnGenerated != turn)
+            if (lastTurnGenerated != turn || turn == 0)
             {
                 moves = MoveUtills.GenerateMoves(this);
                 lastTurnGenerated = turn;
@@ -223,7 +225,7 @@ public class Board
     {
         get
         {
-            if (lastTurnGeneratedMoveMap != turn)
+            if (lastTurnGeneratedMoveMap != turn || turn == 0)
             {
                 moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);
                 lastTurnGeneratedMoveMap = turn;
@@ -238,7 +240,7 @@ public class Board
     {
         get
         {
-            if (lastTurnGeneratedOpo != turn)
+            if (lastTurnGeneratedOpo != turn || turn == 0)
             {
                 whiteTurn = !whiteTurn;
                 moves = MoveUtills.GenerateMoves(this);
@@ -317,6 +319,7 @@ public class Board
         blackCastleKingside = gameStateInfo.blackCastleKingside;
         blackCastleQueenside = gameStateInfo.blackCastleQueenside;
         turn = ((gameStateInfo.plyCount - 1) * 2);
+        if (turn < 0) turn = 0;
         fiftyCount = gameStateInfo.fiftyCount;
         int i = 0;
         foreach (int piece in tiles)
@@ -382,7 +385,7 @@ public class Board
         Board copy = new Board();
         copy.tiles = new int[64];
         Array.Copy(tiles, copy.tiles, 64);
-        copy.turn = turn;
+        copy.turn = 0;
         copy.whiteCastleKingside = whiteCastleKingside;
         copy.whiteCastleQueenside = whiteCastleQueenside;
         copy.blackCastleKingside = blackCastleKingside;
@@ -398,6 +401,12 @@ public class Board
         copy.lastGeneratedBlackCaptureable = -1;
         copy.lastGeneratedPinnedWhite = -1;
         copy.lastGeneratedPinnedBlack = -1;
+        if (whitePieces != null)
+            copy.whitePieces = new List<int>(whitePieces);
+        if (blackPieces != null)
+            copy.blackPieces = new List<int>(blackPieces);
+        refreshMoves();
+
         return copy;
 
     }
@@ -562,6 +571,7 @@ public class Board
             whiteTurn = !whiteTurn;
             lastMove = move;
             hasReverted = false;
+            debugPrintMoves();
             return true;
         }
         catch (Exception _ex)
@@ -816,21 +826,19 @@ public class Board
             tiles[from] = 0;
             tiles[from + 1] = tiles[from + 3];
             tiles[from + 3] = 0;
+
             if (whiteTurn)
-                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
-            else
                 WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
+            else
+                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
         }
         else
         {
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            tiles[from - 1] = tiles[from - 4];
-            tiles[from - 4] = 0;
+
             if (whiteTurn)
-                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
-            else
                 WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
+            else
+                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
         }
     }
 
@@ -849,7 +857,11 @@ public class Board
         int piece = tiles[pos];
         if (IsWhite(piece))
         {
-
+            if (lastGeneratedPinnedWhite != turn)
+            {
+                MoveLegalityUtills.genPinnedMap(this, WHITE, pinnedMapWhite);
+                lastGeneratedPinnedWhite = turn;
+            }
             if (PinnedMapWhite[pos][0] != -1)
                 return PinnedMapWhite[pos];
             //foreach (int[] pinnedPosDir in PinnedWhite)
@@ -859,11 +871,16 @@ public class Board
         }
         else if (IsBlack(piece))
         {
+            if (pos == 29)
+                Debug.Log("STILLPINN: " + lastGeneratedPinnedBlack + "," + lastGeneratedPinnedWhite + "," + turn);
+
+            if (lastGeneratedPinnedBlack != turn)
+            {
+                MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
+                lastGeneratedPinnedBlack = turn;
+            }
             if (PinnedMapBlack[pos][0] != -1)
                 return PinnedMapBlack[pos];
-            //foreach (int[] pinnedPosDir in PinnedBlack)
-            //    if (pinnedPosDir[0] == pos)
-            //        return pinnedPosDir;
             return null;
         }
         else
@@ -880,10 +897,19 @@ public class Board
         //pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
 
     }
-
+    public void refreshMoves()
+    {
+        moves = MoveUtills.GenerateMoves(this);
+        lastTurnGenerated = turn;
+    }
     public void refreshMoveMap()
     {
         moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);
         lastTurnGeneratedMoveMap = turn;
+    }
+    private void debugPrintMoves()
+    {
+        foreach (Move move in moves)
+            Debug.Log(MoveTest.MoveStringRepresentation(move));
     }
 }

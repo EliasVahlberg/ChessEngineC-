@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
-    [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/Simple Search AI")]
-    public class SimpleSearchAI : IAIObject
+    [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/Speed testing AI")]
+    public class SpeedTestingAI : IAIObject
     {
+        static int nRecounts = 1000;
         public override Move SelectMove(Board board)
         {
             Move selectedMove = new Move(0);
@@ -26,7 +27,8 @@ namespace ChessAI
             {
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
-                val = -bsGen.V4CaptureScore(newBoard.tiles, newBoard.whiteTurn);
+                for (int i = 0; i < nRecounts; i++)
+                    val = -bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn);
                 if (ii != 0)
                     allSame &= maxV == val;
                 maxI = maxV > val ? maxI : ii;

@@ -97,7 +97,7 @@ public class MenuManager : MonoBehaviour
 
     public void usingFen()
     {
-        Debug.Log("FEN");
+        //Debug.Log("FEN");
         string fen = inputText.text;
         int[] valFenSections = FENUtills.validFen(fen);
         if (valFenSections[0] >= 2)
@@ -115,7 +115,7 @@ public class MenuManager : MonoBehaviour
 
     public void checkFEN(InputField fenInput)
     {
-        Debug.Log("ENDEDIT");
+        //Debug.Log("ENDEDIT");
         string fen = inputText.text;
         int[] valFenSections = FENUtills.validFen(fen);
         if (valFenSections[0] >= 2)

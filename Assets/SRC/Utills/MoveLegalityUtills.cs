@@ -298,7 +298,8 @@ public class MoveLegalityUtills
                             pinnedMap[pinPos][0] = dir;
                             pinnedMap[pinPos][1] = pinDist;
                             pinnedMap[pinPos][2] = dist;
-                            //Debug.Log("PINNED:" + "{" + pinPos + ", " + dir + ", " + pinDist + ", " + dist + "}");
+
+                            Debug.Log("PINNED:" + "{" + pinPos + ", " + dir + ", " + pinDist + ", " + dist + "}");
                         }
                         break;
                     }

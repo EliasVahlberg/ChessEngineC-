@@ -180,7 +180,7 @@ public class Client : MonoBehaviour
         public IPEndPoint endPoint;
         public UDP()
         {
-            Debug.Log("IP: " + instance.Ip);
+            //Debug.Log("IP: " + instance.Ip);
             endPoint = new IPEndPoint(IPAddress.Parse(instance.Ip), instance.port);
         }
         public void Connect(int _localPort)

@@ -61,6 +61,7 @@ namespace Testing
             };
         #endregion
         #region PerftCheck
+        [Header("PerftCheck")]
         [SerializeField] private Dropdown selectPlyPerftCheck;
         [SerializeField] private Dropdown selectFenPerftCheck;
         [SerializeField] private Button startPerftCheckButton;
@@ -83,6 +84,14 @@ namespace Testing
             new OptionData("Position 6 "),
             };
         #endregion
+        #region PerftDebug
+        [Header("Perf Debug")]
+        [SerializeField] private Dropdown selectPlyPerftDebug;
+        [SerializeField] private Dropdown selectFenPerftDebug;
+        [SerializeField] private Button startPerftDebugButton;
+        [SerializeField] private InputField refResultFieldPerftDebug;
+        [SerializeField] private InputField resultFieldPerftDebug;
+        #endregion
 
         private void Awake()
         {
@@ -96,6 +105,7 @@ namespace Testing
                 Destroy(this);
             }
         }
+
         private void Start()
         {
             #region AIPERFT
@@ -125,6 +135,14 @@ namespace Testing
             selectFenPerftCheck.options = fenOptionsPerftCheck;
             resultFieldPerftCheck.readOnly = true;
             startPerftCheckButton.onClick.AddListener(runPerftCheck);
+            #endregion
+            #region PerftDebug
+
+            selectPlyPerftDebug.options = plyOptionsPerftCheck;
+            selectFenPerftDebug.options = fenOptionsPerftCheck;
+            resultFieldPerftDebug.readOnly = true;
+            startPerftDebugButton.onClick.AddListener(runPerftDebug);
+            refResultFieldPerftDebug.readOnly = false;
             #endregion
         }
 
@@ -217,6 +235,7 @@ namespace Testing
             PrintResultPerftCheck(MoveTest.PerftCheck(fen, ply));
 
         }
+
         private void PrintResultPerftCheck(PerftCheckResult result)
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -239,5 +258,30 @@ namespace Testing
             resultFieldPerftCheck.text = stringBuilder.ToString();
             resultFieldPerftCheck.readOnly = true;
         }
+
+        private void runPerftDebug()
+        {
+            int ply = selectPlyPerftDebug.value + 1;
+            int fen = selectFenPerftDebug.value;
+            refResultFieldPerftDebug.readOnly = true;
+            string refStr = refResultFieldPerftDebug.text;
+            refStr = refStr.Replace("\n", "").Replace("\r", "");
+            string[] refResult = refStr.Split(',');
+            List<string> list = MoveTest.PerftDebug(fen, ply, refResult);
+            PrintResultPerftDebug(list);
+        }
+
+        private void PrintResultPerftDebug(List<string> res)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append("<b>RESULTS:</b> \n");
+            stringBuilder.Append("<b>Number of moves from starting position: </b> \n");
+            stringBuilder.Append(res.Count);
+            foreach (string str in res)
+                stringBuilder.Append(str + "\n");
+            resultFieldPerftDebug.text = stringBuilder.ToString();
+            refResultFieldPerftDebug.readOnly = false;
+        }
     }
+
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -269,9 +270,64 @@ public class MoveTest
         foreach (Move nextMove in board.Moves)
         {
             Board newBoard = board.Clone();
-            newBoard.useMove(nextMove);
+            if (!newBoard.useMove(nextMove))
+            { Debug.Log("FAIL"); }
             PerftCheckRecursive(newBoard, currentPly + 1, plyDepth, nMoves);
 
         }
+    }
+    public static List<string> PerftDebug(int fen, int ply, string[] refResult)
+    {
+        List<string> oList = new List<string>();
+        Board board = new Board(TestFenKnown[fen]);
+        long[] nMoves = new long[ply];
+        PerftDebugRecursive(board, 0, ply, nMoves, oList, "");
+        List<string> refList = refResult.ToList();
+        oList.Sort();
+        refList.Sort();
+        for (int ii = 0; ii < oList.Count; ii++)//Math.Max(outputList.Count, stockfishResult.Count); i++)
+            if (refList.Count > ii)
+            {
+                string str = oList[ii] + " " + refList[ii];
+                oList[ii] = str;
+            }
+
+        return oList;
+    }
+    static private void PerftDebugRecursive(Board board, int currentPly, int plyDepth, long[] nMoves, List<string> oList, string move)
+    {
+        long before = 0;
+        nMoves[currentPly] += board.Moves.Count;
+        if (currentPly == plyDepth - 1)
+        {
+            if (currentPly == 1)
+                oList.Add(move + ": " + board.Moves.Count + ", SF: ");
+            return;
+        }
+        if (board.Moves.Count == 0)
+        {
+            Debug.Log("CM: " + move);
+            Debug.Log(board.boardToFEN());
+        }
+        for (int i = currentPly; i < plyDepth; i++)
+        {
+            before += nMoves[i];
+        }
+
+        foreach (Move nextMove in board.Moves)
+        {
+            Board newBoard = board.Clone();
+            newBoard.useMove(nextMove);
+            PerftDebugRecursive(newBoard, currentPly + 1, plyDepth, nMoves, oList, move + MoveStringRepresentation(nextMove));
+
+        }
+        long delta = 0;
+        for (int i = currentPly; i < plyDepth; i++)
+        {
+            delta += nMoves[i];
+        }
+        delta -= before;
+        if (currentPly == 1)
+            oList.Add(move + ": " + delta + ", SF: ");
     }
 }

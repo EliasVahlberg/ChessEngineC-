@@ -138,6 +138,7 @@ public class MoveUtills
     public static void generateCastelingMoves(int position, Board board, List<Move> moveList)
     {
         bool isWhite = Colour(board.tiles[position]) == WHITE;
+        int color = isWhite ? WHITE : BLACK;
         bool[] castleRights = isWhite ?
             new bool[] { board.whiteCastleKingside, board.whiteCastleQueenside } :
             new bool[] { board.blackCastleKingside, board.blackCastleQueenside };
@@ -155,9 +156,10 @@ public class MoveUtills
         (isSafePosition(squaresBetween[0][0], board)) &&
         (isSafePosition(squaresBetween[0][1], board)) &&
         (IsType(board.tiles[rookPos[0]], ROOK)) &&
-        (IsColour(board.tiles[rookPos[0]], WHITE)) &&
+        (IsColour(board.tiles[rookPos[0]], color)) &&
         (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
-
+        //* NOTE "The king does not pass through a square that is attacked by an enemy piece."
+        //* since the he does not pass through the third square it is ok
         bool cas2 =
         castleRights[1] &&
         board.tiles[squaresBetween[1][0]] == 0 &&
@@ -165,9 +167,8 @@ public class MoveUtills
         board.tiles[squaresBetween[1][2]] == 0 &&
         (isSafePosition(squaresBetween[1][0], board)) &&
         (isSafePosition(squaresBetween[1][1], board)) &&
-        (isSafePosition(squaresBetween[1][2], board)) &&
         (IsType(board.tiles[rookPos[1]], ROOK)) &&
-        (IsColour(board.tiles[rookPos[1]], WHITE)) &&
+        (IsColour(board.tiles[rookPos[1]], color)) &&
         (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
 
         if (cas1)
@@ -196,6 +197,7 @@ public class MoveUtills
             moveList.AddRange(generatePawnUpgrade(position, target));
         else if (board.tiles[target] == 0)
         {
+
             if (MoveLegalityUtills.IsLegal(position, target, board))
                 moveList.Add(new Move(position, target));
 
@@ -235,7 +237,56 @@ public class MoveUtills
                 //*Fixed now but
                 //*Was previously :(board.enPassantAble == position - 1  || board.enPassantAble == position + 1)
                 //! *MASSIVE BLUNDER*
-                moveList.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
+
+                //*Oh shit here we go again...
+                //*Enpassant bypasses Pin kinda (Position 3 ->e2e4->g4e3->Illegal CheckMate)
+                //*This was previously just one line below this.... Fucking chess
+                int col = board.whiteTurn ? WHITE : BLACK;
+                int oCol = board.whiteTurn ? BLACK : WHITE;
+                bool kingOnRank = false;
+                bool rookOrQueenLeft = false;
+                bool rookOrQueenRight = false;
+                int nPiecesOnLeft = 0;
+                int nPiecesOnRight = 0;
+
+                for (int ii = 1; ii <= numSquaresToEdge[position][WEST_I]; ii++)
+                {
+                    if (board.tiles[position - ii] != 0)
+                    {
+                        int piece = board.tiles[position - ii];
+                        if (IsType(piece, KING) && IsColour(piece, col))
+                            kingOnRank = true;
+                        else if (IsRookOrQueen(piece) && IsColour(piece, oCol))
+                        { rookOrQueenLeft = true; break; }
+                        else if (!rookOrQueenLeft)
+                            nPiecesOnLeft++;
+
+                    }
+                }
+                for (int ii = 1; ii <= numSquaresToEdge[position][EAST_I]; ii++)
+                {
+                    if (board.tiles[position + ii] != 0)
+                    {
+                        int piece = board.tiles[position + ii];
+                        if (IsType(piece, KING) && IsColour(piece, col))
+                            kingOnRank = true;
+                        else if (IsRookOrQueen(piece) && IsColour(piece, oCol))
+                        { rookOrQueenRight = true; break; }
+                        else if (!rookOrQueenRight)
+                            nPiecesOnRight++;
+
+                    }
+                }
+                Debug.Log(kingOnRank
+                + ", " + rookOrQueenLeft
+                + ", " + rookOrQueenRight
+                + ", " + nPiecesOnLeft
+                + ", " + nPiecesOnRight);
+                if (kingOnRank && ((rookOrQueenLeft && (nPiecesOnLeft <= 1) || (rookOrQueenRight && (nPiecesOnRight <= 1)))))
+                    return;
+                else
+                    moveList.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
+
             }
         }
     }
