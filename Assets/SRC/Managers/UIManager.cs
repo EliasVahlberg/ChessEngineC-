@@ -265,7 +265,7 @@ public class UIManager : MonoBehaviour
                 DevConsoleBehaviour.instance.ToggleDevConsole();
             return;
         }
-        if (!gameManager.started && Input.GetKeyDown(KeyCode.Alpha9) && Input.GetKeyDown(KeyCode.Alpha0))
+        if (Input.inputString == "+")
         {
             if (TestingMenu.instance.showing)
                 TestingMenu.instance.Deactivate();

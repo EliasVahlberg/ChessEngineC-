@@ -5,46 +5,40 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using Utills;
+
+public readonly struct PerftCheckResult
+{
+    public readonly long nTotalNodes;
+    public readonly long totalTime;
+    public readonly long[] result;
+    public readonly long[] actual;
+    public readonly string fenStartPosition;
+    public PerftCheckResult(
+    long nTotalNodes,
+    long totalTime,
+    long[] result,
+    long[] actual,
+    string fenStartPosition
+    )
+    {
+        this.nTotalNodes = nTotalNodes;
+        this.totalTime = totalTime;
+        this.result = result;
+        this.actual = actual;
+        this.fenStartPosition = fenStartPosition;
+    }
+}
 
 public class MoveTest
 {
     //* INPUT HERE TO COMPARE
     public static List<string> stockfishResult = new List<string>(new string[]{
-"c6c5: 1",
-"a7a6: 1",
-"b7b6: 1",
-"f7f6: 1",
-"g7g6: 1",
-"h7h6: 1",
-"a7a5: 1",
-"b7b5: 1",
-"f7f5: 1",
-"g7g5: 1",
-"h7h5: 1",
-"f2d1: 1",
-"f2h1: 1",
-"f2d3: 1",
-"f2h3: 1",
-"f2e4: 1",
-"f2g4: 1",
-"b8a6: 1",
-"b8d7: 1",
-"e7a3: 1",
-"e7b4: 1",
-"e7h4: 1",
-"e7c5: 1",
-"e7g5: 1",
-"e7d6: 1",
-"e7f6: 1",
-"c8d7: 1",
-"h8g8: 1",
-"d8a5: 1",
-"d8b6: 1",
-"d8c7: 1",
-"d8d7: 1",
-"d8e8: 1",
-"f8g8: 1"
-        });
+"c6c5: 1", "a7a6: 1", "b7b6: 1", "f7f6: 1", "g7g6: 1", "h7h6: 1", "a7a5: 1",
+ "b7b5: 1", "f7f5: 1", "g7g5: 1", "h7h5: 1", "f2d1: 1", "f2h1: 1", "f2d3: 1",
+  "f2h3: 1", "f2e4: 1", "f2g4: 1", "b8a6: 1", "b8d7: 1", "e7a3: 1", "e7b4: 1",
+   "e7h4: 1", "e7c5: 1", "e7g5: 1", "e7d6: 1", "e7f6: 1", "c8d7: 1", "h8g8: 1",
+    "d8a5: 1", "d8b6: 1", "d8c7: 1", "d8d7: 1", "d8e8: 1", "f8g8: 1"         });
     public static string[] PositionRepresentation = {
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
     "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
@@ -54,6 +48,22 @@ public class MoveTest
     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
+
+    public static readonly string[] TestFenKnown = {
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ",
+        "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ",
+        "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+        "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
+        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 "
+    };
+    public static readonly long[][] TestNodesKnown =
+    {new long[]{ 20, 400, 8902, 197281, 4865609, 119060324, 3195901860, 84998978956},
+    new long[]{ 48, 2039, 97862, 4085603, 193690690, 8031647685},
+    new long[]{ 14, 191, 2812, 43238, 674624, 11030083, 178633661, 3009794393},
+    new long[]{ 6, 264, 9467, 422333, 15833292, 706045033},
+    new long[]{ 44, 1486, 62379, 2103487, 89941194},
+    new long[]{ 46, 2079, 89890, 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714}};
     public static string[] TestFen = new string[]{
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
@@ -228,6 +238,39 @@ public class MoveTest
             newBoard.useMove(nextMove);
 
             standardMoveTestRecursiveNoLog(newBoard, currentPly + 1, plyDepth, nMoves);
+
+        }
+    }
+
+
+    public static PerftCheckResult PerftCheck(int fen, int ply)
+    {
+        if (fen >= TestFenKnown.Length)
+            fen = 0;
+        string fenPos = TestFenKnown[fen];
+
+        long nTotalNodes = 0;
+        long[] result = new long[ply];
+        long[] actual = TestNodesKnown[fen];
+        int timeId = TimeUtills.Instance.startMeasurement();
+        Board board = new Board(fenPos);
+
+        PerftCheckRecursive(board, 0, ply, result);
+        long totalTime = TimeUtills.Instance.stopMeasurementMillis(timeId);
+        for (int ii = 0; ii < ply; ii++)
+            nTotalNodes += result[ii];
+        return new PerftCheckResult(nTotalNodes, totalTime, result, actual, fenPos);
+    }
+    public static void PerftCheckRecursive(Board board, int currentPly, int plyDepth, long[] nMoves)
+    {
+        nMoves[currentPly] += board.Moves.Count;
+        if (currentPly == plyDepth - 1)
+            return;
+        foreach (Move nextMove in board.Moves)
+        {
+            Board newBoard = board.Clone();
+            newBoard.useMove(nextMove);
+            PerftCheckRecursive(newBoard, currentPly + 1, plyDepth, nMoves);
 
         }
     }

@@ -286,6 +286,13 @@ public class Board
     public Move lastMove;
     public bool lastMoveWasCapture = false;
     public int lastMoveCaptured = 0;
+    private bool hasReverted = false;
+    private int lastMoveEnPas = 0;
+    private int lastMoveFiftyCount = 0;
+    private bool lastMoveWhiteCastleKingside;
+    private bool lastMoveWhiteCastleQueenside;
+    private bool lastMoveBlackCastleKingside;
+    private bool lastMoveBlackCastleQueenside;
 
 
     public Board()
@@ -456,6 +463,12 @@ public class Board
     {
         try
         {
+            lastMoveFiftyCount = fiftyCount;
+            lastMoveEnPas = enPassantAble;
+            lastMoveWhiteCastleKingside = whiteCastleKingside;
+            lastMoveWhiteCastleQueenside = whiteCastleQueenside;
+            lastMoveBlackCastleKingside = blackCastleKingside;
+            lastMoveBlackCastleQueenside = blackCastleQueenside;
             int from = move.StartSquare;
             int to = move.TargetSquare;
             if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
@@ -547,8 +560,8 @@ public class Board
 
             Turn++;
             whiteTurn = !whiteTurn;
-            isCheckMate();
             lastMove = move;
+            hasReverted = false;
             return true;
         }
         catch (Exception _ex)
@@ -558,6 +571,103 @@ public class Board
         }
     }
 
+    private bool UnmakeMoveInner()
+    {
+        if (hasReverted || lastMove.MoveValue == 0)
+            return false;
+
+        fiftyCount = lastMoveFiftyCount;
+        enPassantAble = lastMoveEnPas;
+        whiteCastleKingside = lastMoveWhiteCastleKingside;
+        whiteCastleQueenside = lastMoveWhiteCastleQueenside;
+        blackCastleKingside = lastMoveBlackCastleKingside;
+        blackCastleQueenside = lastMoveBlackCastleQueenside;
+        Turn--;
+        whiteTurn = !whiteTurn;
+        int from = lastMove.TargetSquare, to = lastMove.StartSquare;
+
+
+        if (lastMove.moveFlag == Move.Flag.EnPassantCapture)
+        {
+            if (whiteTurn)
+                BlackPieces.Add(enPassantAble);
+            else
+                WhitePieces.Add(enPassantAble);
+        }
+        else
+            lastMoveWasCapture = false;
+
+        switch (lastMove.moveFlag)
+        {
+            case Move.Flag.EnPassantCapture:
+                tiles[enPassantAble] = lastMoveCaptured;
+
+                tiles[from] = tiles[to];
+                tiles[to] = 0;
+                break;
+            case Move.Flag.Castling:
+                revertCasteling(from, to);
+                break;
+            case Move.Flag.PromoteToQueen:
+                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
+                tiles[to] = 0;
+                break;
+            case Move.Flag.PromoteToRook:
+                tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
+                tiles[from] = 0;
+                break;
+            case Move.Flag.PromoteToBishop:
+                tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
+                tiles[from] = 0;
+                break;
+            case Move.Flag.PromoteToKnight:
+                tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
+                tiles[from] = 0;
+                break;
+            default:
+                tiles[to] = tiles[from];
+                tiles[from] = 0;
+                break;
+        }
+
+
+
+        if (IsType(tiles[from], KING))
+        {
+            if (whiteTurn)
+                whiteKingPos = from;
+            else
+                blackKingPos = from;
+        }
+        if (whiteTurn)
+        {
+            for (int ii = 0; ii < WhitePieces.Count; ii++)
+                if (WhitePieces[ii] == to)
+                { WhitePieces[ii] = from; break; }
+        }
+        else
+        {
+            for (int ii = 0; ii < BlackPieces.Count; ii++)
+                if (BlackPieces[ii] == to)
+                { BlackPieces[ii] = from; break; }
+        }
+        if (lastMoveWasCapture)
+        {
+            tiles[to] = lastMoveCaptured;
+            if (whiteTurn)
+                BlackPieces.Add(to);
+            else
+                WhitePieces.Add(to);
+        }
+        hasReverted = true;
+        return true;
+
+    }
+
+    private bool revertCasteling(int from, int to)
+    {
+        return false;
+    }
     public bool useMove(Move move, UIManager uiManager)
     {
         return MoveInner(move, uiManager);
@@ -598,8 +708,6 @@ public class Board
 
     public bool isCheckMate()
     {
-        //if (Moves.Count == 0)
-        //    Debug.Log("CheckMate, winner :" + (whiteTurn ? "BLACK" : "WHITE"));
         return Moves.Count == 0 && (whiteTurn ? WhiteInCheck : BlackInCheck);
     }
 

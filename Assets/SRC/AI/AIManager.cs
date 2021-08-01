@@ -10,6 +10,7 @@ namespace ChessAI
     {
 
         [HideInInspector] public static AIManager instance;
+        [SerializeField] private GameObject canvas;
         [Header("UI")]
         [SerializeField] private IAIObject[] aIs = new IAIObject[0];
         [HideInInspector] public IAIObject[] AIs { get { return aIs; } }
@@ -48,14 +49,15 @@ namespace ChessAI
                 ii++;
             }
             aiSelect.options = aiOptions;
+            canvas.SetActive(false);
         }
         public void showAIMenu()
         {
-            instance.gameObject.SetActive(true);
+            canvas.SetActive(true);
         }
         public void hideAIMenu()
         {
-            instance.gameObject.SetActive(false);
+            canvas.SetActive(false);
         }
         public void letAITakeOver(int index)
         {
