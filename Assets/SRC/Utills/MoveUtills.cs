@@ -277,11 +277,11 @@ public class MoveUtills
 
                     }
                 }
-                Debug.Log(kingOnRank
-                + ", " + rookOrQueenLeft
-                + ", " + rookOrQueenRight
-                + ", " + nPiecesOnLeft
-                + ", " + nPiecesOnRight);
+                //Debug.Log(kingOnRank
+                //+ ", " + rookOrQueenLeft
+                //+ ", " + rookOrQueenRight
+                //+ ", " + nPiecesOnLeft
+                //+ ", " + nPiecesOnRight);
                 if (kingOnRank && ((rookOrQueenLeft && (nPiecesOnLeft <= 1) || (rookOrQueenRight && (nPiecesOnRight <= 1)))))
                     return;
                 else

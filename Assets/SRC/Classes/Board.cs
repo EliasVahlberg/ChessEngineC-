@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using static Piece;
 
@@ -35,6 +36,7 @@ public class Board
                 for (int ii = 0; ii < 64; ii++)
                     if (Piece.IsWhite(tiles[ii]))
                         whitePieces.Add(ii);
+                //Debug.Log("GENPW");
 
             }
             return whitePieces;
@@ -52,7 +54,7 @@ public class Board
                 MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
                 lastGeneratedPinnedBlack = turn;
                 //GENPIN
-                Debug.Log("GENPINB");
+                //Debug.Log("GENPINB");
             }
             return pinnedMapBlack;
         }
@@ -339,6 +341,7 @@ public class Board
             pinnedMapBlack[ii] = new int[3] { -1, -1, -1 };
             pinnedMapWhite[ii] = new int[3] { -1, -1, -1 };
         }
+        refreshPieces();
     }
 
     public string boardToFEN()
@@ -401,10 +404,13 @@ public class Board
         copy.lastGeneratedBlackCaptureable = -1;
         copy.lastGeneratedPinnedWhite = -1;
         copy.lastGeneratedPinnedBlack = -1;
-        if (whitePieces != null)
+        if (whitePieces != null || blackPieces != null)
+            refreshPieces();
+        else
+        {
             copy.whitePieces = new List<int>(whitePieces);
-        if (blackPieces != null)
             copy.blackPieces = new List<int>(blackPieces);
+        }
         refreshMoves();
 
         return copy;
@@ -472,6 +478,8 @@ public class Board
     {
         try
         {
+            if (WhitePieces == null || BlackPieces == null)
+                refreshPieces();
             lastMoveFiftyCount = fiftyCount;
             lastMoveEnPas = enPassantAble;
             lastMoveWhiteCastleKingside = whiteCastleKingside;
@@ -571,7 +579,7 @@ public class Board
             whiteTurn = !whiteTurn;
             lastMove = move;
             hasReverted = false;
-            debugPrintMoves();
+            //debugPrintMoves();
             return true;
         }
         catch (Exception _ex)
@@ -826,7 +834,6 @@ public class Board
             tiles[from] = 0;
             tiles[from + 1] = tiles[from + 3];
             tiles[from + 3] = 0;
-
             if (whiteTurn)
                 WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
             else
@@ -835,6 +842,8 @@ public class Board
         else
         {
 
+            Debug.Log(from - 4);
+            Debug.Log(WhitePieces.Contains(from - 4));
             if (whiteTurn)
                 WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
             else
@@ -907,9 +916,27 @@ public class Board
         moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);
         lastTurnGeneratedMoveMap = turn;
     }
+
+    public void refreshPieces()
+    {
+        whitePieces = new List<int>();
+        blackPieces = new List<int>();
+        for (int ii = 0; ii < 64; ii++)
+        {
+            if (Piece.IsWhite(tiles[ii]))
+                whitePieces.Add(ii);
+            else if (Piece.IsBlack(tiles[ii]))
+                blackPieces.Add(ii);
+        }
+    }
+
     private void debugPrintMoves()
     {
+        StringBuilder stringBuilder = new StringBuilder();
         foreach (Move move in moves)
-            Debug.Log(MoveTest.MoveStringRepresentation(move));
+            stringBuilder.Append(MoveTest.MoveStringRepresentation(move) + "\n");
+        Debug.Log("Turn: " + (turn - 1) + "Number of moves: " + moves.Count);
+        Debug.Log(stringBuilder.ToString());
     }
+
 }
