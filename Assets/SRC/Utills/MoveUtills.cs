@@ -165,8 +165,8 @@ public class MoveUtills
         board.tiles[squaresBetween[1][0]] == 0 &&
         board.tiles[squaresBetween[1][1]] == 0 &&
         board.tiles[squaresBetween[1][2]] == 0 &&
-        (isSafePosition(squaresBetween[1][0], board)) &&
         (isSafePosition(squaresBetween[1][1], board)) &&
+        (isSafePosition(squaresBetween[1][2], board)) &&
         (IsType(board.tiles[rookPos[1]], ROOK)) &&
         (IsColour(board.tiles[rookPos[1]], color)) &&
         (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));

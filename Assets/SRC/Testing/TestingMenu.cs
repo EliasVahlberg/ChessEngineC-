@@ -82,6 +82,7 @@ namespace Testing
             new OptionData("Position 4"),
             new OptionData("Position 5"),
             new OptionData("Position 6 "),
+            new OptionData("Custom")
             };
         #endregion
         #region PerftDebug
