@@ -406,6 +406,12 @@ public class GameManager : MonoBehaviour
         uiManager.HideScore();
     }
 
+    public void UnmakeMove()
+    {
+        if (board.UnmakeMove(uiManager))
+        { Debug.Log("UNMADE"); uiManager.playUndoSound(); }
+    }
+
     private void Update()
     {
         if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)

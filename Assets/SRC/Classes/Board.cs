@@ -618,7 +618,7 @@ public class Board
         switch (lastMove.moveFlag)
         {
             case Move.Flag.EnPassantCapture:
-                tiles[enPassantAble] = lastMoveCaptured;
+                tiles[enPassantAble] = (PAWN | ((whiteTurn) ? BLACK : WHITE));
 
                 tiles[from] = tiles[to];
                 tiles[to] = 0;
@@ -631,20 +631,20 @@ public class Board
                 tiles[to] = 0;
                 break;
             case Move.Flag.PromoteToRook:
-                tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
-                tiles[from] = 0;
+                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
+                tiles[to] = 0;
                 break;
             case Move.Flag.PromoteToBishop:
-                tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
-                tiles[from] = 0;
+                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
+                tiles[to] = 0;
                 break;
             case Move.Flag.PromoteToKnight:
-                tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
-                tiles[from] = 0;
+                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
+                tiles[to] = 0;
                 break;
             default:
-                tiles[to] = tiles[from];
-                tiles[from] = 0;
+                tiles[from] = tiles[from];
+                tiles[to] = 0;
                 break;
         }
 
@@ -681,10 +681,102 @@ public class Board
         return true;
 
     }
+    public bool UnmakeMove(UIManager uiManager)
+    {
+        try
+        {
+            Move move = lastMove;
+            int from = move.TargetSquare, to = move.StartSquare;
+            int enPas = -1;
+            if (move.moveFlag == Move.Flag.EnPassantCapture)
+                enPas = enPassantAble;
+            if (!MoveInner(move))
+                return false;
+            switch (move.moveFlag)
+            {
+                case Move.Flag.EnPassantCapture:
+                    uiManager.movePiece(from, to);
+                    uiManager.reinstatePiece(enPas);
+                    break;
+                case Move.Flag.Castling:
+                    uiManager.movePiece(from, to);
+                    if (from < to)
+                        uiManager.movePiece(from + 3, from + 1);
+                    else
+                        uiManager.movePiece(from - 4, from - 1);
+                    break;
+                case Move.Flag.PromoteToQueen:
 
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToRook:
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToBishop:
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                case Move.Flag.PromoteToKnight:
+                    uiManager.movePiece(from, to);
+                    uiManager.pieceUI[to].setSprite(uiManager.piceSprites[uiManager.pieceTypeToSprite[tiles[to]]]);
+                    break;
+                default:
+                    uiManager.movePiece(from, to);
+                    break;
+            }
+
+            string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
+            uiManager.gameText.text = s;
+            lastMove = move;
+            return true;
+        }
+        catch (Exception _ex)
+        {
+            Debug.Log("EXCEPTION DURING MoveInnerUI, ex:" + _ex.ToString());
+            return false;
+        }
+    }
     private bool revertCasteling(int from, int to)
     {
-        return false;
+        try
+        {
+
+            if (from < to)
+            {
+                tiles[from] = tiles[to];
+                tiles[to] = 0;
+                tiles[from + 3] = tiles[from + 1];
+                tiles[from + 1] = 0;
+                if (whiteTurn)
+                    WhitePieces[WhitePieces.FindIndex(i => i == from + 1)] = from + 3;
+                else
+                    BlackPieces[BlackPieces.FindIndex(i => i == from + 1)] = from + 3;
+            }
+            else
+            {
+
+                //Debug.Log(from - 4);
+                //Debug.Log(WhitePieces.Contains(from - 4));
+                tiles[from] = tiles[to];
+                tiles[to] = 0;
+                tiles[from - 4] = tiles[from - 1];
+                tiles[from - 1] = 0;
+                if (whiteTurn)
+                    WhitePieces[WhitePieces.FindIndex(i => i == from - 1)] = from - 4;
+                else
+                    BlackPieces[BlackPieces.FindIndex(i => i == from - 1)] = from - 4;
+            }
+            return true;
+
+        }
+        catch (Exception ex)
+        {
+
+            Debug.LogError("FAIL During revertCasteling ex: " + ex);
+            return false;
+        }
     }
     public bool useMove(Move move, UIManager uiManager)
     {

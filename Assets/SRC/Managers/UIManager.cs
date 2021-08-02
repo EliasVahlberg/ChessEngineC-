@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     public Tile[] tiles;
     [HideInInspector]
     public PieceUI[] pieceUI = new PieceUI[64];
+    public PieceUI lastDestroyedPieceUI = null;
 
     public GameObject tilePref;
     public GameObject boardContainer;
@@ -300,7 +301,13 @@ public class UIManager : MonoBehaviour
         {
             DevConsoleBehaviour.instance.ToggleDevConsole();
         }
-
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            if (gameManager.started && !gameManager.isNetworked)
+            {
+                gameManager.UnmakeMove();
+            }
+        }
     }
 
     public void showDanger(bool white)
@@ -460,9 +467,24 @@ public class UIManager : MonoBehaviour
     {
         if (pieceUI[pos] != null)
         {
-            pieceUI[pos].Destroy();
+            if (lastDestroyedPieceUI != null)
+                lastDestroyedPieceUI.Destroy();
+            lastDestroyedPieceUI = pieceUI[pos];
+            pieceUI[pos].gameObject.SetActive(false);
             pieceUI[pos] = null;
             playDestroyPieceSound();
+
+        }
+    }
+    public void reinstatePiece(int pos)
+    {
+        if (lastDestroyedPieceUI != null)
+        {
+            lastDestroyedPieceUI.gameObject.SetActive(true);
+            pieceUI[pos] = lastDestroyedPieceUI;
+            lastDestroyedPieceUI = null;
+            playDestroyPieceSound();
+
         }
     }
 
@@ -476,6 +498,11 @@ public class UIManager : MonoBehaviour
     {
         audioSource.clip = (internalAudioCounter2++) % 2 == 0 ? destroyPieceSound2 : destroyPieceSound2;
         audioSource.Play();
+    }
+
+    public void playUndoSound()
+    {
+
     }
 
     public void hideBoard()
