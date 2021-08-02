@@ -505,7 +505,7 @@ public class Board
                 else
                     WhitePieces.Remove(to);
             }
-            if (move.moveFlag == Move.Flag.EnPassantCapture)
+            else if (move.moveFlag == Move.Flag.EnPassantCapture)
             {
                 if (whiteTurn)
                     BlackPieces.Remove(enPassantAble);
@@ -842,8 +842,12 @@ public class Board
         else
         {
 
-            Debug.Log(from - 4);
-            Debug.Log(WhitePieces.Contains(from - 4));
+            //Debug.Log(from - 4);
+            //Debug.Log(WhitePieces.Contains(from - 4));
+            tiles[to] = tiles[from];
+            tiles[from] = 0;
+            tiles[from - 1] = tiles[from - 4];
+            tiles[from - 4] = 0;
             if (whiteTurn)
                 WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
             else
@@ -880,8 +884,6 @@ public class Board
         }
         else if (IsBlack(piece))
         {
-            if (pos == 29)
-                Debug.Log("STILLPINN: " + lastGeneratedPinnedBlack + "," + lastGeneratedPinnedWhite + "," + turn);
 
             if (lastGeneratedPinnedBlack != turn)
             {

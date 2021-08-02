@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using Utills;
@@ -41,6 +42,8 @@ namespace ChessAI
         }
         private void Start()
         {
+            aIs = UnityUtills.GetAllInstances<IAIObject>();
+
             int ii = 0;
             foreach (IAIObject ai in aIs)
             {
@@ -110,7 +113,7 @@ namespace ChessAI
             timeID = TimeUtills.Instance.startMeasurement();
             Move move = ai.SelectMove(board);
             long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
-            Debug.Log(ai.Name + " took :" + td + "ms");
+            //Debug.Log(ai.Name + " took :" + td + "ms");
             ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");
             return move;
         }

@@ -14,7 +14,7 @@ public class GameHistoryPanel : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            instance.gameObject.SetActive(false);
+            canvas.gameObject.SetActive(false);
         }
         else if (instance != this)
         {
@@ -24,12 +24,12 @@ public class GameHistoryPanel : MonoBehaviour
     }
     public void activate()
     {
-        gameObject.SetActive(true);
+        canvas.SetActive(true);
         showing = true;
     }
     public void deactivate()
     {
-        gameObject.SetActive(false);
+        canvas.SetActive(false);
         showing = false;
     }
     public void addHistoryItem(string fen, Move move, bool wasWhite, bool wasCapture)
@@ -39,6 +39,14 @@ public class GameHistoryPanel : MonoBehaviour
             Piece.PositionRepresentation[move.StartSquare] + " -> " +
             Piece.PositionRepresentation[move.TargetSquare] +
             (wasCapture ? "</b></color>" : "</b>");
+        if (move.moveFlag == Move.Flag.Castling)
+        {
+            int p = wasWhite ? Piece.KING | Piece.WHITE : Piece.KING | Piece.BLACK;
+            Sprite king = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[p]];
+            string str = (wasWhite ? "W" : "B") + "Cas" + (move.StartSquare > move.TargetSquare ? "Q" : "K");
+            item.init(str, fen, king);
+            return;
+        }
         int piece = GameManager.instance.board.tiles[move.TargetSquare];
         Sprite moved = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[piece]];
         if (wasCapture)

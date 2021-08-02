@@ -277,7 +277,7 @@ namespace Testing
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append("<b>RESULTS:</b> \n");
             stringBuilder.Append("<b>Number of moves from starting position: </b> \n");
-            stringBuilder.Append(res.Count);
+            stringBuilder.Append(res.Count + "\n");
             foreach (string str in res)
                 stringBuilder.Append(str + "\n");
             resultFieldPerftDebug.text = stringBuilder.ToString();
