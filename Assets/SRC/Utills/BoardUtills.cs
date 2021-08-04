@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+
 public class BoardUtills
 {
     public struct Coord : IComparable<Coord>
@@ -46,10 +48,12 @@ public class BoardUtills
                 file++;
             }
             int rank = int.Parse(s[1] + "");
-            return file + rank * 8;
+            Debug.Log("EP: " + (file + (rank - 1) * 8));
+            return file + (rank - 1) * 8;
         }
         catch (System.Exception)
         {
+            Debug.Log("EPFAIL");
             return -1;
         }
 

@@ -9,6 +9,25 @@ public class Board
 {
     public int[] tiles;
 
+    #region New
+    public const int WhiteIndex = 0;
+    public const int BlackIndex = 1;
+    public int[] KingSquares;
+    public ulong ZobristKey;
+    public Stack<ulong> HashHistory;
+    public Stack<GameState> gameStateHistory;
+    public GameState currGameState;
+    public PieceTable[] allPieceTables;
+    public PieceTable[] rooks;
+    public PieceTable[] bishops;
+    public PieceTable[] queens;
+    public PieceTable[] knights;
+    public PieceTable[] pawns;
+    public uint castleRights;
+    #endregion
+    //TODO REPLACE
+    #region PieceLists
+
     private List<int> blackPieces = null;
     public List<int> BlackPieces
     {
@@ -25,6 +44,7 @@ public class Board
             return blackPieces;
         }
     }
+
     private List<int> whitePieces = null;
     public List<int> WhitePieces
     {
@@ -43,6 +63,10 @@ public class Board
         }
     }
 
+    #endregion
+
+    //TODO REPLACE/REMOVE
+    #region Pinned
     private int lastGeneratedPinnedBlack = -1;
     private int[][] pinnedMapBlack = new int[64][];
     private int[][] PinnedMapBlack
@@ -74,40 +98,14 @@ public class Board
             return pinnedMapWhite;
         }
     }
+    #endregion
 
-
-    //private List<int[]> pinnedBlack;
-    //public List<int[]> PinnedBlack
-    //{
-    //    get
-    //    {
-    //        if (lastGeneratedPinnedBlack != turn)
-    //        {
-
-    //            pinnedBlack = MoveLegalityUtills.checkPinned(this, BLACK);
-    //            lastGeneratedPinnedBlack = turn;
-    //        }
-    //        return pinnedBlack;
-    //    }
-    //}
-
-
-    //private List<int[]> pinnedWhite;
-    //public List<int[]> PinnedWhite
-    //{
-    //    get
-    //    {
-    //        if (lastGeneratedPinnedWhite != turn)
-    //        {
-    //            pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
-    //            lastGeneratedPinnedWhite = turn;
-    //        }
-    //        return pinnedWhite;
-    //    }
-    //}
-
+    //TODO Replace/Remove
+    #region Capturable
     private int lastGeneratedWhiteCaptureable = -1;
     private bool[] whiteCaptureable = new bool[64];
+
+    //!DEPRECATED
     private List<int>[] whiteCapturableMapList = new List<int>[64];
     //* is Somehow 0% called much less (Never not equals turn)
     public bool[] WhiteCap
@@ -123,23 +121,10 @@ public class Board
         }
         set { whiteCaptureable = value; }
     }
-    // public List<int>[] WhiteCapMapList
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedWhiteCaptureable != turn)
-    //         {
-    //             MoveUtills.updateCapturable(this, ((whiteTurn) ? KinglessMoves : KinglessMovesOp));
-    //             lastGeneratedWhiteCaptureable = turn;
-    //         }
-    //         return whiteCapturableMapList;
-    //     }
-    //     set { whiteCapturableMapList = value; }
-    // }
-
 
     private int lastGeneratedBlackCaptureable = -1;
     private bool[] blackCaptureable = new bool[64];
+    //!DEPRECATED
     private List<int>[] blackCapturableMapList = new List<int>[64];
     //TODO OPTIMIZE 1.2% (Self = 0%)
     public bool[] BlackCap
@@ -156,23 +141,10 @@ public class Board
         set { blackCaptureable = value; }
     }
 
-    // public List<int>[] BlackCapMapList
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedBlackCaptureable != turn)
-    //         {
-    //             MoveUtills.updateCapturable(this, ((whiteTurn) ? KinglessMoves : KinglessMovesOp));
-    //             lastGeneratedBlackCaptureable = turn;
-    //         }
-    //         return blackCapturableMapList;
-    //     }
-    //     set { blackCapturableMapList = value; }
-    // }
+    #endregion
 
-    public int whiteKingPos;
-    public int blackKingPos;
-
+    //TODO Maby extract
+    #region Moves
     private List<Move> moves = new List<Move>();
     private int lastTurnGenerated = -1;
     public List<Move> Moves
@@ -187,40 +159,6 @@ public class Board
             return moves;
         }
     }
-
-    // private int lastTurnGeneratedKLMoves = -1;
-    // private List<Move> kinglessMoves;
-    // public List<Move> KinglessMoves
-    // {
-    //     get
-    //     {
-    //         if (lastTurnGeneratedKLMoves != turn)
-    //         {
-    //             kinglessMoves = MoveUtills.GenerateMovesExceptKing(this);
-    //             lastTurnGeneratedKLMoves = turn;
-    //         }
-    //         return kinglessMoves;
-    //     }
-    // }
-
-
-    // private int lastTurnGeneratedKLMovesOp = -1;
-    // private List<Move> kinglessMovesOp;
-    // public List<Move> KinglessMovesOp
-    // {
-    //     get
-    //     {
-    //         if (lastTurnGeneratedKLMovesOp != turn)
-    //         {
-    //             whiteTurn = !whiteTurn;
-    //             kinglessMoves = MoveUtills.GenerateMovesExceptKing(this);
-    //             lastTurnGeneratedKLMoves = turn;
-    //             whiteTurn = !whiteTurn;
-    //         }
-    //         return kinglessMovesOp;
-    //     }
-    // }
-
     private int lastTurnGeneratedMoveMap = -1;
     private List<Move>[] moveMap;
     public List<Move>[] MoveMap
@@ -236,8 +174,12 @@ public class Board
         }
         set { moveMap = value; }
     }
+
+    //!DEPRECATED
     private List<Move> oponentMoves;
+    //!DEPRECATED
     private int lastTurnGeneratedOpo = -1;
+    //!DEPRECATED
     public List<Move> OponentMoves
     {
         get
@@ -252,53 +194,46 @@ public class Board
             return moves;
         }
     }
+    #endregion
 
+    #region State
 
     private int turn = 0;
-
     public int Turn { get => turn; set => turn = value; }
+    public bool whiteTurn;
+
+    public int whiteKingPos;
+    public int blackKingPos;
     public bool WhiteInCheck { get => BlackCap[whiteKingPos]; }
     public bool BlackInCheck { get => WhiteCap[blackKingPos]; }
+
     public bool whiteCastleKingside;
     public bool whiteCastleQueenside;
     public bool blackCastleKingside;
     public bool blackCastleQueenside;
 
-    public bool whiteTurn;
     public int enPassantAble = -1;
     public int fiftyCount = 1;
-    public bool Check
-    {
-        get { return WhiteInCheck || BlackInCheck; }
-    }
+    #endregion
 
-
-    public int ColorTurn
-    {
-        get { return whiteTurn ? WHITE : BLACK; }
-    }
-    public int OpoColor
-    {
-        get { return !whiteTurn ? WHITE : BLACK; }
-    }
-    public bool CurPlayerInCheck
-    {
-        get { return (whiteTurn) ? BlackCap[whiteKingPos] : WhiteCap[blackKingPos]; }
-    }
-
+    #region LastState
 
     public Move lastMove;
     public bool lastMoveWasCapture = false;
     public int lastMoveCaptured = 0;
+
     private bool hasReverted = false;
+
     private int lastMoveEnPas = 0;
     private int lastMoveFiftyCount = 0;
+
     private bool lastMoveWhiteCastleKingside;
     private bool lastMoveWhiteCastleQueenside;
     private bool lastMoveBlackCastleKingside;
     private bool lastMoveBlackCastleQueenside;
+    #endregion
 
-
+    #region Constructors
     public Board()
     {
         tiles = new int[64];
@@ -313,16 +248,26 @@ public class Board
     public Board(string fen)
     {
         tiles = new int[64];
+        currGameState = new GameState(0);
         FENUtills.GameStateInfo gameStateInfo = FENUtills.generatePiecePositions(fen);
         tiles = gameStateInfo.squareGrid;
+        currGameState.SetWhiteTurn(gameStateInfo.whiteTurn);
         whiteTurn = gameStateInfo.whiteTurn;
+        currGameState.SetWhiteCastleKingside(gameStateInfo.whiteCastleKingside);
         whiteCastleKingside = gameStateInfo.whiteCastleKingside;
+        currGameState.SetWhiteCastleQueenside(gameStateInfo.whiteCastleQueenside);
         whiteCastleQueenside = gameStateInfo.whiteCastleQueenside;
+        currGameState.SetBlackCastleKingside(gameStateInfo.blackCastleKingside);
         blackCastleKingside = gameStateInfo.blackCastleKingside;
+        currGameState.SetBlackCastleQueenside(gameStateInfo.blackCastleQueenside);
         blackCastleQueenside = gameStateInfo.blackCastleQueenside;
+
+
         turn = ((gameStateInfo.plyCount - 1) * 2);
         if (turn < 0) turn = 0;
         fiftyCount = gameStateInfo.fiftyCount;
+        currGameState.SetFiftyTurnCount(gameStateInfo.fiftyCount);
+        currGameState.SetEnPassant(gameStateInfo.epindex);
         int i = 0;
         foreach (int piece in tiles)
         {
@@ -341,8 +286,35 @@ public class Board
             pinnedMapBlack[ii] = new int[3] { -1, -1, -1 };
             pinnedMapWhite[ii] = new int[3] { -1, -1, -1 };
         }
+        LoadPosition();
         refreshPieces();
     }
+    #endregion
+
+    #region StateInfo
+
+    public bool Check
+    {
+        get { return WhiteInCheck || BlackInCheck; }
+    }
+
+    public int ColorTurn
+    {
+        get { return whiteTurn ? WHITE : BLACK; }
+    }
+
+    public int OpoColor
+    {
+        get { return !whiteTurn ? WHITE : BLACK; }
+    }
+
+    public bool CurPlayerInCheck
+    {
+        get { return (whiteTurn) ? BlackCap[whiteKingPos] : WhiteCap[blackKingPos]; }
+    }
+    #endregion
+
+    #region Utillity
 
     public string boardToFEN()
     {
@@ -361,6 +333,7 @@ public class Board
 
         return FENUtills.generateFEN(gameStateInfo);
     }
+
     //!DEPRECATED (I think at leas)
     public Board copy()
     {
@@ -379,9 +352,11 @@ public class Board
         copy.blackCastleQueenside = blackCastleQueenside;
         copy.whiteTurn = whiteTurn;
         copy.enPassantAble = enPassantAble;
+        LoadPosition();
         return copy;
 
     }
+
 
     public Board Clone()
     {
@@ -412,11 +387,14 @@ public class Board
             copy.blackPieces = new List<int>(blackPieces);
         }
         refreshMoves();
+        LoadPosition();
 
         return copy;
 
     }
+    #endregion
 
+    #region InnerFuncs
     private bool MoveInner(Move move, UIManager uiManager)
     {
         try
@@ -681,6 +659,95 @@ public class Board
         return true;
 
     }
+
+    public void updateCasteling(int from, int to)
+    {
+        int type = PieceType(tiles[to]);
+        if (type == ROOK)
+        {
+            if (whiteTurn)
+            {
+                if (from == 0)
+                    whiteCastleQueenside = false;
+                if (from == 7)
+                    whiteCastleKingside = false;
+            }
+            else
+            {
+                if (from == 63 - 7)
+                    blackCastleQueenside = false;
+                if (from == 63)
+                    blackCastleKingside = false;
+            }
+        }
+        else if (type == KING)
+        {
+            if (whiteTurn)
+            {
+                whiteCastleQueenside = false;
+                whiteCastleKingside = false;
+            }
+            else
+            {
+                blackCastleQueenside = false;
+                blackCastleKingside = false;
+            }
+        }
+    }
+
+    public void updateCasteRook(int to)
+    {
+        int r1 = whiteTurn ? 7 : 63;
+        int r2 = whiteTurn ? 0 : 56;
+        if (to == r1)
+        {
+            if (whiteTurn)
+                blackCastleKingside = false;
+            else
+                whiteCastleKingside = false;
+        }
+        else if (to == r2)
+        {
+            if (whiteTurn)
+                blackCastleQueenside = false;
+            else
+                whiteCastleQueenside = false;
+        }
+    }
+
+    public void castelMove(Move move)
+    {
+        int from = move.StartSquare;
+        int to = move.TargetSquare;
+        if (from < to)
+        {
+            tiles[to] = tiles[from];
+            tiles[from] = 0;
+            tiles[from + 1] = tiles[from + 3];
+            tiles[from + 3] = 0;
+            if (whiteTurn)
+                WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
+            else
+                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
+        }
+        else
+        {
+
+            //Debug.Log(from - 4);
+            //Debug.Log(WhitePieces.Contains(from - 4));
+            tiles[to] = tiles[from];
+            tiles[from] = 0;
+            tiles[from - 1] = tiles[from - 4];
+            tiles[from - 4] = 0;
+            if (whiteTurn)
+                WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
+            else
+                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
+        }
+    }
+    #endregion
+
+    #region OuterFuncs
     public bool UnmakeMove(UIManager uiManager)
     {
         try
@@ -738,6 +805,7 @@ public class Board
             return false;
         }
     }
+
     private bool revertCasteling(int from, int to)
     {
         try
@@ -778,6 +846,7 @@ public class Board
             return false;
         }
     }
+
     public bool useMove(Move move, UIManager uiManager)
     {
         return MoveInner(move, uiManager);
@@ -815,7 +884,9 @@ public class Board
         }
         return false;
     }
+    #endregion
 
+    #region GetStateInfo
     public bool isCheckMate()
     {
         return Moves.Count == 0 && (whiteTurn ? WhiteInCheck : BlackInCheck);
@@ -853,100 +924,6 @@ public class Board
         return false;
     }
 
-
-
-    public void updateCasteling(int from, int to)
-    {
-        int type = PieceType(tiles[to]);
-        if (type == ROOK)
-        {
-            if (whiteTurn)
-            {
-                if (from == 0)
-                    whiteCastleQueenside = false;
-                if (from == 7)
-                    whiteCastleKingside = false;
-            }
-            else
-            {
-                if (from == 63 - 7)
-                    blackCastleQueenside = false;
-                if (from == 63)
-                    blackCastleKingside = false;
-            }
-        }
-        else if (type == KING)
-        {
-            if (whiteTurn)
-            {
-                whiteCastleQueenside = false;
-                whiteCastleKingside = false;
-            }
-            else
-            {
-                blackCastleQueenside = false;
-                blackCastleKingside = false;
-            }
-        }
-    }
-
-    public void updateCasteRook(int to)
-    {
-        int r1 = whiteTurn ? 7 : 63;
-        int r2 = whiteTurn ? 0 : 56;
-        if (to == r1)
-        {
-            if (whiteTurn)
-                blackCastleKingside = false;
-            else
-                whiteCastleKingside = false;
-        }
-        else if (to == r2)
-        {
-            if (whiteTurn)
-                blackCastleQueenside = false;
-            else
-                whiteCastleQueenside = false;
-        }
-    }
-
-    //uiManager.movePiece(from, to);
-    //if (from < to)
-    //uiManager.movePiece(from + 3, from + 1);
-    //else
-    //uiManager.movePiece(from - 4, from - 1);
-
-    public void castelMove(Move move)
-    {
-        int from = move.StartSquare;
-        int to = move.TargetSquare;
-        if (from < to)
-        {
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            tiles[from + 1] = tiles[from + 3];
-            tiles[from + 3] = 0;
-            if (whiteTurn)
-                WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
-            else
-                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
-        }
-        else
-        {
-
-            //Debug.Log(from - 4);
-            //Debug.Log(WhitePieces.Contains(from - 4));
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            tiles[from - 1] = tiles[from - 4];
-            tiles[from - 4] = 0;
-            if (whiteTurn)
-                WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
-            else
-                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
-        }
-    }
-
     public bool isPinned(int pos)
     {
         int piece = tiles[pos];
@@ -954,7 +931,9 @@ public class Board
         else if (IsBlack(piece)) return PinnedMapBlack[pos][0] != -1;
         else return false;
     }
-    //TODO Fix for each
+    #endregion
+
+    #region Refresh
     //TODO OPTIMIZE 
     //*
     public int[] Pin(int pos)
@@ -1000,11 +979,13 @@ public class Board
         //pinnedWhite = MoveLegalityUtills.checkPinned(this, WHITE);
 
     }
+
     public void refreshMoves()
     {
         moves = MoveUtills.GenerateMoves(this);
         lastTurnGenerated = turn;
     }
+
     public void refreshMoveMap()
     {
         moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);
@@ -1032,5 +1013,87 @@ public class Board
         Debug.Log("Turn: " + (turn - 1) + "Number of moves: " + moves.Count);
         Debug.Log(stringBuilder.ToString());
     }
+    #endregion
 
+    #region NewMethods
+    public void LoadPosition()
+    {
+        Initialize();
+
+        // Load pieces into board array and piece lists
+        for (int squareIndex = 0; squareIndex < 64; squareIndex++)
+        {
+            int piece = tiles[squareIndex];
+
+            if (piece != Piece.NONE)
+            {
+                int pieceType = Piece.PieceType(piece);
+                int pieceColourIndex = (Piece.IsColour(piece, Piece.WHITE)) ? WhiteIndex : BlackIndex;
+                if (Piece.IsSlidingPiece(piece))
+                {
+                    if (pieceType == Piece.QUEEN)
+                    {
+                        queens[pieceColourIndex].AddPieceAtSquare(squareIndex);
+                    }
+                    else if (pieceType == Piece.ROOK)
+                    {
+                        rooks[pieceColourIndex].AddPieceAtSquare(squareIndex);
+                    }
+                    else if (pieceType == Piece.BISHOP)
+                    {
+                        bishops[pieceColourIndex].AddPieceAtSquare(squareIndex);
+                    }
+                }
+                else if (pieceType == Piece.KNIGHT)
+                {
+                    knights[pieceColourIndex].AddPieceAtSquare(squareIndex);
+                }
+                else if (pieceType == Piece.PAWN)
+                {
+                    pawns[pieceColourIndex].AddPieceAtSquare(squareIndex);
+                }
+                else if (pieceType == Piece.KING)
+                {
+                    KingSquares[pieceColourIndex] = squareIndex;
+                }
+            }
+        }
+
+        // Initialize zobrist key
+        //ZobristKey = Zobrist.CalculateZobristKey(this);
+    }
+    //TODO USE THIS and replace OnStart
+    private void Initialize()
+    {
+        KingSquares = new int[2];
+
+        gameStateHistory = new Stack<GameState>();
+        ZobristKey = 0;
+        HashHistory = new Stack<ulong>();
+        knights = new PieceTable[] { new PieceTable(10), new PieceTable(10) };
+        pawns = new PieceTable[] { new PieceTable(8), new PieceTable(8) };
+        rooks = new PieceTable[] { new PieceTable(10), new PieceTable(10) };
+        bishops = new PieceTable[] { new PieceTable(10), new PieceTable(10) };
+        queens = new PieceTable[] { new PieceTable(9), new PieceTable(9) };
+        PieceTable emptyList = new PieceTable(0);
+        allPieceTables = new PieceTable[] {
+            emptyList,
+            emptyList,
+            pawns[WhiteIndex],
+            knights[WhiteIndex],
+            emptyList,
+            bishops[WhiteIndex],
+            rooks[WhiteIndex],
+            queens[WhiteIndex],
+            emptyList,
+            emptyList,
+            pawns[BlackIndex],
+            knights[BlackIndex],
+            emptyList,
+            bishops[BlackIndex],
+            rooks[BlackIndex],
+            queens[BlackIndex],
+            };
+    }
+    #endregion
 }

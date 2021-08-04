@@ -476,6 +476,7 @@ public class UIManager : MonoBehaviour
 
         }
     }
+
     public void reinstatePiece(int pos)
     {
         if (lastDestroyedPieceUI != null)
@@ -515,6 +516,7 @@ public class UIManager : MonoBehaviour
                     pUI.Destroy();
         }
     }
+
     public int lastMoveStart = -1;
     public int lastMoveTarget = -1;
     public void LastMoveTint(int from, int to)
@@ -529,6 +531,7 @@ public class UIManager : MonoBehaviour
         tiles[lastMoveStart].lastMoveTint();
         tiles[lastMoveTarget].lastMoveTint();
     }
+
     public void updateScore(int value, bool isWhite)
     {
         if (isWhite)
@@ -542,14 +545,17 @@ public class UIManager : MonoBehaviour
             blackPointText.text = "Black: " + blackPointCounter;
         }
     }
+
     public void HideScore()
     {
         pointsCanvas.SetActive(false);
     }
+
     public void ShowScore()
     {
         pointsCanvas.SetActive(true);
     }
+
     public void ResetScore()
     {
         whitePointCounter = 0;
