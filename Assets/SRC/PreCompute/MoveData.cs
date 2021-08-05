@@ -37,6 +37,12 @@ public static class MoveData
     public static readonly int[][] kingMovesMap;
     public static readonly int[][] knightMovesMap;
 
+    public static readonly ulong[] kingAttackBitboards;
+    public static readonly ulong[] knightAttackBitboards;
+    public static readonly ulong[][] pawnAttackBitboards;
+
+    public static readonly int[] directionLookup;
+
 
 
     static MoveData()
@@ -46,6 +52,9 @@ public static class MoveData
         kingMoves = new byte[64];
         knightMovesMap = new int[64][];
         kingMovesMap = new int[64][];
+        kingAttackBitboards = new ulong[64];
+        knightAttackBitboards = new ulong[64];
+        pawnAttackBitboards = new ulong[64][];
         for (int squareIndex = 0; squareIndex < 64; squareIndex++)
         {
 
@@ -57,6 +66,98 @@ public static class MoveData
             knightMovesMap[squareIndex] = genKnightMovesMap(squareIndex);
             kingMovesMap[squareIndex] = genKingMovesMap(squareIndex);
 
+            #region KnightBitBoard
+            var legalKnightJumps = new List<byte>();
+            ulong knightBitboard = 0;
+            foreach (int knightJumpDelta in allKnightJumps)
+            {
+                int knightJumpSquare = squareIndex + knightJumpDelta;
+                if (knightJumpSquare >= 0 && knightJumpSquare < 64)
+                {
+                    int knightSquareY = knightJumpSquare / 8;
+                    int knightSquareX = knightJumpSquare - knightSquareY * 8;
+                    // Ensure knight has moved max of 2 squares on x/y axis (to reject indices that have wrapped around side of board)
+                    int maxCoordMoveDst = System.Math.Max(System.Math.Abs(x - knightSquareX), System.Math.Abs(y - knightSquareY));
+                    if (maxCoordMoveDst == 2)
+                    {
+                        legalKnightJumps.Add((byte)knightJumpSquare);
+                        knightBitboard |= 1ul << knightJumpSquare;
+                    }
+                }
+            }
+            knightAttackBitboards[squareIndex] = knightBitboard;
+            #endregion
+
+            #region KingBitBoard
+            // Calculate all squares king can move to from current square (not including castling)
+            var legalKingMoves = new List<byte>();
+            foreach (int kingMoveDelta in directionOffsets)
+            {
+                int kingMoveSquare = squareIndex + kingMoveDelta;
+                if (kingMoveSquare >= 0 && kingMoveSquare < 64)
+                {
+                    int kingSquareY = kingMoveSquare / 8;
+                    int kingSquareX = kingMoveSquare - kingSquareY * 8;
+                    // Ensure king has moved max of 1 square on x/y axis (to reject indices that have wrapped around side of board)
+                    int maxCoordMoveDst = System.Math.Max(System.Math.Abs(x - kingSquareX), System.Math.Abs(y - kingSquareY));
+                    if (maxCoordMoveDst == 1)
+                    {
+                        legalKingMoves.Add((byte)kingMoveSquare);
+                        kingAttackBitboards[squareIndex] |= 1ul << kingMoveSquare;
+                    }
+                }
+            }
+            #endregion
+
+            #region PawnBitBoard
+            pawnAttackBitboards[squareIndex] = new ulong[2];
+            if (x > 0)
+            {
+                if (y < 7)
+                {
+                    pawnAttackBitboards[squareIndex][Board.WhiteIndex] |= 1ul << (squareIndex + 7);
+                }
+                if (y > 0)
+                {
+                    pawnAttackBitboards[squareIndex][Board.BlackIndex] |= 1ul << (squareIndex - 9);
+                }
+            }
+            if (x < 7)
+            {
+                if (y < 7)
+                {
+                    pawnAttackBitboards[squareIndex][Board.WhiteIndex] |= 1ul << (squareIndex + 9);
+                }
+                if (y > 0)
+                {
+                    pawnAttackBitboards[squareIndex][Board.BlackIndex] |= 1ul << (squareIndex - 7);
+                }
+            }
+            #endregion
+
+            #region DirectionLookup
+            directionLookup = new int[127];
+            for (int i = 0; i < 127; i++)
+            {
+                int offset = i - 63;
+                int absOffset = System.Math.Abs(offset);
+                int absDir = 1;
+                if (absOffset % 9 == 0)
+                {
+                    absDir = 9;
+                }
+                else if (absOffset % 8 == 0)
+                {
+                    absDir = 8;
+                }
+                else if (absOffset % 7 == 0)
+                {
+                    absDir = 7;
+                }
+
+                directionLookup[i] = absDir * System.Math.Sign(offset);
+            }
+            #endregion
 
         }
     }

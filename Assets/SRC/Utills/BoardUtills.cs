@@ -82,5 +82,18 @@ public class BoardUtills
     {
         return pos % 8;
     }
+    public static bool ContainsTile(ulong bitboard, int tile)
+    {
+        return ((bitboard >> tile) & 1) != 0;
+    }
+    public static bool[] BitBoardToBoolArray(ulong bitboard)
+    {
+        bool[] arr = new bool[64];
+        for (int ii = 0; ii < 64; ii++)
+        {
+            arr[ii] = ((bitboard >> ii) & 1) != 0;
+        }
+        return arr;
+    }
 
 }

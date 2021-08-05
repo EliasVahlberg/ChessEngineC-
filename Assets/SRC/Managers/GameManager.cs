@@ -81,7 +81,6 @@ public class GameManager : MonoBehaviour
     public Board createBoard(string fen)
     {
         started = true;
-        onStartingGame();
         return new Board(fen);
     }
 
@@ -249,7 +248,8 @@ public class GameManager : MonoBehaviour
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
         uiManager.gameText.text = s;
         uiManager.winText.text = "";
-        board.onStart();
+        //board.onStart();
+        board.generateNewMoves();
 
     }
 
@@ -262,7 +262,8 @@ public class GameManager : MonoBehaviour
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
         uiManager.gameText.text = s;
         uiManager.winText.text = "";
-        board.onStart();
+        //board.onStart();
+        board.generateNewMoves();
     }
 
     public void forfit()
@@ -370,6 +371,7 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+        board.generateNewMoves();
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
         if (!GameHistoryPanel.instance.showing)
             GameHistoryPanel.instance.activate();
@@ -395,6 +397,7 @@ public class GameManager : MonoBehaviour
 
     public void onStartingGame()
     {
+        board.generateNewMoves();
         AIManager.instance.showAIMenu();
         UIManager.instance.ShowScore();
 
