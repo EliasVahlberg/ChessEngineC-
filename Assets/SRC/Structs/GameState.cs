@@ -5,16 +5,16 @@ public struct GameState
     //27-32     27      22-26   16-22       10-16     4-10        0-4  
     //00000     0       0000    000000      000000    000000      0000
     //Unused    WTurn   CapT    CapI        FiftyT    EnPassant   Castle
-    public const uint whiteCastleKingsideMask = 0b0001;
-    public const uint whiteCastleQueensideMask = 0b0010;
-    public const uint blackCastleKingsideMask = 0b0100;
-    public const uint blackCastleQueensideMask = 0b1000;
-    public const uint castleMask = 0b1111;
-    public const uint enPassantMask = 0b1111110000;
-    public const uint fiftyTurnMask = 0b1111110000000000;
-    public const uint prevCapturedIndexMask = 0b1111110000000000000000;
-    public const uint prevCapturedTypeMask = 0b11110000000000000000000000;
-    public const uint whiteTurnMask = 0b100000000000000000000000000;
+    public const uint whiteCastleKingsideMask = 0b0001U;
+    public const uint whiteCastleQueensideMask = 0b0010U;
+    public const uint blackCastleKingsideMask = 0b0100U;
+    public const uint blackCastleQueensideMask = 0b1000U;
+    public const uint castleMask = 0b1111U;
+    public const uint enPassantMask = 0b1111110000U;
+    public const uint fiftyTurnMask = 0b1111110000000000U;
+    public const uint prevCapturedIndexMask = 0b1111110000000000000000U;
+    public const uint prevCapturedTypeMask = 0b11110000000000000000000000U;
+    public const uint whiteTurnMask = 0b100000000000000000000000000U;
 
     private uint gameState;
     public uint gameStateValue

@@ -94,27 +94,27 @@ namespace Utills
 
             for (int squareIndex = 0; squareIndex < 64; squareIndex++)
             {
-                if (board.Square[squareIndex] != 0)
+                if (board.tiles[squareIndex] != 0)
                 {
-                    int pieceType = Piece.PieceType(board.Square[squareIndex]);
-                    int pieceColour = Piece.Colour(board.Square[squareIndex]);
+                    int pieceType = Piece.PieceType(board.tiles[squareIndex]);
+                    int pieceColour = Piece.Colour(board.tiles[squareIndex]);
 
-                    zobristKey ^= piecesArray[pieceType, (pieceColour == Piece.White) ? Board.WhiteIndex : Board.BlackIndex, squareIndex];
+                    zobristKey ^= piecesArray[pieceType, (pieceColour == Piece.WHITE) ? Board.WhiteIndex : Board.BlackIndex, squareIndex];
                 }
             }
 
-            int epIndex = (int)(board.currentGameState >> 4) & 15;
+            int epIndex = board.currGameState.EnPassant();
             if (epIndex != -1)
             {
-                zobristKey ^= enPassantFile[epIndex];
+                zobristKey ^= enPassantFile[BoardUtills.File(epIndex)];
             }
 
-            if (board.ColourToMove == Piece.Black)
+            if (!board.whiteTurn)
             {
                 zobristKey ^= sideToMove;
             }
 
-            zobristKey ^= castlingRights[board.currentGameState & 0b1111];
+            zobristKey ^= castlingRights[board.currGameState.CastleRights()];
 
             return zobristKey;
         }
