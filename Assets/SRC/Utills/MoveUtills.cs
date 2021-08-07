@@ -58,6 +58,7 @@ public class MoveUtills
         GenerateMoves();
 
     }
+
     public void GenerateCaptureMoves(Board board)
     {
         this.board = board;
@@ -84,6 +85,11 @@ public class MoveUtills
         GenerateSlidingMoves();
         GenerateKnightMoves();
         GeneratePawnMoves();
+        //if (inCheck)
+        //    Debug.Log("IN CHECK");
+        //if (pinsExist)
+        //    Debug.Log("PIN EXISTS");
+
     }
 
     private void GenerateSlidingMoves()
@@ -145,6 +151,7 @@ public class MoveUtills
 
         for (int ii = 0; ii < myPawns.Count; ii++)
             GeneratePawnPieceMoves(myPawns[ii]);
+
     }
 
     public void GenerateKingMoves()
@@ -414,44 +421,8 @@ public class MoveUtills
 
     #endregion
 
+    #region GeneratePieceMoves
 
-    //TODO Optimize 96.8%
-    //TODO REMOVE FOREACH, SELF = 9.6%
-    //public static List<Move> GenerateMoves(Board board)
-    //{
-    //    List<Move> moves = new List<Move>();    //TODO Make sure it is Linked list
-    //    for (int pos = 0; pos < 64; pos++)
-    //    {
-    //        int piece = board.tiles[pos];
-    //        if (IsColour(piece, board.ColorTurn))
-    //        {
-    //            if (IsSlidingPiece(piece))
-    //            {
-    //                generateSlidingMoves(pos, piece, board, moves);
-    //            }
-    //            switch (PieceType(piece))
-    //            {
-    //                case PAWN:
-    //                    generatePawnMoves(pos, board, moves);
-    //                    break;
-    //                case KNIGHT:
-    //                    generateKnightMoves(pos, board, moves);
-    //                    //moves.AddRange(generateKnightMoves(pos, board));
-    //                    break;
-    //                case KING:
-    //                    generateKingMoves(pos, board, moves);
-    //                    break;
-    //
-    //                default: break;
-    //            }
-    //        }
-    //    }
-    //    return moves;
-    //}
-
-
-    // TODO OPTIMIZE 46%
-    //*
 
     private void GenerateSlidingPieceMoves(int position, int startDir, int endDir)
     {
@@ -494,9 +465,10 @@ public class MoveUtills
 
     private void GeneratePawnPieceMoves(int position)
     {
-        int moveDir = (board.whiteTurn) ? directionOffsets[NORTH_I] : directionOffsets[SOUTH_I];
-        int[] attackDir = (board.whiteTurn) ? pawnAttackDirections[0] : pawnAttackDirections[1];
-        bool isInStarting = ((board.whiteTurn && (position / 8 == 1)) || ((!board.whiteTurn) && (position / 8 == 6)));
+        //Debug.Log("PAWN: " + BoardUtills.stringFromIndex(position));
+        int moveDir = (whiteTurn) ? directionOffsets[NORTH_I] : directionOffsets[SOUTH_I];
+        int[] attackDir = (whiteTurn) ? pawnAttackDirections[0] : pawnAttackDirections[1];
+        bool isInStarting = ((whiteTurn && (position / 8 == 1)) || ((!whiteTurn) && (position / 8 == 6)));
         int enPassantPos = board.currGameState.EnPassant();
 
         int target = position + moveDir;
@@ -505,26 +477,40 @@ public class MoveUtills
         //pinnedPosDir
         bool isLegal = false;
 
-
-        if ((board.tiles[target] == 0) && willUpgrade)
-            GeneratePawnUpgrades(position, target);
-        else if (board.tiles[target] == 0)
+        if (genNonCaptures)
         {
-            isLegal = IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target);
-            if (isLegal)
+            if ((board.tiles[target] == 0) && willUpgrade)
+                GeneratePawnUpgrades(position, target);
+            else if (board.tiles[target] == 0)
             {
-                Moves.Add(new Move(position, target));
-            }
-            target += moveDir;
-            isLegal = IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target);
-            if (isInStarting && board.tiles[target] == 0)
-                if (isLegal)
-                    Moves.Add(new Move(position, target, Move.Flag.PawnTwoForward));
+                //if (IsPinned(position))
+                //    Debug.Log("PINNED: " + position);
+                //if (!IsMovingAlongPinnedAxis(position, moveDir))
+                //    Debug.Log("NOT MOVING PINNED AXIS: " + position);
+                //if (!ResolvesCheckRay(target))
+                //    Debug.Log("NOT RESOLVING CHECK RAY: " + position);
 
+
+                isLegal = IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target);
+                if (isLegal)
+                {
+                    Moves.Add(new Move(position, target));
+                }
+                target += moveDir;
+                isLegal = IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target);
+                if (isInStarting && board.tiles[target] == 0)
+                    if (isLegal)
+                        Moves.Add(new Move(position, target, Move.Flag.PawnTwoForward));
+
+            }
         }
 
         target = position + attackDir[0];
-        if (IsOnBoard(target) && Colour(board.tiles[target]) == ((board.whiteTurn) ? BLACK : WHITE) && (position - 8 * (position / 8)) != 0)
+        //if (!IsColour(board.tiles[target], opponentColor))
+        //    Debug.Log("NOATK LEFT: " + BoardUtills.stringFromIndex(position) + ", " + BoardUtills.stringFromIndex(target));
+        //if (IsColour(board.tiles[target], opponentColor))
+        //    Debug.Log("!!ATK LEFT: " + BoardUtills.stringFromIndex(position) + ", " + BoardUtills.stringFromIndex(target));
+        if (IsOnBoard(target) && IsColour(board.tiles[target], opponentColor) && (position - (8 * (position / 8))) != 0)
         {
             isLegal = IsMovingAlongPinnedAxis(position, attackDir[0]) && ResolvesCheckRay(target);
             if (isLegal)
@@ -609,7 +595,10 @@ public class MoveUtills
                 if (kingOnRank && ((rookOrQueenLeft && (nPiecesOnLeft <= 1) || (rookOrQueenRight && (nPiecesOnRight <= 1)))))
                     return;
                 else
+                {
+                    //Debug.Log("EP:" + board.enPassantAble);
                     Moves.Add(new Move(position, board.enPassantAble + moveDir, Move.Flag.EnPassantCapture));
+                }
 
             }
         }
@@ -617,6 +606,7 @@ public class MoveUtills
 
     private void GeneratePawnUpgrades(int position, int target)
     {
+        //Debug.Log("PAWN UPGRADE");
         Moves.Add(new Move(position, target, Move.Flag.PromoteToQueen));
         Moves.Add(new Move(position, target, Move.Flag.PromoteToKnight));
         Moves.Add(new Move(position, target, Move.Flag.PromoteToRook));
@@ -666,87 +656,107 @@ public class MoveUtills
             Moves.Add(new Move(kingSquare, squaresBetween[1][1], Move.Flag.Castling));
         }
     }
+
+    #endregion
+
+    #region Old
+
+    public List<Move>[] sortMovesBasedOnPosition()
+    {
+        List<Move>[] moveGrid = new List<Move>[64];
+        foreach (Move move in Moves)
+        {
+            if (moveGrid[move.StartSquare] == null)
+                moveGrid[move.StartSquare] = new List<Move>();
+            moveGrid[move.StartSquare].Add(move);
+        }
+        return moveGrid;
+    }
+
+    #region DEPRECATED
+
+
     //TODO OPTIMIZE 10%,
     //*
 
 
     //TODO OPTIMIZE 5.4%, SELF = 0.7%
     //*
-    public static void generateKingMoves(int position, Board board, List<Move> moveList, MoveUtills generator)
-    {
-        int[] arr = getKingMoves(position);
-        for (int ii = 0; ii < arr.Length; ii++)
-        {
-            int target = arr[ii];
-            if (!IsColour(board.tiles[target], board.ColorTurn))
-                //if (MoveLegalityUtills.IsLegal(position, target, board)) //TODO OPTIMIZE 2.1%
-                moveList.Add(new Move(position, target));
-        }
-        generateCastelingMoves(position, board, moveList, generator);
-    }
+    //public static void generateKingMoves(int position, Board board, List<Move> moveList, MoveUtills generator)
+    //{
+    //    int[] arr = getKingMoves(position);
+    //    for (int ii = 0; ii < arr.Length; ii++)
+    //    {
+    //        int target = arr[ii];
+    //        if (!IsColour(board.tiles[target], board.ColorTurn))
+    //            //if (MoveLegalityUtills.IsLegal(position, target, board)) //TODO OPTIMIZE 2.1%
+    //            moveList.Add(new Move(position, target));
+    //    }
+    //    generateCastelingMoves(position, board, moveList, generator);
+    //}
 
     //TODO OPTIMIZE 1.6% (Is kinda optimzed)
     //*
-    public static void generateCastelingMoves(int position, Board board, List<Move> moveList, MoveUtills generator)
-    {
-        bool isWhite = Colour(board.tiles[position]) == WHITE;
-        int color = isWhite ? WHITE : BLACK;
-        bool[] castleRights = isWhite ?
-            new bool[] { board.whiteCastleKingside, board.whiteCastleQueenside } :
-            new bool[] { board.blackCastleKingside, board.blackCastleQueenside };
-        int[][] squaresBetween = isWhite ?
-            new int[][] { new int[] { 5, 6 }, new int[] { 1, 2, 3 } } :
-            new int[][] { new int[] { 61, 62 }, new int[] { 57, 58, 59 } };
-        int[] rookPos = isWhite ?
-            new int[] { 7, 0 } :
-            new int[] { 63, 56 };
+    // public static void generateCastelingMoves(int position, Board board, List<Move> moveList, MoveUtills generator)
+    // {
+    //     bool isWhite = Colour(board.tiles[position]) == WHITE;
+    //     int color = isWhite ? WHITE : BLACK;
+    //     bool[] castleRights = isWhite ?
+    //         new bool[] { board.whiteCastleKingside, board.whiteCastleQueenside } :
+    //         new bool[] { board.blackCastleKingside, board.blackCastleQueenside };
+    //     int[][] squaresBetween = isWhite ?
+    //         new int[][] { new int[] { 5, 6 }, new int[] { 1, 2, 3 } } :
+    //         new int[][] { new int[] { 61, 62 }, new int[] { 57, 58, 59 } };
+    //     int[] rookPos = isWhite ?
+    //         new int[] { 7, 0 } :
+    //         new int[] { 63, 56 };
 
-        bool cas1 =
-        castleRights[0] &&
-        board.tiles[squaresBetween[0][0]] == 0 &&
-        board.tiles[squaresBetween[0][1]] == 0 &&
-        (generator.isSafePosition(squaresBetween[0][0])) &&
-        (generator.isSafePosition(squaresBetween[0][1])) &&
-        (IsType(board.tiles[rookPos[0]], ROOK)) &&
-        (IsColour(board.tiles[rookPos[0]], color)) &&
-        (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
-        //* NOTE "The king does not pass through a square that is attacked by an enemy piece."
-        //* since the he does not pass through the third square it is ok
-        bool cas2 =
-        castleRights[1] &&
-        board.tiles[squaresBetween[1][0]] == 0 &&
-        board.tiles[squaresBetween[1][1]] == 0 &&
-        board.tiles[squaresBetween[1][2]] == 0 &&
-        (generator.isSafePosition(squaresBetween[1][1])) &&
-        (generator.isSafePosition(squaresBetween[1][2])) &&
-        (IsType(board.tiles[rookPos[1]], ROOK)) &&
-        (IsColour(board.tiles[rookPos[1]], color)) &&
-        (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
+    //     bool cas1 =
+    //     castleRights[0] &&
+    //     board.tiles[squaresBetween[0][0]] == 0 &&
+    //     board.tiles[squaresBetween[0][1]] == 0 &&
+    //     (generator.isSafePosition(squaresBetween[0][0])) &&
+    //     (generator.isSafePosition(squaresBetween[0][1])) &&
+    //     (IsType(board.tiles[rookPos[0]], ROOK)) &&
+    //     (IsColour(board.tiles[rookPos[0]], color)) &&
+    //     (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
+    //     //* NOTE "The king does not pass through a square that is attacked by an enemy piece."
+    //     //* since the he does not pass through the third square it is ok
+    //     bool cas2 =
+    //     castleRights[1] &&
+    //     board.tiles[squaresBetween[1][0]] == 0 &&
+    //     board.tiles[squaresBetween[1][1]] == 0 &&
+    //     board.tiles[squaresBetween[1][2]] == 0 &&
+    //     (generator.isSafePosition(squaresBetween[1][1])) &&
+    //     (generator.isSafePosition(squaresBetween[1][2])) &&
+    //     (IsType(board.tiles[rookPos[1]], ROOK)) &&
+    //     (IsColour(board.tiles[rookPos[1]], color)) &&
+    //     (!(isWhite ? board.WhiteInCheck : board.BlackInCheck));
 
-        if (cas1)
-        {
-            moveList.Add(new Move(position, squaresBetween[0][1], Move.Flag.Castling));
-        }
-        if (cas2)
-        {
-            moveList.Add(new Move(position, squaresBetween[1][1], Move.Flag.Castling));
-        }
+    //     if (cas1)
+    //     {
+    //         moveList.Add(new Move(position, squaresBetween[0][1], Move.Flag.Castling));
+    //     }
+    //     if (cas2)
+    //     {
+    //         moveList.Add(new Move(position, squaresBetween[1][1], Move.Flag.Castling));
+    //     }
 
-    }
+    // }
 
     // TODO OPTIMIZE 17.6%, SELF = 1.8%
     //*
     // TODO OPTIMIZE 18.8%, SELF = 1.6%
 
-    private static List<Move> generatePawnUpgrade(int position, int target)
-    {
-        List<Move> upgradeMoves = new List<Move>();
-        upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToQueen));
-        upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToRook));
-        upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToBishop));
-        upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToKnight));
-        return upgradeMoves;
-    }
+    // private static List<Move> generatePawnUpgrade(int position, int target)
+    // {
+    //     List<Move> upgradeMoves = new List<Move>();
+    //     upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToQueen));
+    //     upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToRook));
+    //     upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToBishop));
+    //     upgradeMoves.Add(new Move(position, target, Move.Flag.PromoteToKnight));
+    //     return upgradeMoves;
+    // }
 
     //TODO Make this //!DEPRECATED 
     // public static List<Move> generateMovesForThisSquare(int pos, Board board)
@@ -787,17 +797,7 @@ public class MoveUtills
     //     return moveL;
     // }
 
-    public List<Move>[] sortMovesBasedOnPosition()
-    {
-        List<Move>[] moveGrid = new List<Move>[64];
-        foreach (Move move in Moves)
-        {
-            if (moveGrid[move.StartSquare] == null)
-                moveGrid[move.StartSquare] = new List<Move>();
-            moveGrid[move.StartSquare].Add(move);
-        }
-        return moveGrid;
-    }
+
 
     //TODO OPTIMIZE 0.4%, SELF = 0.2%
     //public static List<int> getPieces(Board board, int color)
@@ -821,5 +821,7 @@ public class MoveUtills
     //    //        pieces.Add(pos);
     //    //return pieces;
     //}
+    #endregion
 
+    #endregion
 }

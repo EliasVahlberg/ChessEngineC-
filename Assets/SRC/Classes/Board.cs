@@ -429,7 +429,8 @@ public class Board
             if (move.moveFlag == Move.Flag.EnPassantCapture)
                 enPas = enPassantAble;
             if (!MoveInnerV2(move))//MoveInner(move))
-                return false;
+            { Debug.Log("FAILMOVE"); return false; }
+
             switch (move.moveFlag)
             {
                 case Move.Flag.EnPassantCapture:
@@ -464,7 +465,6 @@ public class Board
                     uiManager.movePiece(from, to);
                     break;
             }
-
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
             lastMove = move;
@@ -627,7 +627,7 @@ public class Board
             //    ZobristKey ^= Zobrist.castlingRights[originalCastleState]; // remove old castling rights state
             //    ZobristKey ^= Zobrist.castlingRights[newCastleState]; // add new castling rights state
             //}
-            if (movePieceType == Piece.PAWN || capturedPieceType != Piece.NONE)
+            if (movePieceType == Piece.PAWN || capturedPieceType != NONE)
             {
                 fiftyMoveCounter = 0;
             }
@@ -636,6 +636,7 @@ public class Board
             nextGameState.SetWhiteTurn(!whiteTurn);
             nextGameState.SetFiftyTurnCount(fiftyMoveCounter);
             currGameState = nextGameState;
+            ColorIndex = 1 - ColorIndex;
             Turn++;
             whiteTurn = !whiteTurn;
             //currentGameState |= newCastleState;
@@ -1229,7 +1230,7 @@ public class Board
         }
         foreach (Move move in Moves)
         {
-            if (move.TargetSquare == to)
+            if (move.TargetSquare == to && move.StartSquare == from)
             {
                 return MoveInner(move, uiManager);
             }
