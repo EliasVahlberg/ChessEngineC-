@@ -903,7 +903,8 @@ public class Board
             uint originalCastleState = currGameState.CastleRights();
 
 
-            int capturedPiece = currGameState.PrevCapturedType();
+            int capturedPiece = currGameState.PrevCapturedType() | (OpponentColour);
+            capturedPiece |= capturedPiece == 0 ? 0 : OpponentColour;
             int capturedPieceType = PieceType(capturedPiece);
 
             int movedFrom = move.StartSquare;
@@ -939,6 +940,9 @@ public class Board
             }
             else if (!isPromotion)
             {
+                Debug.Log(movedPieceType + ", " + ColorIndex + ", " + BoardUtills.stringFromIndex(movedTo) + ", " + BoardUtills.stringFromIndex(movedFrom));
+                Debug.Log(Convert.ToString(move.MoveValue, 2));
+                Debug.Log(tiles[movedTo]);
                 GetPieceTable(movedPieceType, ColorIndex).MovePiece(movedTo, movedFrom);
             }
 
@@ -979,7 +983,8 @@ public class Board
                 Debug.Log("EP:" + epIndex);
                 //currGameState.EnPassant();
                 tiles[movedTo] = 0;
-                tiles[epIndex] = (int)capturedPiece | (OpponentColour);
+                //!LAST EDITED
+                tiles[epIndex] = (int)PAWN | (OpponentColour);
                 pawns[opponentColourIndex].AddPieceAtSquare(epIndex);
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epIndex];
 
@@ -1467,6 +1472,8 @@ public class Board
 
     PieceTable GetPieceTable(int pieceType, int colourIndex)
     {
+        if (pieceType == 0 || pieceType == 1 || pieceType == 4 || pieceType == 8 || pieceType == 9 || pieceType == 12 || pieceType < 0 || pieceType > 15)
+            throw new ArgumentException("Illegal argument: {pieceType = " + pieceType + "}");
         return allPieceTables[colourIndex * 8 + pieceType];
     }
 
