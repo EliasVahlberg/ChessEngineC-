@@ -91,7 +91,7 @@ public class MenuManager : MonoBehaviour
     public void defaultStart()
     {
         Debug.Log("DEFSTART");
-        gameManager.resetBoard();
+        GameManager.instance.onResetGame();
         hideMainMenu();
     }
 
@@ -107,7 +107,7 @@ public class MenuManager : MonoBehaviour
             for (int i = 0; i <= valFenSections[0]; i++)
                 validFEN += (i != 0 ? " " : "") + sections[i];
 
-            gameManager.resetBoard(validFEN);
+            GameManager.instance.onResetGame(validFEN);
             hideMainMenu();
 
         }
@@ -255,8 +255,7 @@ public class MenuManager : MonoBehaviour
 
     public void returnMainMenu()
     {
-        gameManager.started = false;
-        uiManager.hideBoard();
+        GameManager.instance.onStoppingGame();
         hideMainMenu();
         showMainMenu();
     }

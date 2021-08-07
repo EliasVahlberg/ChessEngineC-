@@ -54,6 +54,7 @@ public class MoveUtills
         inCheck = false;
         inDoubleCheck = false;
         genNonCaptures = true;
+        pinsExist = false;
         generateAttackMaps();
         GenerateMoves();
 
@@ -79,16 +80,20 @@ public class MoveUtills
 
     private void GenerateMoves()
     {
+        //if (inCheck)
+        //    Debug.Log("IN CHECK");
+        //if (pinsExist)
+        //    Debug.Log("PIN EXISTS");
+        //if (inDoubleCheck)
+        //    Debug.Log("IN DOUBLE CHECK");
+
         GenerateKingMoves();
         if (inDoubleCheck)
             return;
         GenerateSlidingMoves();
         GenerateKnightMoves();
         GeneratePawnMoves();
-        //if (inCheck)
-        //    Debug.Log("IN CHECK");
-        //if (pinsExist)
-        //    Debug.Log("PIN EXISTS");
+
 
     }
 
@@ -195,9 +200,10 @@ public class MoveUtills
     private void generateAttackMaps()
     {
         currentAttackMap = 0;
+        currentAttackMapNoPawns = 0;
         pinRayMap = 0;
         generateSlidingAttackMap();
-        generateCheckingRayMap();
+        //generateCheckingRayMap();
         generateKnightAttackMap();
         generatePawnAttackMap();
         generateKingAttackMap();
@@ -212,22 +218,90 @@ public class MoveUtills
         PieceTable enemyRooks = board.rooks[opponentColorIndex];
         for (int i = 0; i < enemyRooks.Count; i++)
         {
-            UpdateSlidingAttackPiece(enemyRooks[i], 0, 4);
+            AddSlidingPieceToAttackMap(enemyRooks[i], 0, 4);
         }
         PieceTable enemyQueens = board.queens[opponentColorIndex];
         for (int i = 0; i < enemyQueens.Count; i++)
         {
-            UpdateSlidingAttackPiece(enemyQueens[i], 0, 8);
+            AddSlidingPieceToAttackMap(enemyQueens[i], 0, 8);
         }
-
         PieceTable enemyBishops = board.bishops[opponentColorIndex];
         for (int i = 0; i < enemyBishops.Count; i++)
         {
-            UpdateSlidingAttackPiece(enemyBishops[i], 4, 8);
+            AddSlidingPieceToAttackMap(enemyBishops[i], 4, 8);
+        }
+
+        //*Dirty OPTIMIZATION
+        int startDir = 0;
+        int endDir = 8;
+        checkRayMap = 0;
+        if (board.queens[opponentColorIndex].Count == 0)
+        {
+            startDir = (board.rooks[opponentColorIndex].Count > 0) ? 0 : 4;
+            endDir = (board.bishops[opponentColorIndex].Count > 0) ? 8 : 4;
+        }
+        for (int dir = startDir; dir < endDir; dir++)
+        {
+            bool isDiagonal = dir > 3;
+            int n = numSquaresToEdge[kingSquare][dir];
+            int dirOffset = directionOffsets[dir];
+            bool firendlyOnRay = false;
+            ulong rayMask = 0;
+            for (int i = 0; i < n; i++)
+            {
+                int squareIndex = kingSquare + dirOffset * (i + 1);
+                rayMask |= 1ul << squareIndex;
+                int piece = board.tiles[squareIndex];
+
+                if (piece != NONE)
+                {
+                    if (Piece.IsColour(piece, color))
+                    {
+                        if (!firendlyOnRay)
+                        {
+                            firendlyOnRay = true;
+                        }
+                        else
+                        {
+                            //NOPIN
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        int pieceType = Piece.PieceType(piece);
+
+                        if (isDiagonal && Piece.IsBishopOrQueen(pieceType) || !isDiagonal && Piece.IsRookOrQueen(pieceType))
+                        {
+                            if (firendlyOnRay)
+                            {
+                                pinsExist = true;
+                                pinRayMap |= rayMask;
+                                //PINNED
+                            }
+                            else
+                            {
+                                checkRayMap |= rayMask;
+                                inDoubleCheck = inCheck;
+                                inCheck = true;
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                if (inDoubleCheck)
+                {
+                    break;
+                }
+            }
         }
     }
 
-    private void UpdateSlidingAttackPiece(int startSquare, int startDirIndex, int endDirIndex)
+    private void AddSlidingPieceToAttackMap(int startSquare, int startDirIndex, int endDirIndex)
     {
 
         for (int directionIndex = startDirIndex; directionIndex < endDirIndex; directionIndex++)
@@ -271,6 +345,7 @@ public class MoveUtills
         }
     }
 
+    //!DEPRECATED
     private void generateCheckingRayMap()
     {
         int startDirIndex = 0;
@@ -384,7 +459,7 @@ public class MoveUtills
     #region PositionInfo
     public bool isSafePosition(int pos)
     {
-        return BoardUtills.ContainsTile(currentAttackMap, pos);
+        return !BoardUtills.ContainsTile(currentAttackMap, pos);
     }
 
     public bool IsPinned(int pos)
@@ -431,6 +506,7 @@ public class MoveUtills
         // If this piece is pinned, and the king is in check, this piece cannot move
         if (inCheck && isPinned)
         {
+            Debug.Log("IN CHECK BUT PINNED:" + BoardUtills.stringFromIndex(position));
             return;
         }
         int opoColor = board.whiteTurn ? BLACK : WHITE;
@@ -479,8 +555,22 @@ public class MoveUtills
 
         if (genNonCaptures)
         {
+            if (target > 63 || target < 0)
+            {
+                Debug.Log(target + "," + position + (whiteTurn ? ", WHITE" : ", BLACK"));
+                string str = "";
+                for (int ii = 0; ii < board.pawns[colorIndex].Count; ii++)
+                {
+                    str += board.pawns[colorIndex][ii] + ", ";
+                }
+                Debug.Log("::" + str);
+            }
+
             if ((board.tiles[target] == 0) && willUpgrade)
-                GeneratePawnUpgrades(position, target);
+            {
+                if (IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target))
+                    GeneratePawnUpgrades(position, target);
+            }
             else if (board.tiles[target] == 0)
             {
                 //if (IsPinned(position))
@@ -489,7 +579,6 @@ public class MoveUtills
                 //    Debug.Log("NOT MOVING PINNED AXIS: " + position);
                 //if (!ResolvesCheckRay(target))
                 //    Debug.Log("NOT RESOLVING CHECK RAY: " + position);
-
 
                 isLegal = IsMovingAlongPinnedAxis(position, moveDir) && ResolvesCheckRay(target);
                 if (isLegal)
@@ -512,7 +601,7 @@ public class MoveUtills
         //    Debug.Log("!!ATK LEFT: " + BoardUtills.stringFromIndex(position) + ", " + BoardUtills.stringFromIndex(target));
         if (IsOnBoard(target) && IsColour(board.tiles[target], opponentColor) && (position - (8 * (position / 8))) != 0)
         {
-            isLegal = IsMovingAlongPinnedAxis(position, attackDir[0]) && ResolvesCheckRay(target);
+            isLegal = (IsMovingAlongPinnedAxis(position, attackDir[0]) && ResolvesCheckRay(target));//|| IsCheckingPiece(target);
             if (isLegal)
             {
                 if (willUpgrade)
@@ -521,10 +610,11 @@ public class MoveUtills
                     Moves.Add(new Move(position, target));
             }
         }
+
         target = position + attackDir[1];
         if (IsOnBoard(target) && Colour(board.tiles[target]) == ((board.whiteTurn) ? BLACK : WHITE) && (position - 8 * (position / 8)) != 7)
         {
-            isLegal = IsMovingAlongPinnedAxis(position, attackDir[1]) && ResolvesCheckRay(target);
+            isLegal = IsMovingAlongPinnedAxis(position, attackDir[1]) && ResolvesCheckRay(target);//|| IsCheckingPiece(target);
             if (isLegal)
             {
                 if (willUpgrade)
@@ -646,14 +736,27 @@ public class MoveUtills
         (IsType(board.tiles[rookPos[1]], ROOK)) &&
         (IsColour(board.tiles[rookPos[1]], color)) &&
         (!(whiteTurn ? board.WhiteInCheck : board.BlackInCheck));
+        //*DEBUG
+        //Debug.Log(
+        //castleRights[1] + ",\n" +
+        //(board.tiles[squaresBetween[1][0]] == 0) + ",\n" +
+        //(board.tiles[squaresBetween[1][1]] == 0) + ",\n" +
+        //(board.tiles[squaresBetween[1][2]] == 0) + ",\n" +
+        //((isSafePosition(squaresBetween[1][1]))) + ",\n" +
+        //((isSafePosition(squaresBetween[1][2]))) + ",\n" +
+        //((IsType(board.tiles[rookPos[1]], ROOK))) + ",\n" +
+        //((IsColour(board.tiles[rookPos[1]], color))) + ",\n" +
+        //(!(whiteTurn ? board.WhiteInCheck : board.BlackInCheck)));
 
         if (cas1)
         {
             Moves.Add(new Move(kingSquare, squaresBetween[0][1], Move.Flag.Castling));
+            //Debug.Log("CAS K");
         }
         if (cas2)
         {
             Moves.Add(new Move(kingSquare, squaresBetween[1][1], Move.Flag.Castling));
+            //Debug.Log("CAS Q");
         }
     }
 

@@ -2,9 +2,9 @@ using UnityEngine;
 
 public struct GameState
 {
-    //27-32     27      22-26   16-22       10-16     4-10        0-4  
-    //00000     0       0000    000000      000000    000000      0000
-    //Unused    WTurn   CapT    CapI        FiftyT    EnPassant   Castle
+    //27-32     28      27      22-26   16-22       10-16     4-10        0-4  
+    //0000      0       0       0000    000000      000000    000000      0000
+    //Unused    EPCap   WTurn   CapT    CapI        FiftyT    EnPassant   Castle
     public const uint whiteCastleKingsideMask = 0b0001U;
     public const uint whiteCastleQueensideMask = 0b0010U;
     public const uint blackCastleKingsideMask = 0b0100U;
@@ -109,8 +109,9 @@ public struct GameState
 
     public void SetCastleRights(uint val)
     {
-        gameState = (uint)((gameState & (~castleMask)) | (gameState & (castleMask & val)));
+        gameState = (uint)((gameState & (~castleMask)) | (castleMask & val));
     }
+
     #endregion
 
     #region EnPassant
@@ -122,8 +123,6 @@ public struct GameState
     {
         gameState = (uint)((gameState & (~enPassantMask)) | (enPassantMask & (val << 4)));
     }
-
-
     #endregion
 
     #region FiftyTurn

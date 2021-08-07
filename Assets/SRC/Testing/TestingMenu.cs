@@ -233,7 +233,8 @@ namespace Testing
         {
             int ply = selectPlyPerftCheck.value + 1;
             int fen = selectFenPerftCheck.value;
-            PrintResultPerftCheck(MoveTest.PerftCheck(fen, ply));
+            //PrintResultPerftCheck(MoveTest.PerftCheck(fen, ply));
+            PrintResultPerftCheck(MoveTest.PerftCheckV2(fen, ply));
 
         }
 
@@ -268,7 +269,8 @@ namespace Testing
             string refStr = refResultFieldPerftDebug.text;
             refStr = refStr.Replace("\n", "").Replace("\r", "");
             string[] refResult = refStr.Split(',');
-            List<string> list = MoveTest.PerftDebug(fen, ply, refResult);
+            //List<string> list = MoveTest.PerftDebug(fen, ply, refResult);
+            List<string> list = MoveTest.PerftDebugV2(fen, ply, refResult);
             PrintResultPerftDebug(list);
         }
 
@@ -277,7 +279,7 @@ namespace Testing
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append("<b>RESULTS:</b> \n");
             stringBuilder.Append("<b>Number of moves from starting position: </b> \n");
-            stringBuilder.Append(res.Count + "\n");
+            stringBuilder.Append((res.Count - 1) + "\n");
             foreach (string str in res)
                 stringBuilder.Append(str + "\n");
             resultFieldPerftDebug.text = stringBuilder.ToString();

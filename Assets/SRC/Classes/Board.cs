@@ -420,7 +420,7 @@ public class Board
     #endregion
 
     #region InnerFuncs
-    private bool MoveInner(Move move, UIManager uiManager)
+    private bool MoveInnerV2(Move move, UIManager uiManager)
     {
         try
         {
@@ -482,6 +482,7 @@ public class Board
         try
         {
 
+
             bool WhiteToMove = currGameState.WhiteTurn();
             uint newCastleState = currGameState.CastleRights();
             uint oldCastleState = currGameState.CastleRights();
@@ -489,7 +490,7 @@ public class Board
             gameStateHistory.Push(currGameState);
             GameState nextGameState = new GameState(0);//new GameState(currGameState.gameStateValue);
 
-            int ColorToMove = (WhiteToMove) ? WHITE : BLACK;
+            int ColorToMove = (whiteTurn) ? WHITE : BLACK;
             int opponentColourIndex = 1 - ColorIndex;
             int moveFrom = move.StartSquare;
             int moveTo = move.TargetSquare;
@@ -523,6 +524,7 @@ public class Board
             }
             else
             {
+                Debug.Log(movePieceType + ", " + ColorIndex + ", " + moveFrom + ", " + moveTo);
                 GetPieceTable(movePieceType, ColorIndex).MovePiece(moveFrom, moveTo);
             }
 
@@ -552,7 +554,7 @@ public class Board
                         break;
 
                 }
-                pieceOnTargetSquare = promoteType | ColorIndex;
+                pieceOnTargetSquare = promoteType | ColorToMove;
                 pawns[ColorIndex].RemovePieceAtSquare(moveTo);
             }
             else
@@ -563,6 +565,7 @@ public class Board
                     case Move.Flag.EnPassantCapture:
                         int epPawnSquare = moveTo + ((ColorIndex == Piece.WHITE) ? -8 : 8);
                         nextGameState.SetPrevCapturedIndex(epPawnSquare);
+                        //nextGameState.SetEnPassant(epPawnSquare);
                         tiles[epPawnSquare] = 0; // clear ep capture square
                         pawns[opponentColourIndex].RemovePieceAtSquare(epPawnSquare);
                         //ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epPawnSquare];
@@ -573,7 +576,7 @@ public class Board
                         int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
 
                         tiles[castlingRookFromIndex] = Piece.NONE;
-                        tiles[castlingRookToIndex] = Piece.NONE | ColorToMove;
+                        tiles[castlingRookToIndex] = Piece.ROOK | ColorToMove;
 
                         rooks[ColorIndex].MovePiece(castlingRookFromIndex, castlingRookToIndex);
                         //ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
@@ -651,8 +654,9 @@ public class Board
             //plyCount++;
             //fiftyMoveCounter++;
             hasGeneratedMoves = false;
+            //Debug.Log(Convert.ToString(currGameState.gameStateValue, 2));
+            //Debug.Log(currGameState.gameStateValue);
             return true;
-
 
 
         }
@@ -664,6 +668,7 @@ public class Board
 
     }
 
+    //!DEPRECATED
     private bool MoveInner(Move move)
     {
         try
@@ -778,7 +783,7 @@ public class Board
             return false;
         }
     }
-
+    //!DEPRECATED
     private bool UnmakeMoveInner()
     {
         if (hasReverted || lastMove.MoveValue == 0)
@@ -792,6 +797,7 @@ public class Board
         blackCastleQueenside = lastMoveBlackCastleQueenside;
         Turn--;
         whiteTurn = !whiteTurn;
+
         int from = lastMove.TargetSquare, to = lastMove.StartSquare;
 
 
@@ -877,15 +883,16 @@ public class Board
         try
         {
 
+
             if (gameStateHistory.Count == 0)
             {
                 Debug.Log("FAIL in UnmakeMoveInnerV2");
                 Debug.Log("FIRST RECORDED TURN REACHED");
                 return false;
             }
+            Move move = currGameState.PrevMove;
             //int opponentColour = ColourToMove;
             //int ColourToMoveIndex = whiteTurn ? 0 : 1;
-            Move move = currGameState.PrevMove;
             int opponentColourIndex = ColorIndex;
             bool undoingWhiteMove = !whiteTurn;
             int ColourToMove = whiteTurn ? BLACK : WHITE; // side who made the move we are undoing
@@ -918,6 +925,7 @@ public class Board
             //    ZobristKey ^= Zobrist.enPassantFile[oldEnPassantFile];
 
             // ignore ep captures, handled later
+
             if (capturedPieceType != 0 && !isEnPassant)
             {
                 //ZobristKey ^= Zobrist.piecesArray[capturedPieceType, opponentColourIndex, movedTo];
@@ -934,13 +942,19 @@ public class Board
                 GetPieceTable(movedPieceType, ColorIndex).MovePiece(movedTo, movedFrom);
             }
 
+
             // put back moved piece
             tiles[movedFrom] = movedPieceType | ColourToMove; // note that if move was a pawn promotion, this will put the promoted piece back instead of the pawn. Handled in special move switch
-            tiles[movedTo] = capturedPiece; // will be 0 if no piece was captured
+            tiles[movedTo] = capturedPiece == 0 ? 0 : capturedPiece | (OpponentColour); // will be 0 if no piece was captured
 
             if (isPromotion)
             {
+
                 pawns[ColorIndex].AddPieceAtSquare(movedFrom);
+                //Debug.Log("UNMADE PROMOTION: " + movedFrom + "->" + movedTo);
+
+
+
                 switch (moveFlags)
                 {
                     case Move.Flag.PromoteToQueen:
@@ -958,12 +972,17 @@ public class Board
                 }
             }
             else if (isEnPassant)
-            { // ep cature: put captured pawn back on right square
-                int epIndex = currGameState.EnPassant();//movedTo + ((ColourToMove == WHITE) ? -8 : 8);
+            {
+
+                // ep cature: put captured pawn back on right square
+                int epIndex = movedTo + ((ColourToMove == WHITE) ? -8 : 8);
+                Debug.Log("EP:" + epIndex);
+                //currGameState.EnPassant();
                 tiles[movedTo] = 0;
-                tiles[epIndex] = (int)capturedPiece;
+                tiles[epIndex] = (int)capturedPiece | (OpponentColour);
                 pawns[opponentColourIndex].AddPieceAtSquare(epIndex);
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epIndex];
+
             }
             else if (moveFlags == Move.Flag.Castling)
             { // castles: move rook back to starting square
@@ -980,7 +999,6 @@ public class Board
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookToIndex];
 
             }
-
             //gameStateHistory.Pop(); // removes current state from history
             currGameState = gameStateHistory.Pop(); // sets current state to previous state in history
 
@@ -1002,6 +1020,9 @@ public class Board
             //{
             //    RepetitionPositionHistory.Pop();
             //}
+            hasGeneratedMoves = false;
+            //Debug.Log(Convert.ToString(currGameState.gameStateValue, 2));
+            //Debug.Log(currGameState.gameStateValue);
             return true;
 
         }
@@ -1100,6 +1121,7 @@ public class Board
     #endregion
 
     #region OuterFuncs
+    //!DEPRECATED
     public bool UnmakeMove(UIManager uiManager)
     {
         try
@@ -1107,6 +1129,8 @@ public class Board
             Move move = currGameState.PrevMove;
             int from = move.TargetSquare, to = move.StartSquare;
             int enPas = -1;
+            bool reinstate = currGameState.PrevCapturedType() != 0;
+            int reinstateindex = currGameState.PrevCapturedIndex();
             if (move.moveFlag == Move.Flag.EnPassantCapture)
                 enPas = enPassantAble;
             if (!UnmakeMoveInnerV2())
@@ -1145,10 +1169,11 @@ public class Board
                     uiManager.movePiece(from, to);
                     break;
             }
-
+            if (reinstate)
+                uiManager.reinstatePiece(reinstateindex);
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
-            lastMove = move;
+            //lastMove = move;
 
             return true;
         }
@@ -1157,6 +1182,10 @@ public class Board
             Debug.Log("EXCEPTION DURING MoveInnerUI, ex:" + _ex.ToString());
             return false;
         }
+    }
+    public bool UnmakeMove()
+    {
+        return UnmakeMoveInnerV2();
     }
 
     private bool revertCasteling(int from, int to)
@@ -1202,22 +1231,22 @@ public class Board
 
     public bool useMove(Move move, UIManager uiManager)
     {
-        if (!hasGeneratedMoves)
-        {
-            Debug.LogError("NO NEW MOVES GENERATED");
-            return false;
-        }
-        return MoveInner(move, uiManager);
+        //if (!hasGeneratedMoves)
+        //{
+        //    Debug.LogError("NO NEW MOVES GENERATED");
+        //    return false;
+        //}
+        return MoveInnerV2(move, uiManager);
     }
 
     public bool useMove(Move move)
     {
-        if (!hasGeneratedMoves)
-        {
-            Debug.LogError("NO NEW MOVES GENERATED");
-            return false;
-        }
-        return MoveInner(move);
+        //if (!hasGeneratedMoves)
+        //{
+        //    Debug.LogError("NO NEW MOVES GENERATED");
+        //    return false;
+        //}
+        return MoveInnerV2(move);
     }
 
     public bool tryMove(int from, int to, UIManager uiManager)
@@ -1232,7 +1261,7 @@ public class Board
         {
             if (move.TargetSquare == to && move.StartSquare == from)
             {
-                return MoveInner(move, uiManager);
+                return MoveInnerV2(move, uiManager);
             }
         }
         return false;
@@ -1251,7 +1280,7 @@ public class Board
         {
             if (move.TargetSquare == to)
             {
-                return MoveInner(move);
+                return MoveInnerV2(move);
             }
         }
         return false;

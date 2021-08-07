@@ -278,6 +278,44 @@ public class MoveTest
 
         }
     }
+
+
+    public static PerftCheckResult PerftCheckV2(int fen, int ply)
+    {
+        if (fen >= TestFenKnown.Length)
+            fen = 0;
+        string fenPos = TestFenKnown[fen];
+
+        long nTotalNodes = 0;
+        long[] result = new long[ply];
+        long[] actual = TestNodesKnown[fen];
+        int timeId = TimeUtills.Instance.startMeasurement();
+        Board board = new Board(fenPos);
+
+        PerftCheckRecursiveV2(board, 0, ply, result);
+        long totalTime = TimeUtills.Instance.stopMeasurementMillis(timeId);
+        for (int ii = 0; ii < ply; ii++)
+            nTotalNodes += result[ii];
+        return new PerftCheckResult(nTotalNodes, totalTime, result, actual, fenPos);
+    }
+    public static void PerftCheckRecursiveV2(Board board, int currentPly, int plyDepth, long[] nMoves)
+    {
+        board.generateNewMoves();
+        nMoves[currentPly] += board.Moves.Count;
+        if (currentPly == plyDepth - 1)
+            return;
+        foreach (Move nextMove in board.Moves)
+        {
+            board.generateNewMoves();
+            if (!board.useMove(nextMove))
+            { Debug.Log("FAIL MAKE"); }
+            PerftCheckRecursiveV2(board, currentPly + 1, plyDepth, nMoves);
+            if (!board.UnmakeMove())
+            { Debug.Log("FAIL UNMAKE"); }
+
+        }
+    }
+
     public static List<string> PerftDebug(int fen, int ply, string[] refResult)
     {
         List<string> oList = new List<string>();
@@ -321,6 +359,77 @@ public class MoveTest
             Board newBoard = board.Clone();
             newBoard.useMove(nextMove);
             PerftDebugRecursive(newBoard, currentPly + 1, plyDepth, nMoves, oList, move + MoveStringRepresentation(nextMove));
+
+        }
+        long delta = 0;
+        for (int i = currentPly; i < plyDepth; i++)
+        {
+            delta += nMoves[i];
+        }
+        delta -= before;
+        if (currentPly == 1)
+            oList.Add(move + ": " + delta + ", SF: ");
+    }
+
+
+    public static List<string> PerftDebugV2(int fen, int ply, string[] refResult)
+    {
+        List<string> oList = new List<string>();
+        Board board = new Board(TestFenKnown[fen]);
+        long[] nMoves = new long[ply];
+        PerftDebugRecursiveV2(board, 0, ply, nMoves, oList, "");
+        List<string> refList = refResult.ToList();
+        oList.Sort();
+        refList.Sort();
+        for (int ii = 0; ii < oList.Count; ii++)//Math.Max(outputList.Count, stockfishResult.Count); i++)
+        {
+            string str = "";
+            if (refList.Count > ii)
+            {
+                str = oList[ii] + " " + refList[ii];
+            }
+            else
+                str = oList[ii];
+            oList[ii] = str;
+        }
+
+        oList.Add("TOTAL: " + nMoves[ply - 1]);
+
+        return oList;
+    }
+    static private void PerftDebugRecursiveV2(Board board, int currentPly, int plyDepth, long[] nMoves, List<string> oList, string move)
+    {
+        long before = 0;
+        board.generateNewMoves();
+        nMoves[currentPly] += board.Moves.Count;
+        if (currentPly == plyDepth - 1)
+        {
+            if (currentPly <= 1)
+            {
+                Debug.Log(board.Moves.Count);
+                oList.Add(move + ": " + board.Moves.Count + ", SF: ");
+            }
+
+            return;
+        }
+        if (board.Moves.Count == 0)
+        {
+            Debug.Log("CM: " + move);
+            Debug.Log(board.boardToFEN());
+        }
+        for (int i = currentPly; i < plyDepth; i++)
+        {
+            before += nMoves[i];
+        }
+
+        foreach (Move nextMove in board.Moves)
+        {
+            board.generateNewMoves();
+            if (!board.useMove(nextMove))
+                Debug.Log("FAIL MAKE");
+            PerftDebugRecursiveV2(board, currentPly + 1, plyDepth, nMoves, oList, move + MoveStringRepresentation(nextMove));
+            if (!board.UnmakeMove())
+                Debug.Log("FAIL UNMAKE");
 
         }
         long delta = 0;

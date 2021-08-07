@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     public bool blackForfit = false;
     public bool whiteForfit = false;
     public bool started = false;
+    public bool ended = false;
     public bool isNetworked
     {
         get { return NetworkUIManager.instance.IsConnected(); }
@@ -80,7 +81,6 @@ public class GameManager : MonoBehaviour
 
     public Board createBoard(string fen)
     {
-        started = true;
         return new Board(fen);
     }
 
@@ -99,10 +99,8 @@ public class GameManager : MonoBehaviour
                     onNewTurn(board.lastMove, !board.whiteTurn);
                 string winMes;
                 if ((winMes = isEndGameCondition()) != "")
-                {
                     uiManager.winText.text = winMes;
-                    started = false;
-                }
+
             }
             else
             {
@@ -134,6 +132,8 @@ public class GameManager : MonoBehaviour
 
             }
         }
+        else
+            Debug.Log("NOSTART");
 
     }
 
@@ -206,7 +206,7 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i <= valFenSections[0]; i++)
                 validFEN += (i != 0 ? " " : "") + sections[i];
 
-            resetBoard(validFEN);
+            onResetGame(validFEN);
             MenuManager.instance.hideLobby();
             Debug.Log("FEN ACCEPTED");
             return true;
@@ -229,7 +229,7 @@ public class GameManager : MonoBehaviour
                 for (int i = 0; i <= valFenSections[0]; i++)
                     validFEN += (i != 0 ? " " : "") + sections[i];
 
-                resetBoard(validFEN);
+                onResetGame(validFEN);
                 MenuManager.instance.hideLobby();
                 Debug.Log("SENT FEN USED");
                 return;
@@ -241,44 +241,37 @@ public class GameManager : MonoBehaviour
     #endregion
     public void resetBoard()
     {
-        if (started == true)
-            onStoppingGame();
+
         board = createBoard();
-        uiManager.generatePieceUI();
+        started = true;
+        UIManager.instance.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
-        uiManager.gameText.text = s;
-        uiManager.winText.text = "";
-        //board.onStart();
+        UIManager.instance.gameText.text = s;
         board.generateNewMoves();
 
     }
 
     public void resetBoard(string fen)
     {
-        if (started == true)
-            onStoppingGame();
+
         board = createBoard(fen);
-        uiManager.generatePieceUI();
+        started = true;
+        UIManager.instance.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
-        uiManager.gameText.text = s;
-        uiManager.winText.text = "";
-        //board.onStart();
+        UIManager.instance.gameText.text = s;
         board.generateNewMoves();
     }
 
     public void forfit()
     {
-        onStoppingGame();
+
         if (blackForfit)
-        {
             uiManager.winText.text = "Black Forfit ! \n Press \"R\" to restart.";
-            started = false;
-        }
         else if (whiteForfit)
-        {
             uiManager.winText.text = "White Forfit ! \n Press \"R\" to restart.";
-            started = false;
-        }
+        started = false;
+        ended = true;
+
     }
 
     public string isEndGameCondition()
@@ -293,6 +286,11 @@ public class GameManager : MonoBehaviour
             mes = "Black Forfit ! \n Press \"R\" to restart.";
         else if (whiteForfit)
             mes = "White Forfit ! \n Press \"R\" to restart.";
+        if (mes != "")
+        {
+            started = false;
+            ended = true;
+        }
         return mes;
 
     }
@@ -322,6 +320,8 @@ public class GameManager : MonoBehaviour
 
     public bool playAIMove()
     {
+        if (ended || !started)
+            return false;
         if (isAIPaused)
             return false;
         if (useAIDelay && aiDelayStart == null)
@@ -341,7 +341,7 @@ public class GameManager : MonoBehaviour
         {
             uiManager.winText.text = winMes;
             AIManager.instance.toggleAIPaus();
-            started = false;
+
         }
         return true;
     }
@@ -365,6 +365,7 @@ public class GameManager : MonoBehaviour
             pausAI();
 
     }
+
     public void onNewTurn(Move move, bool wasWhite)
     {
         if (!started)
@@ -372,9 +373,9 @@ public class GameManager : MonoBehaviour
             return;
         }
         board.generateNewMoves();
+        Debug.Log("NUM MOVES:" + board.Moves.Count);
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
-        if (!GameHistoryPanel.instance.showing)
-            GameHistoryPanel.instance.activate();
+
         GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
         if (board.lastMoveWasCapture)
             uiManager.updateScore(Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)], wasWhite);
@@ -398,21 +399,46 @@ public class GameManager : MonoBehaviour
     public void onStartingGame()
     {
         board.generateNewMoves();
-        AIManager.instance.showAIMenu();
-        UIManager.instance.ShowScore();
+        UIManager.instance.ShowInGameUI();
+
 
     }
     //TODO IMPLEMENT
     public void onStoppingGame()
     {
-        uiManager.ResetScore();
-        uiManager.HideScore();
+        board = null;
+        UIManager.instance.ResetInGameUI();
+        UIManager.instance.HideInGameUI();
+        ended = false;
+        started = false;
+    }
+
+    public void onResetGame()
+    {
+        UIManager.instance.ResetInGameUI();
+        ended = false;
+        resetBoard();
+    }
+
+    public void onResetGame(string FEN)
+    {
+        UIManager.instance.ResetInGameUI();
+        ended = false;
+        resetBoard(FEN);
     }
 
     public void UnmakeMove()
     {
+        int val = -Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)];
         if (board.UnmakeMove(uiManager))
-        { Debug.Log("UNMADE"); uiManager.playUndoSound(); }
+        {
+            Debug.Log("UNMADE");
+            UIManager.instance.updateScore(val, !board.whiteTurn);
+            uiManager.playUndoSound();
+            GameHistoryPanel.instance.removeLast();
+        }
+        else { Debug.Log("UNDOFAIL"); }
+        board.generateNewMoves();
     }
 
     private void Update()
@@ -422,4 +448,13 @@ public class GameManager : MonoBehaviour
                 playAIMove();
     }
 
+    public void ResetAI()
+    {
+        isAIPaused = false;
+        whiteAIPlaying = false;
+        blackAIPlaying = false;
+        wAI = null;
+        bAI = null;
+        aiDelayMs = 0;
+    }
 }

@@ -9,12 +9,14 @@ public class GameHistoryPanel : MonoBehaviour
     public GameObject historyItemPrefab;
     public bool showing = false;
     public static GameHistoryPanel instance;
+    private Stack<GameObject> historyItemStack;
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
             canvas.gameObject.SetActive(false);
+            historyItemStack = new Stack<GameObject>();
         }
         else if (instance != this)
         {
@@ -56,7 +58,17 @@ public class GameHistoryPanel : MonoBehaviour
         }
         else
             item.init(msg, fen, moved);
-
+        historyItemStack.Push(item.gameObject);
+    }
+    public void removeLast()
+    {
+        if (historyItemStack.Count != 0)
+            GameObject.Destroy(historyItemStack.Pop());
+    }
+    public void resetHistory()
+    {
+        while (historyItemStack.Count != 0)
+            GameObject.Destroy(historyItemStack.Pop());
     }
 
 }

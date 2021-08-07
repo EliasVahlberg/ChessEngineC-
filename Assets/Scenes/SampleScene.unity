@@ -17715,6 +17715,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  lastDestroyedPieceUI: {fileID: 0}
   tilePref: {fileID: 2781509385858064020, guid: 468ef250d3b508243baf5ee7d8828222, type: 3}
   boardContainer: {fileID: 604214784}
   startPos: {x: 0, y: 0}
@@ -17748,6 +17749,8 @@ MonoBehaviour:
   movePieceSound2: {fileID: 8300000, guid: f8a1db654054a4f4c97218ee9969ee4c, type: 3}
   destroyPieceSound1: {fileID: 8300000, guid: ddc36bee8083c7e49bb9339d5f0807df, type: 3}
   destroyPieceSound2: {fileID: 8300000, guid: eece564d90073214b992ccde27381f3d, type: 3}
+  OnStartSound: {fileID: 8300000, guid: 4ac39cd17626e2f4fa4a6645090c3117, type: 3}
+  OnUndoSound: {fileID: 8300000, guid: addeef91d473ad94ea4b84d8c0abff26, type: 3}
   audioSource: {fileID: 1286733560}
   whitePointText: {fileID: 661438791}
   blackPointText: {fileID: 1197521098}
@@ -17788,6 +17791,7 @@ MonoBehaviour:
   blackForfit: 0
   whiteForfit: 0
   started: 0
+  ended: 0
 --- !u!114 &1239729843
 MonoBehaviour:
   m_ObjectHideFlags: 0

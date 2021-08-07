@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ChessAI;
 using Testing;
 using UnityEngine;
 using UnityEngine.UI;
@@ -56,6 +57,8 @@ public class UIManager : MonoBehaviour
     public AudioClip movePieceSound2; //http://freesoundeffect.net/sound/game-piece-slide-2-sound-effect
     public AudioClip destroyPieceSound1; //http://freesoundeffect.net/sound/game-piece-fall-1-sound-effect
     public AudioClip destroyPieceSound2; //http://freesoundeffect.net/sound/game-piece-fall-2-sound-effect
+    public AudioClip OnStartSound; //https://freesound.org/people/jalastram/sounds/362227/
+    public AudioClip OnUndoSound; //https://freesound.org/people/jalastram/sounds/348493/
     public AudioSource audioSource;
     private int internalAudioCounter1 = 0;
     private int internalAudioCounter2 = 0;
@@ -91,6 +94,8 @@ public class UIManager : MonoBehaviour
         generateBoardUI();
         menuManager = MenuManager.instance;
 
+        audioSource.PlayOneShot(OnStartSound, 0.2f);
+        audioSource.SetScheduledEndTime(AudioSettings.dspTime + (1f));
     }
 
     private void generateBoardUI()
@@ -259,7 +264,14 @@ public class UIManager : MonoBehaviour
     private bool isFlipped = false;
     private void checkKeyInput()
     {
+        if (gameManager.ended)
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+                gameManager.resetBoard();
+            if (Input.GetKeyDown(KeyCode.Escape))
+            { gameManager.onStoppingGame(); menuManager.showMainMenu(); }
 
+        }
         if (DevConsoleBehaviour.instance.active)
         {
             if (Input.GetKeyDown(KeyCode.F1))
@@ -286,11 +298,8 @@ public class UIManager : MonoBehaviour
             flipCamera();
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            gameManager.resetBoard();
-        }
-        if (Input.GetKeyDown(KeyCode.Escape))
+
+        if (Input.GetKeyDown(KeyCode.Escape) && !gameManager.ended)
         {
             if (menuManager.showing)
                 menuManager.hideMainMenu();
@@ -452,8 +461,7 @@ public class UIManager : MonoBehaviour
     {
         if (pieceUI[to] != null)
         {
-            pieceUI[to].Destroy();
-            playDestroyPieceSound();
+            destroyPiece(to);
         }
         else
             playMovePieceSound();
@@ -481,6 +489,7 @@ public class UIManager : MonoBehaviour
     {
         if (lastDestroyedPieceUI != null)
         {
+            Debug.Log("REINSTATED");
             lastDestroyedPieceUI.gameObject.SetActive(true);
             pieceUI[pos] = lastDestroyedPieceUI;
             lastDestroyedPieceUI = null;
@@ -503,7 +512,9 @@ public class UIManager : MonoBehaviour
 
     public void playUndoSound()
     {
-
+        internalAudioCounter2--;
+        audioSource.clip = OnUndoSound;
+        audioSource.Play();
     }
 
     public void hideBoard()
@@ -560,5 +571,40 @@ public class UIManager : MonoBehaviour
     {
         whitePointCounter = 0;
         blackPointCounter = 0;
+    }
+
+    public void ShowInGameUI()
+    {
+        //GameHistory
+        GameHistoryPanel.instance.activate();
+        //GameText/Score
+        ShowScore();
+        //AI menu
+        AIManager.instance.showAIMenu();
+        //
+    }
+
+    public void ResetInGameUI()
+    {
+        //GameText/Score
+        ResetScore();
+        ShowScore();
+        //WIN Screen
+        winText.text = "";
+        //ResetAI
+        GameManager.instance.ResetAI();
+        AIManager.instance.showAIMenu();
+        //GameHistory
+        GameHistoryPanel.instance.resetHistory();
+        GameHistoryPanel.instance.activate();
+
+    }
+
+    public void HideInGameUI()
+    {
+        GameHistoryPanel.instance.deactivate();
+        AIManager.instance.hideAIMenu();
+        winText.text = "";
+        hideBoard();
     }
 }
