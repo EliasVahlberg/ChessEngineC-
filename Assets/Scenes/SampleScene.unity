@@ -17715,7 +17715,6 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  lastDestroyedPieceUI: {fileID: 0}
   tilePref: {fileID: 2781509385858064020, guid: 468ef250d3b508243baf5ee7d8828222, type: 3}
   boardContainer: {fileID: 604214784}
   startPos: {x: 0, y: 0}

@@ -124,7 +124,7 @@ public static class FENUtills
                 }
 
                 if ((!typeSymbolDict.ContainsKey(Piece.PieceType(piece))))
-                    Debug.Log("NOT FOUND: " + piece);
+                    Debug.Log("NOT FOUND: " + piece + ", at: {" + file + ", " + rank + "}");
                 fen += Piece.IsBlack(piece) ? typeSymbolDict[Piece.PieceType(piece)] : char.ToUpper(typeSymbolDict[Piece.PieceType(piece)]);
 
             }

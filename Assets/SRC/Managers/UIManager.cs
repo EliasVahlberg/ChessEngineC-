@@ -16,7 +16,7 @@ public class UIManager : MonoBehaviour
     public Tile[] tiles;
     [HideInInspector]
     public PieceUI[] pieceUI = new PieceUI[64];
-    public PieceUI lastDestroyedPieceUI = null;
+    public Stack<PieceUI> destroyedPieceUI = new Stack<PieceUI>();
 
     public GameObject tilePref;
     public GameObject boardContainer;
@@ -475,9 +475,7 @@ public class UIManager : MonoBehaviour
     {
         if (pieceUI[pos] != null)
         {
-            if (lastDestroyedPieceUI != null)
-                lastDestroyedPieceUI.Destroy();
-            lastDestroyedPieceUI = pieceUI[pos];
+            destroyedPieceUI.Push(pieceUI[pos]);
             pieceUI[pos].gameObject.SetActive(false);
             pieceUI[pos] = null;
             playDestroyPieceSound();
@@ -487,12 +485,12 @@ public class UIManager : MonoBehaviour
 
     public void reinstatePiece(int pos)
     {
-        if (lastDestroyedPieceUI != null)
+        if (destroyedPieceUI.Count != 0)
         {
             Debug.Log("REINSTATED");
-            lastDestroyedPieceUI.gameObject.SetActive(true);
-            pieceUI[pos] = lastDestroyedPieceUI;
-            lastDestroyedPieceUI = null;
+            PieceUI obj = destroyedPieceUI.Pop();
+            obj.gameObject.SetActive(true);
+            pieceUI[pos] = obj;
             playDestroyPieceSound();
 
         }

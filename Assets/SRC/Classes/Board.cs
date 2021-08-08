@@ -504,6 +504,7 @@ public class Board
             bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
 
 
+
             // Handle captures
             if (capturedPieceType != 0)
             {
@@ -520,11 +521,11 @@ public class Board
             if (movePieceType == Piece.KING)
             {
                 KingSquares[ColorIndex] = moveTo;
-                newCastleState &= (WhiteToMove) ? 0b1100U : 0b0011U;
+                newCastleState &= (whiteTurn) ? 0b1100U : 0b0011U;
             }
             else
             {
-                Debug.Log(movePieceType + ", " + ColorIndex + ", " + moveFrom + ", " + moveTo);
+
                 GetPieceTable(movePieceType, ColorIndex).MovePiece(moveFrom, moveTo);
             }
 
@@ -563,8 +564,10 @@ public class Board
                 switch (moveFlag)
                 {
                     case Move.Flag.EnPassantCapture:
-                        int epPawnSquare = moveTo + ((ColorIndex == Piece.WHITE) ? -8 : 8);
+                        //!CAUSED MASSIVE ISSUE was:ColourIndex 
+                        int epPawnSquare = moveTo + ((ColorToMove == Piece.WHITE) ? -8 : 8);
                         nextGameState.SetPrevCapturedIndex(epPawnSquare);
+                        nextGameState.SetPrevCapturedType(PAWN);
                         //nextGameState.SetEnPassant(epPawnSquare);
                         tiles[epPawnSquare] = 0; // clear ep capture square
                         pawns[opponentColourIndex].RemovePieceAtSquare(epPawnSquare);
@@ -575,7 +578,7 @@ public class Board
                         int castlingRookFromIndex = (kingside) ? moveTo + 1 : moveTo - 2;
                         int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
 
-                        tiles[castlingRookFromIndex] = Piece.NONE;
+                        tiles[castlingRookFromIndex] = 0;
                         tiles[castlingRookToIndex] = Piece.ROOK | ColorToMove;
 
                         rooks[ColorIndex].MovePiece(castlingRookFromIndex, castlingRookToIndex);
@@ -642,10 +645,11 @@ public class Board
             ColorIndex = 1 - ColorIndex;
             Turn++;
             whiteTurn = !whiteTurn;
+            hasGeneratedMoves = false;
+
             //currentGameState |= newCastleState;
             //currentGameState |= (uint)fiftyMoveCounter << 14;
             //gameStateHistory.Push(currentGameState);
-
             // Change side to move
             //WhiteToMove = !WhiteToMove;
             //ColourToMove = (WhiteToMove) ? Piece.White : Piece.Black;
@@ -653,9 +657,10 @@ public class Board
             //ColourToMoveIndex = 1 - ColourToMoveIndex;
             //plyCount++;
             //fiftyMoveCounter++;
-            hasGeneratedMoves = false;
+
             //Debug.Log(Convert.ToString(currGameState.gameStateValue, 2));
             //Debug.Log(currGameState.gameStateValue);
+            Debug.Log("M:" + Moves.Count);
             return true;
 
 
@@ -903,7 +908,9 @@ public class Board
             uint originalCastleState = currGameState.CastleRights();
 
 
-            int capturedPiece = currGameState.PrevCapturedType() | (OpponentColour);
+
+            int capturedPiece = currGameState.PrevCapturedType();// | (OpponentColour);
+
             capturedPiece |= capturedPiece == 0 ? 0 : OpponentColour;
             int capturedPieceType = PieceType(capturedPiece);
 
@@ -915,6 +922,8 @@ public class Board
 
             int toSquarePieceType = Piece.PieceType(tiles[movedTo]);
             int movedPieceType = (isPromotion) ? PAWN : toSquarePieceType;
+
+
 
             // Update zobrist key with new piece position and side to move
             //ZobristKey ^= Zobrist.sideToMove;
@@ -940,9 +949,7 @@ public class Board
             }
             else if (!isPromotion)
             {
-                Debug.Log(movedPieceType + ", " + ColorIndex + ", " + BoardUtills.stringFromIndex(movedTo) + ", " + BoardUtills.stringFromIndex(movedFrom));
-                Debug.Log(Convert.ToString(move.MoveValue, 2));
-                Debug.Log(tiles[movedTo]);
+
                 GetPieceTable(movedPieceType, ColorIndex).MovePiece(movedTo, movedFrom);
             }
 
@@ -955,7 +962,6 @@ public class Board
             {
 
                 pawns[ColorIndex].AddPieceAtSquare(movedFrom);
-                //Debug.Log("UNMADE PROMOTION: " + movedFrom + "->" + movedTo);
 
 
 
@@ -977,13 +983,8 @@ public class Board
             }
             else if (isEnPassant)
             {
-
-                // ep cature: put captured pawn back on right square
                 int epIndex = movedTo + ((ColourToMove == WHITE) ? -8 : 8);
-                Debug.Log("EP:" + epIndex);
-                //currGameState.EnPassant();
                 tiles[movedTo] = 0;
-                //!LAST EDITED
                 tiles[epIndex] = (int)PAWN | (OpponentColour);
                 pawns[opponentColourIndex].AddPieceAtSquare(epIndex);
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epIndex];
@@ -991,7 +992,6 @@ public class Board
             }
             else if (moveFlags == Move.Flag.Castling)
             { // castles: move rook back to starting square
-
                 bool kingside = movedTo == 6 || movedTo == 62;
                 int castlingRookFromIndex = (kingside) ? movedTo + 1 : movedTo - 2;
                 int castlingRookToIndex = (kingside) ? movedTo - 1 : movedTo + 1;
@@ -1028,6 +1028,7 @@ public class Board
             hasGeneratedMoves = false;
             //Debug.Log(Convert.ToString(currGameState.gameStateValue, 2));
             //Debug.Log(currGameState.gameStateValue);
+
             return true;
 
         }
@@ -1136,10 +1137,10 @@ public class Board
             int enPas = -1;
             bool reinstate = currGameState.PrevCapturedType() != 0;
             int reinstateindex = currGameState.PrevCapturedIndex();
-            if (move.moveFlag == Move.Flag.EnPassantCapture)
-                enPas = enPassantAble;
             if (!UnmakeMoveInnerV2())
                 return false;
+            if (move.moveFlag == Move.Flag.EnPassantCapture)
+                enPas = move.TargetSquare + ((whiteTurn) ? -8 : 8); ;
             switch (move.moveFlag)
             {
                 case Move.Flag.EnPassantCapture:

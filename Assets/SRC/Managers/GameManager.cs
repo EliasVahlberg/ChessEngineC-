@@ -432,7 +432,7 @@ public class GameManager : MonoBehaviour
         int val = -Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)];
         if (board.UnmakeMove(uiManager))
         {
-            Debug.Log("UNMADE");
+            //Debug.Log("UNMADE");
             UIManager.instance.updateScore(val, !board.whiteTurn);
             uiManager.playUndoSound();
             GameHistoryPanel.instance.removeLast();
