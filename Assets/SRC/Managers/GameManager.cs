@@ -6,10 +6,15 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    [HideInInspector]
     public UIManager uiManager;
+    [HideInInspector]
     public MenuManager menuManager;
+    [HideInInspector]
     public NetworkGameManager networkGameManager;
+    [HideInInspector]
     public NetworkUIManager networkUIManager;
+    [HideInInspector]
     public Board board;
 
     public int myColor = 0;
@@ -34,10 +39,13 @@ public class GameManager : MonoBehaviour
     public bool blackAIPlaying = false;
     public bool useAIDelay = true;
     public bool isAIPaused = false;
-    public long aiDelayMs = 0;
+    public int aiDelayMs = 50;
+    public bool aiWaitingToMove = false;
+    public static int DEFAULT_AI_DELAY_MS = 50;
     public DateTime aiDelayStart;
     #endregion
     //UI interface
+    public bool newTurnFlag = false;
     public int selectedMoveTo = -1;
     public int selectedPiece = -1;
     public bool blackForfit = false;
@@ -96,7 +104,8 @@ public class GameManager : MonoBehaviour
                 if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
                     Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
                 else
-                    onNewTurn(board.lastMove, !board.whiteTurn);
+                    newTurnFlag = true;
+
                 string winMes;
                 if ((winMes = isEndGameCondition()) != "")
                     uiManager.winText.text = winMes;
@@ -164,7 +173,7 @@ public class GameManager : MonoBehaviour
             if (!board.useMove(sentMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
             else
-                onNewTurn(board.lastMove, !board.whiteTurn);
+                newTurnFlag = true;
             moveSent = false;
         }
         else
@@ -172,7 +181,7 @@ public class GameManager : MonoBehaviour
             if (!board.useMove(recivedMove, uiManager) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + recivedMove.StartSquare + ", to = " + recivedMove.TargetSquare + " }");
             else
-                onNewTurn(board.lastMove, !board.whiteTurn);
+                newTurnFlag = true;
         }
     }
 
@@ -265,10 +274,10 @@ public class GameManager : MonoBehaviour
     public void forfit()
     {
 
-        if (blackForfit)
-            uiManager.winText.text = "Black Forfit ! \n Press \"R\" to restart.";
-        else if (whiteForfit)
-            uiManager.winText.text = "White Forfit ! \n Press \"R\" to restart.";
+
+        uiManager.winText.text = isEndGameCondition();
+
+
         started = false;
         ended = true;
 
@@ -277,19 +286,20 @@ public class GameManager : MonoBehaviour
     public string isEndGameCondition()
     {
         string mes = "";
-
+        board.generateNewMoves();
         if (board.isCheckMate())
-            mes = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n Press \"R\" to restart.";
+            mes = "Checkmate " + (board.whiteTurn ? "Black" : "White") + " Won! \n";
         else if (board.isDraw())
-            mes = "Draw! \n Press \"R\" to restart.";
+            mes = "Draw! \n";
         else if (blackForfit)
-            mes = "Black Forfit ! \n Press \"R\" to restart.";
+            mes = "Black Forfit ! \n";
         else if (whiteForfit)
-            mes = "White Forfit ! \n Press \"R\" to restart.";
+            mes = "White Forfit ! \n";
         if (mes != "")
         {
             started = false;
             ended = true;
+            return mes + " Press \"R\" to restart or \"ESC\" to go back.";
         }
         return mes;
 
@@ -299,11 +309,11 @@ public class GameManager : MonoBehaviour
     {
         if (whiteAIPlaying && board.whiteTurn)
         {
-            if (board.Moves.Count == 0)
-            {
-                Debug.Log("White AI Lost");
-            }
-            Debug.Log("White AI:" + wAI.Name);
+            //if (board.Moves.Count == 0)
+            //{
+            //    Debug.Log("White AI Lost");
+            //}
+            //Debug.Log("White AI:" + wAI.Name);
             return AIManager.instance.SelectMove(wAI, board);
         }
         else if (blackAIPlaying && !board.whiteTurn)
@@ -312,7 +322,7 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("Black AI Lost");
             }
-            Debug.Log("Black AI:" + bAI.Name);
+            //Debug.Log("Black AI:" + bAI.Name);
             return AIManager.instance.SelectMove(bAI, board);
         }
         return new Move(0);
@@ -327,22 +337,26 @@ public class GameManager : MonoBehaviour
         if (useAIDelay && aiDelayStart == null)
             aiDelayStart = DateTime.Now;
         if (useAIDelay && (((TimeSpan)(DateTime.Now - aiDelayStart)).TotalMilliseconds < aiDelayMs))
-            return false;
-        else aiDelayStart = DateTime.Now;
+        { return false; }
+
         Move move = getAIMove();
         if (move.StartSquare == 0 && move.TargetSquare == 0)
         {
             return false;
         }
         board.useMove(move, uiManager);
-        onNewTurn(board.lastMove, !board.whiteTurn);
+
         string winMes;
         if ((winMes = isEndGameCondition()) != "")
         {
             uiManager.winText.text = winMes;
             AIManager.instance.toggleAIPaus();
+            return false;
 
         }
+        //Debug.Log("FIFTY COUNT = " + board.fiftyCount);
+        aiDelayStart = DateTime.Now;
+        newTurnFlag = true;
         return true;
     }
 
@@ -351,12 +365,13 @@ public class GameManager : MonoBehaviour
         if (blackAIPlaying || whiteAIPlaying)
             isAIPaused = true;
     }
+
     private void resumeAI()
     {
         if (blackAIPlaying || whiteAIPlaying)
             isAIPaused = false;
-        playAIMove();
     }
+
     public void toggleAIPaus()
     {
         if (isAIPaused)
@@ -373,7 +388,7 @@ public class GameManager : MonoBehaviour
             return;
         }
         board.generateNewMoves();
-        Debug.Log("NUM MOVES:" + board.Moves.Count);
+        //Debug.Log("NUM MOVES:" + board.Moves.Count);
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
 
         GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
@@ -384,7 +399,7 @@ public class GameManager : MonoBehaviour
             AIManager.instance.letAIPlayButton.gameObject.SetActive(false);
             AIManager.instance.aiSelect.gameObject.SetActive(false);
             AIManager.instance.toggleAIPausButton.gameObject.SetActive(true);
-            playAIMove();
+            aiWaitingToMove = true;
         }
         else
         {
@@ -393,17 +408,19 @@ public class GameManager : MonoBehaviour
             AIManager.instance.letAIPlayButton.gameObject.SetActive(true);
         }
 
+        newTurnFlag = false;
         uiManager.hideDanger();
     }
 
     public void onStartingGame()
     {
+
         board.generateNewMoves();
         UIManager.instance.ShowInGameUI();
 
 
     }
-    //TODO IMPLEMENT
+
     public void onStoppingGame()
     {
         board = null;
@@ -415,6 +432,8 @@ public class GameManager : MonoBehaviour
 
     public void onResetGame()
     {
+        whiteForfit = false;
+        blackForfit = false;
         UIManager.instance.ResetInGameUI();
         ended = false;
         resetBoard();
@@ -443,9 +462,14 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
-            if (useAIDelay)
-                playAIMove();
+        if (started)
+        {
+            if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
+                if (useAIDelay && aiWaitingToMove)
+                    playAIMove();
+            if (newTurnFlag)
+                onNewTurn(board.lastMove, !board.whiteTurn);
+        }
     }
 
     public void ResetAI()
@@ -453,8 +477,9 @@ public class GameManager : MonoBehaviour
         isAIPaused = false;
         whiteAIPlaying = false;
         blackAIPlaying = false;
+        aiWaitingToMove = true;
         wAI = null;
         bAI = null;
-        aiDelayMs = 0;
+        aiDelayMs = DEFAULT_AI_DELAY_MS;
     }
 }

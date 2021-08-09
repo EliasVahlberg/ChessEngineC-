@@ -74,6 +74,7 @@ namespace ChessAI
                     isWhiteAIActive = true;
                     gameManager.wAI = activeWhiteAI;
                     gameManager.whiteAIPlaying = true;
+                    gameManager.aiWaitingToMove = true;
                     wAINameDisplay.text = "<color=cyan><b>White AI: " + gameManager.wAI.Name + "</b></color>";
 
 

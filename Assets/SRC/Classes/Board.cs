@@ -232,6 +232,7 @@ public class Board
 
     public bool WhiteInCheck;
     public bool BlackInCheck;
+    public bool CurrentInCheck { get => whiteTurn ? WhiteInCheck : BlackInCheck; }
 
     public bool whiteCastleKingside
     {
@@ -304,9 +305,9 @@ public class Board
 
     #region LastState
 
-    public Move lastMove;
-    public bool lastMoveWasCapture = false;
-    public int lastMoveCaptured = 0;
+    public Move lastMove { get => currGameState.PrevMove; }
+    public bool lastMoveWasCapture { get => currGameState.PrevCapturedType() != 0; }
+    public int lastMoveCaptured { get => currGameState.PrevCapturedType(); }
 
     private bool hasReverted = false;
 
@@ -467,7 +468,7 @@ public class Board
             }
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
-            lastMove = move;
+            //lastMove = move;
             return true;
         }
         catch (Exception _ex)
@@ -641,7 +642,7 @@ public class Board
             nextGameState.SetCastleRights(newCastleState);
             nextGameState.PrevMove = move;
             nextGameState.SetWhiteTurn(!whiteTurn);
-            nextGameState.SetFiftyTurnCount(fiftyMoveCounter);
+            nextGameState.SetFiftyTurnCount(fiftyMoveCounter + 1);
             currGameState = nextGameState;
             ColorIndex = 1 - ColorIndex;
             Turn++;
@@ -700,8 +701,8 @@ public class Board
                 updateCasteRook(to);
             if (tiles[to] != 0)
             {
-                lastMoveWasCapture = true;
-                lastMoveCaptured = tiles[to];
+                //lastMoveWasCapture = true;
+                //lastMoveCaptured = tiles[to];
                 if (whiteTurn)
                     BlackPieces.Remove(to);
                 else
@@ -715,7 +716,7 @@ public class Board
                     WhitePieces.Remove(enPassantAble);
             }
             else
-                lastMoveWasCapture = false;
+            { }//lastMoveWasCapture = false;
 
             switch (move.moveFlag)
             {
@@ -779,7 +780,7 @@ public class Board
 
             Turn++;
             whiteTurn = !whiteTurn;
-            lastMove = move;
+            //lastMove = move;
             hasReverted = false;
             //debugPrintMoves();
             return true;
@@ -816,7 +817,7 @@ public class Board
                 WhitePieces.Add(enPassantAble);
         }
         else
-            lastMoveWasCapture = false;
+        { }//lastMoveWasCapture = false;
 
         switch (lastMove.moveFlag)
         {

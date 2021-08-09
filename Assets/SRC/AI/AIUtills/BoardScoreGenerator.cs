@@ -21,7 +21,7 @@ namespace ChessAI
         const int COLOR_MASK = 0b11000;
         public static int captureWeight = 1;
         public static int[] pieceScoreArr = new int[]{
-            0*captureWeight,
+            0,
             int.MaxValue/2,
             1*captureWeight,
             3*captureWeight,
@@ -29,6 +29,16 @@ namespace ChessAI
             5*captureWeight,
             9*captureWeight
             };
+        public static Dictionary<int, int> pieceScore = new Dictionary<int, int>()
+        {
+            {0b000,pieceScoreArr[0]},
+            {0b001,0},
+            {0b010,pieceScoreArr[2]},
+            {0b011,pieceScoreArr[3]},
+            {0b101,pieceScoreArr[4]},
+            {0b110,pieceScoreArr[5]},
+            {0b111,pieceScoreArr[6]}
+        };
         private static Dictionary<int, int> pieceScoreW = new Dictionary<int, int>()
         {
             {0b00000,pieceScoreArr[0]},

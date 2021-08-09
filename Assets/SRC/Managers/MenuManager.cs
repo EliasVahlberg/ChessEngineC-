@@ -153,11 +153,11 @@ public class MenuManager : MonoBehaviour
             if (isInLobby)
             {
                 inGameDisconnectButton.gameObject.SetActive(true);
-                returnMainMenuButton.gameObject.SetActive(false);
+                //returnMainMenuButton.gameObject.SetActive(false);
             }
             else
             {
-                returnMainMenuButton.gameObject.SetActive(true);
+                //returnMainMenuButton.gameObject.SetActive(true);
                 inGameDisconnectButton.gameObject.SetActive(false);
             }
             playDefaultStart.gameObject.SetActive(false);
@@ -179,6 +179,7 @@ public class MenuManager : MonoBehaviour
             openSettingsMenuButton.gameObject.SetActive(true);
             playDefaultStart.gameObject.SetActive(true);
             openNetworkMenuButton.gameObject.SetActive(true);
+            quitButton.gameObject.SetActive(true);
         }
         showing = true;
     }

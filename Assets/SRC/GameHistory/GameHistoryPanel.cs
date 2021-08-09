@@ -37,7 +37,9 @@ public class GameHistoryPanel : MonoBehaviour
     public void addHistoryItem(string fen, Move move, bool wasWhite, bool wasCapture)
     {
         HistoryItem item = Instantiate(historyItemPrefab, Vector3.zero, Quaternion.identity, content.transform).GetComponent<HistoryItem>();
+        bool wasEP = GameManager.instance.board.lastMove.moveFlag == Move.Flag.EnPassantCapture;
         string msg = (wasCapture ? "<color=red><b>" : "<b>") + (wasWhite ? "White" : "Black") + " Move:" +
+            (wasEP ? "(EP)" : "") +
             Piece.PositionRepresentation[move.StartSquare] + " -> " +
             Piece.PositionRepresentation[move.TargetSquare] +
             (wasCapture ? "</b></color>" : "</b>");
@@ -51,9 +53,14 @@ public class GameHistoryPanel : MonoBehaviour
         }
         int piece = GameManager.instance.board.tiles[move.TargetSquare];
         Sprite moved = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[piece]];
-        if (wasCapture)
+        if (wasEP)
         {
-            Sprite captured = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[GameManager.instance.board.lastMoveCaptured]];
+            Sprite captured = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[Piece.PAWN | (wasWhite ? Piece.BLACK : Piece.WHITE)]];
+            item.init(msg, fen, moved, captured);
+        }
+        else if (wasCapture)
+        {
+            Sprite captured = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[GameManager.instance.board.lastMoveCaptured | (wasWhite ? Piece.BLACK : Piece.WHITE)]];
             item.init(msg, fen, moved, captured);
         }
         else

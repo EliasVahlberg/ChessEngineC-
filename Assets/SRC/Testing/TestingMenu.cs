@@ -111,15 +111,7 @@ namespace Testing
         {
             #region AIPERFT
 
-            int ii = 0;
-            foreach (IAIObject ai in AIManager.instance.AIs)
-            {
-                string str = "AI [" + ii + "] :" + ai.Name;
-                aiOptions.Add(new OptionData(str));
-                ii++;
-            }
-            wAISelect.options = aiOptions;
-            bAISelect.options = aiOptions;
+
             selectNumberOfMoves.options = nMovesOptions;
             resultField.readOnly = true;
             startTestButton.onClick.AddListener(runAIPerfTest);
@@ -151,6 +143,15 @@ namespace Testing
         {
             if (MenuManager.instance.showing)
             {
+                int ii = 0;
+                foreach (IAIObject ai in AIManager.instance.AIs)
+                {
+                    string str = "AI [" + ii + "] :" + ai.Name;
+                    aiOptions.Add(new OptionData(str));
+                    ii++;
+                }
+                wAISelect.options = aiOptions;
+                bAISelect.options = aiOptions;
                 MenuManager.instance.hideMainMenu();
                 canvas.SetActive(true);
                 showing = true;
