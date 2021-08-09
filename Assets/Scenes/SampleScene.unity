@@ -18218,11 +18218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 991862298}
   aIs:
-  - {fileID: 11400000, guid: fe2ee446cef196948a1eaa0a3c90d805, type: 2}
-  - {fileID: 11400000, guid: fc34e8f6c395aef40bdac0f07e3ed9c7, type: 2}
-  - {fileID: 11400000, guid: f8046da15ca6ed2488c56e502e6e9b70, type: 2}
-  - {fileID: 11400000, guid: f74b664ea1dbc75419f0b84dcd9c2639, type: 2}
-  - {fileID: 11400000, guid: 6146e144963d83b47b7835e004065008, type: 2}
+  - {fileID: 0}
   showing: 0
   isBlackAIActive: 0
   isWhiteAIActive: 0

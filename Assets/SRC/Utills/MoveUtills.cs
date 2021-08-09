@@ -641,6 +641,9 @@ public class MoveUtills
 
                 //* FOURTH time is the charm right?
                 //*Back at it again
+
+                //* One last time 
+                //*Changed so that it's looking both left and right and counting up (nPiecesOnLeft + nPiecesOnRight) <= 1
                 int col = board.whiteTurn ? WHITE : BLACK;
                 int oCol = board.whiteTurn ? BLACK : WHITE;
                 bool kingOnRank = false;
@@ -655,7 +658,10 @@ public class MoveUtills
                     {
                         int piece = board.tiles[position - ii];
                         if (IsType(piece, KING) && IsColour(piece, color))
+                        {
                             kingOnRank = true;
+                            break;
+                        }
                         else if (IsRookOrQueen(piece) && IsColour(piece, opponentColor))
                         { rookOrQueenLeft = true; break; }
                         else if (!rookOrQueenLeft)
@@ -669,7 +675,10 @@ public class MoveUtills
                     {
                         int piece = board.tiles[position + ii];
                         if (IsType(piece, KING) && IsColour(piece, color))
+                        {
                             kingOnRank = true;
+                            break;
+                        }
                         else if (IsRookOrQueen(piece) && IsColour(piece, opponentColor))
                         { rookOrQueenRight = true; break; }
                         else if (!rookOrQueenRight)
@@ -682,7 +691,7 @@ public class MoveUtills
                 //+ ", " + rookOrQueenRight
                 //+ ", " + nPiecesOnLeft
                 //+ ", " + nPiecesOnRight);
-                if (kingOnRank && ((rookOrQueenLeft && (nPiecesOnLeft <= 1) || (rookOrQueenRight && (nPiecesOnRight <= 1)))))
+                if (kingOnRank && ((rookOrQueenLeft && ((nPiecesOnLeft + nPiecesOnRight) <= 1) || (rookOrQueenRight && (nPiecesOnRight + nPiecesOnLeft <= 1)))))
                     return;
                 else
                 {

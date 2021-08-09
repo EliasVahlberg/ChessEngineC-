@@ -51,6 +51,7 @@ namespace ChessAI
                 aiOptions.Add(new OptionData(str));
                 ii++;
             }
+            Debug.Log("Num ais: " + ii);
             aiSelect.options = aiOptions;
             canvas.SetActive(false);
         }

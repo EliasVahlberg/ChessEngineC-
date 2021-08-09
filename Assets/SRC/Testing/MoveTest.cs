@@ -57,7 +57,7 @@ public class MoveTest
         "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
         "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  ",
         "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ",
-        "rnbq1k1r/pp1Pbppp/2p5/8/2B5/P7/1PP1NnPP/RNBQK2R b KQ - 0 8"         //Custom
+        "8/8/3p4/KPp4r/1R2Pp1k/8/6P1/8 w  c5 0 1"         //Custom
     };
     public static readonly long[][] TestNodesKnown =
     {new long[]{ 20, 400, 8902, 197281, 4865609, 119060324, 3195901860, 84998978956},
@@ -302,6 +302,7 @@ public class MoveTest
     {
         board.generateNewMoves();
         nMoves[currentPly] += board.Moves.Count;
+
         if (currentPly == plyDepth - 1)
             return;
         foreach (Move nextMove in board.Moves)
@@ -425,6 +426,8 @@ public class MoveTest
             //    str1 += MoveStringRepresentation(nmove) + "\n";
             //}
             //Debug.Log(str1);
+            if (board.Moves.Count == 0)
+                Debug.Log("CM: " + move);
             return;
         }
         if (board.Moves.Count == 0)
@@ -436,6 +439,7 @@ public class MoveTest
         {
             before += nMoves[i];
         }
+        long before2 = nMoves[plyDepth - 1];
 
         foreach (Move nextMove in board.Moves)
         {
@@ -459,7 +463,18 @@ public class MoveTest
             delta += nMoves[i];
         }
         delta -= before;
+        before2 = nMoves[plyDepth - 1] - before2;
         if (currentPly == 1)
-            oList.Add(move + ": " + delta + ", SF: ");
+        {
+            //*WAS delta
+            oList.Add(move + ": " + before2 + ", SF: ");
+            Debug.LogError(move + ": " + delta + ", " + before2);
+        }
+        if (currentPly == 2)
+        {
+            //oList.Add(move + ": " + delta + ", SF: ");
+            //board.generateNewMoves();
+            //Debug.Log(move + ": " + delta + ", " + board.Moves.Count);
+        }
     }
 }
