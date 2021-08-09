@@ -565,6 +565,7 @@ public class Board
                 {
                     case Move.Flag.EnPassantCapture:
                         //!CAUSED MASSIVE ISSUE was:ColourIndex 
+                        //TODO kms
                         int epPawnSquare = moveTo + ((ColorToMove == Piece.WHITE) ? -8 : 8);
                         nextGameState.SetPrevCapturedIndex(epPawnSquare);
                         nextGameState.SetPrevCapturedType(PAWN);
@@ -645,7 +646,6 @@ public class Board
             ColorIndex = 1 - ColorIndex;
             Turn++;
             whiteTurn = !whiteTurn;
-            hasGeneratedMoves = false;
 
             //currentGameState |= newCastleState;
             //currentGameState |= (uint)fiftyMoveCounter << 14;
@@ -660,7 +660,9 @@ public class Board
 
             //Debug.Log(Convert.ToString(currGameState.gameStateValue, 2));
             //Debug.Log(currGameState.gameStateValue);
-            Debug.Log("M:" + Moves.Count);
+            //Debug.Log("M:" + Moves.Count);
+            //debugPrintMoves();
+            hasGeneratedMoves = false;
             return true;
 
 
@@ -992,13 +994,13 @@ public class Board
             }
             else if (moveFlags == Move.Flag.Castling)
             { // castles: move rook back to starting square
+
                 bool kingside = movedTo == 6 || movedTo == 62;
                 int castlingRookFromIndex = (kingside) ? movedTo + 1 : movedTo - 2;
                 int castlingRookToIndex = (kingside) ? movedTo - 1 : movedTo + 1;
 
                 tiles[castlingRookToIndex] = 0;
                 tiles[castlingRookFromIndex] = ROOK | ColourToMove;
-
                 rooks[ColorIndex].MovePiece(castlingRookToIndex, castlingRookFromIndex);
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
                 //ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookToIndex];
@@ -1039,6 +1041,7 @@ public class Board
         }
 
     }
+
     public void updateCasteling(int from, int to)
     {
         int type = PieceType(tiles[to]);
@@ -1149,10 +1152,11 @@ public class Board
                     break;
                 case Move.Flag.Castling:
                     uiManager.movePiece(from, to);
-                    if (from < to)
-                        uiManager.movePiece(from + 3, from + 1);
-                    else
-                        uiManager.movePiece(from - 4, from - 1);
+                    bool kingside = from == 6 || from == 62;
+                    int castlingRookFromIndex = (kingside) ? from + 1 : from - 2;
+                    int castlingRookToIndex = (kingside) ? from - 1 : from + 1;
+                    Debug.Log(from + ", " + to + "," + castlingRookFromIndex + ", " + castlingRookToIndex);
+                    uiManager.movePiece(castlingRookToIndex, castlingRookFromIndex);
                     break;
                 case Move.Flag.PromoteToQueen:
 

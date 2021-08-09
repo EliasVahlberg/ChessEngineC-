@@ -76,7 +76,7 @@ public class MoveTest
         "rnbqkbnr/ppppppp1/7p/8/8/P7/RPPPPPPP/1NBQKBNR b Kkq - 1 2",
         "rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
         "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ",
-        "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQ1RK1 b KQ - 1 8"
+        "rnbq1k1r/pp1P1ppp/2p5/8/2B5/b7/1PP1NnPP/RNBQK2R w KQ - 0 8"
         };
     static List<List<string>> leafList = new List<List<string>>();
     static List<string> outputList;
@@ -416,10 +416,15 @@ public class MoveTest
         {
             if (currentPly <= 1)
             {
-                Debug.Log(board.Moves.Count);
+                //Debug.Log(board.Moves.Count);
                 oList.Add(move + ": " + board.Moves.Count + ", SF: ");
             }
-
+            //string str1 = move + "\n";
+            //foreach (Move nmove in board.Moves)
+            //{
+            //    str1 += MoveStringRepresentation(nmove) + "\n";
+            //}
+            //Debug.Log(str1);
             return;
         }
         if (board.Moves.Count == 0)

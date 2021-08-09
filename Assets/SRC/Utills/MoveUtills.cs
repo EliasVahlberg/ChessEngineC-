@@ -506,7 +506,7 @@ public class MoveUtills
         // If this piece is pinned, and the king is in check, this piece cannot move
         if (inCheck && isPinned)
         {
-            Debug.Log("IN CHECK BUT PINNED:" + BoardUtills.stringFromIndex(position));
+            //Debug.Log("IN CHECK BUT PINNED:" + BoardUtills.stringFromIndex(position));
             return;
         }
         int opoColor = board.whiteTurn ? BLACK : WHITE;
@@ -723,7 +723,7 @@ public class MoveUtills
         (isSafePosition(squaresBetween[0][1])) &&
         (IsType(board.tiles[rookPos[0]], ROOK)) &&
         (IsColour(board.tiles[rookPos[0]], color)) &&
-        (!(whiteTurn ? board.WhiteInCheck : board.BlackInCheck));
+        (!inCheck);
         //* NOTE "The king does not pass through a square that is attacked by an enemy piece."
         //* since the he does not pass through the third square it is ok
         bool cas2 =
@@ -735,7 +735,7 @@ public class MoveUtills
         (isSafePosition(squaresBetween[1][2])) &&
         (IsType(board.tiles[rookPos[1]], ROOK)) &&
         (IsColour(board.tiles[rookPos[1]], color)) &&
-        (!(whiteTurn ? board.WhiteInCheck : board.BlackInCheck));
+        (!inCheck);
         //*DEBUG
         //Debug.Log(
         //castleRights[1] + ",\n" +
