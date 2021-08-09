@@ -63,7 +63,10 @@ public readonly struct Move
     {
         return StartSquare == m.StartSquare && TargetSquare == m.TargetSquare && moveFlag == m.moveFlag;
     }
-
+    public override string ToString()
+    {
+        return BoardUtills.stringFromIndex(StartSquare) + BoardUtills.stringFromIndex(TargetSquare);
+    }
     public bool isPromotion()
     {
         int moveflag = moveFlag;

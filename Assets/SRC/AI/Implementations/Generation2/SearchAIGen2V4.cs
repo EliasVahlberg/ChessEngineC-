@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Utills;
+
 namespace ChessAI
 {
     [CreateAssetMenu(fileName = "SearchAIGen2V4", menuName = "Utilities/AI GEN 2/Search AI V4")]
@@ -16,6 +18,7 @@ namespace ChessAI
         private long numPrunes;
         public override Move SelectMove(Board board)
         {
+            int measureID = TimeUtills.Instance.startMeasurement();
             #region Before_ValidCopy
 
             int[] tilesCopy = new int[64];
@@ -26,7 +29,6 @@ namespace ChessAI
             counter = 0;
             numPrunes = 0;
             bestMove = new Move(0);
-            OrderMoves(board);
 
             if (board.Moves.Count == 0)
                 throw new ArgumentNullException("board.Moves", "EndgameConditions are handeled by the game manager and not the AI");
@@ -44,6 +46,12 @@ namespace ChessAI
             if (!AIUtillsManager.instance.BoardIntegrityCheck(board, tilesCopy, gameStateCopy))
                 throw new InvalidOperationException("Board was mutated during selection of moves");
             #endregion
+
+            long deltaT = TimeUtills.Instance.stopMeasurementMillis(measureID);
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> " + this.Name + ", Time :" + deltaT + "ms </color>");
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> \t Positions evaluated:" + counter + "</color>");
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> \t Move selected:" + bestMove.ToString() + "Score: " + maxVal + "</color>");
+
             return bestMove;
         }
 
@@ -53,7 +61,7 @@ namespace ChessAI
             if (depth == 0)
                 return AIUtillsManager.instance.BoardScoreGen.V4CaptureScore(board.tiles, board.whiteTurn);
 
-            board.generateNewMoves();
+            OrderMoves(board);
 
             if (board.Moves.Count == 0)
                 return board.CurrentInCheck ? negInf : 0;
@@ -74,9 +82,9 @@ namespace ChessAI
                     numPrunes++;
                     return beta;
                 }
-                if (alpha <= val)
+                if (val > alpha)
                 {
-                    alpha = alpha > val ? alpha : val;
+                    alpha = val;
                     if (depth == maxDepth)
                         bestMove = move;
                 }

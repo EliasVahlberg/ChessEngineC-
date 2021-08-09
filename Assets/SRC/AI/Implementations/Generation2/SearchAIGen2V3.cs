@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Utills;
+
 namespace ChessAI
 {
     [CreateAssetMenu(fileName = "SearchAIGen2V3", menuName = "Utilities/AI GEN 2/Search AI V3")]
@@ -21,6 +23,7 @@ namespace ChessAI
             Array.Copy(board.tiles, tilesCopy, 64);
             GameState gameStateCopy = new GameState(board.currGameState.gameStateValue, board.currGameState.PrevMove);
             #endregion
+            int measureID = TimeUtills.Instance.startMeasurement();
             counter = 0;
             numPrunes = 0;
             bestMove = new Move(0);
@@ -38,6 +41,10 @@ namespace ChessAI
             if (!AIUtillsManager.instance.BoardIntegrityCheck(board, tilesCopy, gameStateCopy))
                 throw new InvalidOperationException("Board was mutated during selection of moves");
             #endregion
+            long deltaT = TimeUtills.Instance.stopMeasurementMillis(measureID);
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> " + this.Name + ", Time :" + deltaT + "ms </color>");
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> \t Positions evaluated:" + counter + "</color>");
+            ConsoleHistory.instance.addLogHistory("\t<color=orange> \t Move selected:" + bestMove.ToString() + "Score: " + maxVal + "</color>");
             return bestMove;
         }
 
@@ -68,9 +75,9 @@ namespace ChessAI
                     numPrunes++;
                     return beta;
                 }
-                if (alpha <= val)
+                if (val > alpha)
                 {
-                    alpha = alpha > val ? alpha : val;
+                    alpha = val;
                     if (depth == maxDepth)
                         bestMove = move;
                 }
