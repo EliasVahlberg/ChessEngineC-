@@ -7,6 +7,11 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    #region Constants
+
+    static readonly char[] ranksIndecies = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+    #endregion
+
     #region publicVars
     [HideInInspector]
     public GameManager gameManager;
@@ -34,7 +39,15 @@ public class UIManager : MonoBehaviour
     public Color tintOffset = new Color(0, 100, 0);
     public Color dangerTintOffset = new Color(100, 0, 0);
     public Color lastMoveTintOffset = new Color(100, 0, 100);
-    static readonly char[] ranksIndecies = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+
+
+    public GameObject promotionMenu;
+    public GameObject promotionMenuExit;
+    public GameObject promotionMenuQueen;
+    public GameObject promotionMenuKnight;
+    public GameObject promotionMenuRook;
+    public GameObject promotionMenuBishop;
+
     public Dictionary<int, int> pieceTypeToSprite = new Dictionary<int, int>()
     {
         [Piece.KING | Piece.WHITE] = 0,
@@ -51,6 +64,7 @@ public class UIManager : MonoBehaviour
         [Piece.QUEEN | Piece.BLACK] = 11
     };
     #endregion
+
     #region Assets
     public Sprite[] piceSprites = new Sprite[12];
     public AudioClip movePieceSound1; //http://freesoundeffect.net/sound/game-piece-slide-1-sound-effect
@@ -63,15 +77,23 @@ public class UIManager : MonoBehaviour
     private int internalAudioCounter1 = 0;
     private int internalAudioCounter2 = 0;
     #endregion
+
+    #region StateVariables
+
     private int whitePointCounter = 0;
     public Text whitePointText;
     private int blackPointCounter = 0;
     public Text blackPointText;
     public GameObject pointsCanvas;
+    private bool selectingPromotion = false;
 
     private List<int> tintedSquares;
+    #endregion
 
     public static UIManager instance;
+
+    #region INIT
+
     private void Awake()
     {
         if (instance == null)
@@ -149,6 +171,7 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+    #endregion
 
     void Update()
     {
@@ -156,6 +179,7 @@ public class UIManager : MonoBehaviour
         checkKeyInput();
     }
 
+    #region InputHandeling
 
     [HideInInspector]
     public bool dragging = false;
@@ -185,9 +209,31 @@ public class UIManager : MonoBehaviour
         }
         else
         {
+            if (selectingPromotion && Input.GetMouseButtonDown(0))
+            {
+                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
+                RaycastHit2D[] hits = Physics2D.RaycastAll(mousePosition, new Vector2(0, 0), 0.2f);
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    if (hits[i].collider.tag == "Promotion")
+                    {
+                        GameObject obj = hits[i].collider.gameObject;
+                        if (obj == promotionMenuExit)
+                            onPromotionSelectExit(0);
+                        else if (obj == promotionMenuQueen)
+                            onPromotionSelectExit(Piece.QUEEN);
+                        else if (obj == promotionMenuKnight)
+                            onPromotionSelectExit(Piece.KNIGHT);
+                        else if (obj == promotionMenuRook)
+                            onPromotionSelectExit(Piece.ROOK);
+                        else if (obj == promotionMenuBishop)
+                            onPromotionSelectExit(Piece.BISHOP);
 
-            if (dragging && Input.GetMouseButtonUp(0))
+                    }
+                }
+            }
+            else if (dragging && Input.GetMouseButtonUp(0))
             {
                 dragging = false;
                 hideAvailableMoves();
@@ -319,10 +365,33 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    private int promotionStart;
+    private int promotionTarget;
+    public void onPromotionSelectEnter(Move move)
+    {
+        selectingPromotion = true;
+        promotionMenu.SetActive(true);
+        promotionMenu.transform.position = pieceUI[move.StartSquare].transform.position;
+        promotionStart = move.StartSquare;
+        promotionTarget = move.TargetSquare;
+
+    }
+    public void onPromotionSelectExit(int option)
+    {
+        selectingPromotion = false;
+        promotionMenu.SetActive(false);
+        GameManager.instance.selectPromotionMove(option, promotionStart, promotionTarget);
+    }
+    #endregion
+
+    #region ColorTiles
     public void showDanger(bool white)
     {
         if (!gameManager.started)
             return;
+
+
+
 
         bool dangerTinted = white ? dangerTintedW : dangerTintedB;
         List<int> dangerTintedList = white ? dangerTintedListW : dangerTintedListB;
@@ -345,6 +414,10 @@ public class UIManager : MonoBehaviour
         }
         else
         {
+
+            if (!GameManager.instance.board.HasGeneratedMoves ||
+                (GameManager.instance.board.whiteTurn != white))
+                return;
             int i = 0;
             foreach (bool b in ((white) ? gameManager.board.BlackCap : gameManager.board.WhiteCap))
             {
@@ -397,6 +470,25 @@ public class UIManager : MonoBehaviour
             }
         }
     }
+
+    public int lastMoveStart = -1;
+    public int lastMoveTarget = -1;
+    public void LastMoveTint(int from, int to)
+    {
+        if (lastMoveStart != -1 || lastMoveTarget != -1)
+        {
+            tiles[lastMoveStart].revertLastMoveTint();
+            tiles[lastMoveTarget].revertLastMoveTint();
+        }
+        lastMoveStart = from;
+        lastMoveTarget = to;
+        tiles[lastMoveStart].lastMoveTint();
+        tiles[lastMoveTarget].lastMoveTint();
+    }
+
+    #endregion
+
+    #region BoardView
     public void flipCamera()
     {
         if (isFlipped)
@@ -432,8 +524,6 @@ public class UIManager : MonoBehaviour
             tintedSquares.Clear();
         }
         //Maby prevent nullpointer
-        if (gameManager.board.MoveMap == null)
-            gameManager.board.refreshMoveMap();
 
         List<Move> moveL = gameManager.board.MoveMap[pos];
         if (moveL == null)
@@ -456,6 +546,20 @@ public class UIManager : MonoBehaviour
                 tiles[target].revertTint();
             }
     }
+
+    public void hideBoard()
+    {
+        if (!gameManager.started)
+        {
+            boardContainer.SetActive(false);
+            foreach (PieceUI pUI in pieceUI)
+                if (pUI != null)
+                    pUI.Destroy();
+        }
+    }
+    #endregion
+
+    #region BoardUpdate
 
     public void movePiece(int from, int to)
     {
@@ -496,6 +600,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Sound
+
     public void playMovePieceSound()
     {
         audioSource.clip = (internalAudioCounter1++) % 2 == 0 ? movePieceSound1 : movePieceSound2;
@@ -515,31 +623,9 @@ public class UIManager : MonoBehaviour
         audioSource.Play();
     }
 
-    public void hideBoard()
-    {
-        if (!gameManager.started)
-        {
-            boardContainer.SetActive(false);
-            foreach (PieceUI pUI in pieceUI)
-                if (pUI != null)
-                    pUI.Destroy();
-        }
-    }
+    #endregion
 
-    public int lastMoveStart = -1;
-    public int lastMoveTarget = -1;
-    public void LastMoveTint(int from, int to)
-    {
-        if (lastMoveStart != -1 || lastMoveTarget != -1)
-        {
-            tiles[lastMoveStart].revertLastMoveTint();
-            tiles[lastMoveTarget].revertLastMoveTint();
-        }
-        lastMoveStart = from;
-        lastMoveTarget = to;
-        tiles[lastMoveStart].lastMoveTint();
-        tiles[lastMoveTarget].lastMoveTint();
-    }
+    #region Score
 
     public void updateScore(int value, bool isWhite)
     {
@@ -570,6 +656,10 @@ public class UIManager : MonoBehaviour
         whitePointCounter = 0;
         blackPointCounter = 0;
     }
+
+    #endregion
+
+    #region IngameUIToggle
 
     public void ShowInGameUI()
     {
@@ -605,4 +695,6 @@ public class UIManager : MonoBehaviour
         winText.text = "";
         hideBoard();
     }
+
+    #endregion
 }

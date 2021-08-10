@@ -8,12 +8,11 @@ namespace ChessAI
         public static int Evaluate(Board board, bool evaluateWhite)
         {
             int score = 0;
-            int piece = 0;
-            foreach (int piecePos in (evaluateWhite ? board.WhitePieces : board.BlackPieces))
-            {
-                piece = board.tiles[piecePos];
-                score += Read(BoardWeightMap.PieceToMap[Piece.PieceType(piece)], piecePos, board.whiteTurn);
-            }
+            int color = evaluateWhite ? Piece.WHITE : Piece.BLACK;
+            for (int ii = 0; ii < 64; ii++)
+                if (Piece.IsColour(board.tiles[ii], color))
+                    score += Read(BoardWeightMap.PieceToMap[Piece.PieceType(board.tiles[ii])], ii, board.whiteTurn);
+
             return score;
         }
         public static int Read(int[] table, int square, bool isWhite)

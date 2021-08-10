@@ -7,151 +7,147 @@ using static Piece;
 
 public class Board
 {
+    public const int BlackIndex = 1;
+    public const int WhiteIndex = 0;
+
+    #region CoreFeilds
+
+    /*
+    TODO Make private
+    */
     public int[] tiles;
 
-    #region New
+    /*
+    *
+    */
     private MoveUtills moveGenerator;
+
+    /*
+    *
+    */
     private bool hasGeneratedMoves = false;
-    public const int WhiteIndex = 0;
-    public const int BlackIndex = 1;
+
+    /*
+    *
+    */
+    public bool HasGeneratedMoves { get => hasGeneratedMoves; }
+
+    /*
+    TODO Make private
+    */
     public int ColorIndex = 0;
-    //public int ColorToMove = 0;
-    public int[] KingSquares;
+
+
+
+    /*
+    *
+    */
     public ulong ZobristKey;
+
+    /*
+    *
+    */
     public Stack<ulong> HashHistory;
+
+    /*
+    *
+    */
     public Stack<GameState> gameStateHistory;
+
+    /*
+    *
+    */
     public GameState currGameState;
-    public PieceTable[] allPieceTables;
-    public PieceTable[] rooks;
-    public PieceTable[] bishops;
-    public PieceTable[] queens;
-    public PieceTable[] knights;
-    public PieceTable[] pawns;
+
+    /*
+    *
+    */
     public uint castleRights;
     #endregion
-    //TODO REPLACE
+
     #region PieceLists
 
-    private List<int> blackPieces = null;
-    public List<int> BlackPieces
-    {
-        get
-        {
-            if (blackPieces == null)
-            {
-                blackPieces = new List<int>();
-                for (int ii = 0; ii < 64; ii++)
-                    if (Piece.IsBlack(tiles[ii]))
-                        blackPieces.Add(ii);
+    /*
+    *
+    */
+    public int[] KingSquares;
+    /*
+    *
+    */
+    public PieceTable[] allPieceTables;
 
-            }
-            return blackPieces;
-        }
-    }
+    /*
+    *
+    */
+    public PieceTable[] rooks;
 
-    private List<int> whitePieces = null;
-    public List<int> WhitePieces
-    {
-        get
-        {
-            if (whitePieces == null)
-            {
-                whitePieces = new List<int>();
-                for (int ii = 0; ii < 64; ii++)
-                    if (Piece.IsWhite(tiles[ii]))
-                        whitePieces.Add(ii);
-                //Debug.Log("GENPW");
+    /*
+    *
+    */
+    public PieceTable[] bishops;
 
-            }
-            return whitePieces;
-        }
-    }
+    /*
+    *
+    */
+    public PieceTable[] queens;
 
+    /*
+    *
+    */
+    public PieceTable[] knights;
+
+    /*
+    *
+    */
+    public PieceTable[] pawns;
     #endregion
 
-    //TODO REPLACE/REMOVE
-    #region Pinned
-    // private int lastGeneratedPinnedBlack = -1;
-    // private int[][] pinnedMapBlack = new int[64][];
-    // private int[][] PinnedMapBlack
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedPinnedBlack != turn || turn == 0)
-    //         {
-    //             MoveLegalityUtills.genPinnedMap(this, BLACK, pinnedMapBlack);
-    //             lastGeneratedPinnedBlack = turn;
-    //             //GENPIN
-    //             //Debug.Log("GENPINB");
-    //         }
-    //         return pinnedMapBlack;
-    //     }
-    // }
-
-    // private int lastGeneratedPinnedWhite = -1;
-    // private int[][] pinnedMapWhite = new int[64][];
-    // public int[][] PinnedMapWhite
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedPinnedWhite != turn || turn == 0)
-    //         {
-    //             MoveLegalityUtills.genPinnedMap(this, WHITE, pinnedMapWhite);
-    //             lastGeneratedPinnedWhite = turn;
-    //         }
-    //         return pinnedMapWhite;
-    //     }
-    // }
-
-    #endregion
-
-    //TODO Replace/Remove
     #region Capturable
-    // private int lastGeneratedWhiteCaptureable = -1;
-    // private bool[] whiteCaptureable = new bool[64];
 
-    // //!DEPRECATED
-    // private List<int>[] whiteCapturableMapList = new List<int>[64];
-    // //* is Somehow 0% called much less (Never not equals turn)
-    public bool[] WhiteCap;
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedWhiteCaptureable != turn || turn == 0)
-    //         {
-    //             whiteCaptureable = MoveLegalityUtills.updateCapturable(this, true);
-    //             lastGeneratedWhiteCaptureable = turn;
-    //         }
-    //         return whiteCaptureable;
-    //     }
-    //     set { whiteCaptureable = value; }
-    // }
+    private bool[] whiteCap;
+    /*
+    *Can only be accessed during black turn
+    *@RequiresUIM
+    */
+    public bool[] WhiteCap
+    {
+        get
+        {
+            if (whiteCap == null)
+                RefreshCapturableMap();
+            if (whiteCap == null)
+                throw new InvalidOperationException("Generation of white capturable map can only be done during black turn ");
+            return whiteCap;
+        }
+    }
 
-    // private int lastGeneratedBlackCaptureable = -1;
-    // private bool[] blackCaptureable = new bool[64];
-    // //!DEPRECATED
-    // private List<int>[] blackCapturableMapList = new List<int>[64];
-    // //TODO OPTIMIZE 1.2% (Self = 0%)
-    public bool[] BlackCap;
-    // {
-    //     get
-    //     {
-    //         if (lastGeneratedBlackCaptureable != turn || turn == 0)
-    //         {
-    //             blackCaptureable = MoveLegalityUtills.updateCapturable(this, false); //TODO OPTIMIZE 1.2%
-    //             lastGeneratedBlackCaptureable = turn;
-    //         }
-    //         return blackCaptureable;
-    //     }
-    //     set { blackCaptureable = value; }
-    // }
+
+    public bool[] blackCap;
+    /*
+    *Can only be accessed during white turn
+    *@RequiresUIM
+    */
+    public bool[] BlackCap
+    {
+        get
+        {
+            if (blackCap == null)
+                RefreshCapturableMap();
+            if (blackCap == null)
+                throw new InvalidOperationException("Generation of black capturable map can only be done during white turn ");
+            return blackCap;
+        }
+    }
+
 
     #endregion
 
-    //TODO Maby extract
     #region Moves
-    //private List<Move> moves = new List<Move>();
-    //private int lastTurnGenerated = -1;
+
+    /*
+    *Moves generated by the moveGenerator
+    !Precondition: (Call to generateNewMoves() for the current turn)
+    */
     public List<Move> Moves
     {
         get
@@ -160,53 +156,48 @@ public class Board
         }
     }
 
-    // //!DEPRECATED
-    // private int lastTurnGeneratedMoveMap = -1;
-    // //!DEPRECATED
-    // private List<Move>[] moveMap;
-    // //!DEPRECATED
-    public List<Move>[] MoveMap;
-    // {
-    //     get
-    //     {
-    //         if (lastTurnGeneratedMoveMap != turn || turn == 0)
-    //         {
-    //             moveMap = MoveUtills.sortMovesBasedOnPosition(Moves);
-    //             lastTurnGeneratedMoveMap = turn;
-    //         }
-    //         return moveMap;
-    //     }
-    //     set { moveMap = value; }
-    // }
+    private List<Move>[] moveMap = null;
 
-    // //!DEPRECATED
-    // private List<Move> oponentMoves;
-    // //!DEPRECATED
-    // private int lastTurnGeneratedOpo = -1;
-    // //!DEPRECATED
-    // public List<Move> OponentMoves
-    // {
-    //     get
-    //     {
-    //         if (lastTurnGeneratedOpo != turn || turn == 0)
-    //         {
-    //             whiteTurn = !whiteTurn;
-    //             moves = MoveUtills.GenerateMoves(this);
-    //             whiteTurn = !whiteTurn;
-    //             lastTurnGeneratedOpo = turn;
-    //         }
-    //         return moves;
-    //     }
-    // }
+    /*
+    *Note use of this should not be done excessively
+    *Get calls after a new turn refreshes it
+    !Uses unoptimzed code
+    !Precondition: (Call to generateNewMoves() for the current turn)
+    *@RequiresUIM
+    */
+    public List<Move>[] MoveMap
+    {
+        get
+        {
+            if (moveMap == null)
+                refreshMoveMap();
+            return moveMap;
+        }
+    }
+
 
     #endregion
 
     #region State
 
+    /*
+    *
+    */
     private int turn = 0;
+
+    /*
+    *
+    */
     public int Turn { get => turn; set => turn = value; }
+
+    /*
+    TODO Make private with a getter
+    */
     public bool whiteTurn;
 
+    /*
+    *
+    */
     public int whiteKingPos
     {
         get
@@ -218,6 +209,10 @@ public class Board
             KingSquares[0] = value;
         }
     }
+
+    /*
+    *
+    */
     public int blackKingPos
     {
         get
@@ -230,10 +225,24 @@ public class Board
         }
     }
 
+    /*
+    *
+    */
     public bool WhiteInCheck;
+
+    /*
+    *
+    */
     public bool BlackInCheck;
+
+    /*
+    *
+    */
     public bool CurrentInCheck { get => whiteTurn ? WhiteInCheck : BlackInCheck; }
 
+    /*
+    *
+    */
     public bool whiteCastleKingside
     {
         get
@@ -245,6 +254,10 @@ public class Board
             currGameState.SetWhiteCastleKingside(value);
         }
     }
+
+    /*
+    *
+    */
     public bool whiteCastleQueenside
     {
         get
@@ -256,6 +269,10 @@ public class Board
             currGameState.SetWhiteCastleQueenside(value);
         }
     }
+
+    /*
+    *
+    */
     public bool blackCastleKingside
     {
         get
@@ -267,6 +284,10 @@ public class Board
             currGameState.SetBlackCastleKingside(value);
         }
     }
+
+    /*
+    *
+    */
     public bool blackCastleQueenside
     {
         get
@@ -279,6 +300,9 @@ public class Board
         }
     }
 
+    /*
+    *
+    */
     public int enPassantAble
     {
         get
@@ -290,6 +314,10 @@ public class Board
             currGameState.SetEnPassant(value);
         }
     }
+
+    /*
+    *
+    */
     public int fiftyCount
     {
         get
@@ -301,31 +329,41 @@ public class Board
             currGameState.SetFiftyTurnCount(value);
         }
     }
+
     #endregion
 
     #region LastState
 
+    /*
+    *
+    */
     public Move lastMove { get => currGameState.PrevMove; }
+
+    /*
+    *
+    */
     public bool lastMoveWasCapture { get => currGameState.PrevCapturedType() != 0; }
+
+    /*
+    *
+    */
     public int lastMoveCaptured { get => currGameState.PrevCapturedType(); }
 
-    private bool hasReverted = false;
-
-    private int lastMoveEnPas = 0;
-    private int lastMoveFiftyCount = 0;
-
-    private bool lastMoveWhiteCastleKingside;
-    private bool lastMoveWhiteCastleQueenside;
-    private bool lastMoveBlackCastleKingside;
-    private bool lastMoveBlackCastleQueenside;
     #endregion
 
     #region Constructors
+
+    /*
+    !Deprecated Use: Board(string fen), or if you like pain you could always try and find out 
+    */
     public Board()
     {
         tiles = new int[64];
     }
 
+    /*
+    *
+    */
     public Board(string fen)
     {
         tiles = new int[64];
@@ -350,27 +388,37 @@ public class Board
         currGameState.SetFiftyTurnCount(gameStateInfo.fiftyCount);
         currGameState.SetEnPassant(gameStateInfo.epindex);
         LoadPosition();
-        refreshPieces();
     }
     #endregion
 
     #region StateInfo
-
+    /*
+    *
+    */
     public bool Check
     {
         get { return WhiteInCheck || BlackInCheck; }
     }
 
+    /*
+    *
+    */
     public int ColorTurn
     {
         get { return whiteTurn ? WHITE : BLACK; }
     }
 
+    /*
+    *
+    */
     public int OpoColor
     {
         get { return !whiteTurn ? WHITE : BLACK; }
     }
 
+    /*
+    *
+    */
     public bool CurPlayerInCheck
     {
         get { return moveGenerator.InCheck; }
@@ -378,7 +426,10 @@ public class Board
     #endregion
 
     #region Utillity
-
+    /*
+    *Produces an fen for the board
+    ! Uses unoptimzed code
+    */
     public string boardToFEN()
     {
         FENUtills.GameStateInfo gameStateInfo = new FENUtills.GameStateInfo();
@@ -397,7 +448,9 @@ public class Board
         return FENUtills.generateFEN(gameStateInfo);
     }
 
-
+    /*
+    ! Deprecated but I am to lazy to remove all references
+    */
     public Board Clone()
     {
         Board copy = new Board();
@@ -421,6 +474,9 @@ public class Board
     #endregion
 
     #region InnerFuncs
+    /*
+    *
+    */
     private bool MoveInnerV2(Move move, UIManager uiManager)
     {
         try
@@ -468,7 +524,7 @@ public class Board
             }
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
-            //lastMove = move;
+            PropriataryDataReset(); //*Prevents use of old state
             return true;
         }
         catch (Exception _ex)
@@ -478,6 +534,9 @@ public class Board
         }
     }
 
+    /*
+    *
+    */
     private bool MoveInnerV2(Move move)
     {
         try
@@ -676,216 +735,9 @@ public class Board
 
     }
 
-    //!DEPRECATED
-    private bool MoveInner(Move move)
-    {
-        try
-        {
-            if (WhitePieces == null || BlackPieces == null)
-                refreshPieces();
-            lastMoveFiftyCount = fiftyCount;
-            lastMoveEnPas = enPassantAble;
-            lastMoveWhiteCastleKingside = whiteCastleKingside;
-            lastMoveWhiteCastleQueenside = whiteCastleQueenside;
-            lastMoveBlackCastleKingside = blackCastleKingside;
-            lastMoveBlackCastleQueenside = blackCastleQueenside;
-            int from = move.StartSquare;
-            int to = move.TargetSquare;
-            if (enPassantAble != -1 && move.moveFlag != Move.Flag.EnPassantCapture)
-                currGameState.SetEnPassant(0);
-            if (tiles[to] == 0 && !IsType(tiles[from], PAWN))
-                currGameState.IncrementFiftyTurnCount();
-            else
-                currGameState.SetFiftyTurnCount(0);
-            if (IsType(tiles[to], ROOK))
-                updateCasteRook(to);
-            if (tiles[to] != 0)
-            {
-                //lastMoveWasCapture = true;
-                //lastMoveCaptured = tiles[to];
-                if (whiteTurn)
-                    BlackPieces.Remove(to);
-                else
-                    WhitePieces.Remove(to);
-            }
-            else if (move.moveFlag == Move.Flag.EnPassantCapture)
-            {
-                if (whiteTurn)
-                    BlackPieces.Remove(enPassantAble);
-                else
-                    WhitePieces.Remove(enPassantAble);
-            }
-            else
-            { }//lastMoveWasCapture = false;
-
-            switch (move.moveFlag)
-            {
-                case Move.Flag.PawnTwoForward:
-                    currGameState.SetEnPassant(to);
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
-                    break;
-                case Move.Flag.EnPassantCapture:
-                    tiles[enPassantAble] = 0;
-
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
-                    currGameState.SetEnPassant(0);
-                    break;
-                case Move.Flag.Castling:
-                    castelMove(move);
-                    break;
-                case Move.Flag.PromoteToQueen:
-                    tiles[to] = QUEEN | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
-                    break;
-                case Move.Flag.PromoteToRook:
-                    tiles[to] = ROOK | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
-                    break;
-                case Move.Flag.PromoteToBishop:
-                    tiles[to] = BISHOP | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
-                    break;
-                case Move.Flag.PromoteToKnight:
-                    tiles[to] = KNIGHT | (whiteTurn ? WHITE : BLACK);
-                    tiles[from] = 0;
-                    break;
-                default:
-                    tiles[to] = tiles[from];
-                    tiles[from] = 0;
-                    break;
-            }
-
-            updateCasteling(from, to);
-            if (IsType(tiles[to], KING))
-            {
-                if (whiteTurn)
-                    whiteKingPos = to;
-                else
-                    blackKingPos = to;
-            }
-            if (whiteTurn)
-            {
-                for (int ii = 0; ii < WhitePieces.Count; ii++)
-                    if (WhitePieces[ii] == from)
-                    { WhitePieces[ii] = to; break; }
-            }
-            else
-            {
-                for (int ii = 0; ii < BlackPieces.Count; ii++)
-                    if (BlackPieces[ii] == from)
-                    { BlackPieces[ii] = to; break; }
-            }
-
-            Turn++;
-            whiteTurn = !whiteTurn;
-            //lastMove = move;
-            hasReverted = false;
-            //debugPrintMoves();
-            return true;
-        }
-        catch (Exception _ex)
-        {
-            Debug.Log("EXCEPTION DURING MoveInner, ex:" + _ex.ToString());
-            return false;
-        }
-    }
-    //!DEPRECATED
-    private bool UnmakeMoveInner()
-    {
-        if (hasReverted || lastMove.MoveValue == 0)
-            return false;
-
-        fiftyCount = lastMoveFiftyCount;
-        enPassantAble = lastMoveEnPas;
-        whiteCastleKingside = lastMoveWhiteCastleKingside;
-        whiteCastleQueenside = lastMoveWhiteCastleQueenside;
-        blackCastleKingside = lastMoveBlackCastleKingside;
-        blackCastleQueenside = lastMoveBlackCastleQueenside;
-        Turn--;
-        whiteTurn = !whiteTurn;
-
-        int from = lastMove.TargetSquare, to = lastMove.StartSquare;
-
-
-        if (lastMove.moveFlag == Move.Flag.EnPassantCapture)
-        {
-            if (whiteTurn)
-                BlackPieces.Add(enPassantAble);
-            else
-                WhitePieces.Add(enPassantAble);
-        }
-        else
-        { }//lastMoveWasCapture = false;
-
-        switch (lastMove.moveFlag)
-        {
-            case Move.Flag.EnPassantCapture:
-                tiles[enPassantAble] = (PAWN | ((whiteTurn) ? BLACK : WHITE));
-
-                tiles[from] = tiles[to];
-                tiles[to] = 0;
-                break;
-            case Move.Flag.Castling:
-                revertCasteling(from, to);
-                break;
-            case Move.Flag.PromoteToQueen:
-                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
-                tiles[to] = 0;
-                break;
-            case Move.Flag.PromoteToRook:
-                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
-                tiles[to] = 0;
-                break;
-            case Move.Flag.PromoteToBishop:
-                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
-                tiles[to] = 0;
-                break;
-            case Move.Flag.PromoteToKnight:
-                tiles[from] = PAWN | (whiteTurn ? WHITE : BLACK);
-                tiles[to] = 0;
-                break;
-            default:
-                tiles[from] = tiles[from];
-                tiles[to] = 0;
-                break;
-        }
-
-
-
-        if (IsType(tiles[from], KING))
-        {
-            if (whiteTurn)
-                whiteKingPos = from;
-            else
-                blackKingPos = from;
-        }
-        if (whiteTurn)
-        {
-            for (int ii = 0; ii < WhitePieces.Count; ii++)
-                if (WhitePieces[ii] == to)
-                { WhitePieces[ii] = from; break; }
-        }
-        else
-        {
-            for (int ii = 0; ii < BlackPieces.Count; ii++)
-                if (BlackPieces[ii] == to)
-                { BlackPieces[ii] = from; break; }
-        }
-        if (lastMoveWasCapture)
-        {
-            tiles[to] = lastMoveCaptured;
-            if (whiteTurn)
-                BlackPieces.Add(to);
-            else
-                WhitePieces.Add(to);
-        }
-        hasReverted = true;
-        return true;
-
-    }
-
+    /*
+    *
+    */
     private bool UnmakeMoveInnerV2()
     {
         try
@@ -1043,95 +895,13 @@ public class Board
 
     }
 
-    public void updateCasteling(int from, int to)
-    {
-        int type = PieceType(tiles[to]);
-        if (type == ROOK)
-        {
-            if (whiteTurn)
-            {
-                if (from == 0)
-                    whiteCastleQueenside = false;
-                if (from == 7)
-                    whiteCastleKingside = false;
-            }
-            else
-            {
-                if (from == 63 - 7)
-                    blackCastleQueenside = false;
-                if (from == 63)
-                    blackCastleKingside = false;
-            }
-        }
-        else if (type == KING)
-        {
-            if (whiteTurn)
-            {
-                whiteCastleQueenside = false;
-                whiteCastleKingside = false;
-            }
-            else
-            {
-                blackCastleQueenside = false;
-                blackCastleKingside = false;
-            }
-        }
-    }
-
-    public void updateCasteRook(int to)
-    {
-        int r1 = whiteTurn ? 7 : 63;
-        int r2 = whiteTurn ? 0 : 56;
-        if (to == r1)
-        {
-            if (whiteTurn)
-                blackCastleKingside = false;
-            else
-                whiteCastleKingside = false;
-        }
-        else if (to == r2)
-        {
-            if (whiteTurn)
-                blackCastleQueenside = false;
-            else
-                whiteCastleQueenside = false;
-        }
-    }
-
-    public void castelMove(Move move)
-    {
-        int from = move.StartSquare;
-        int to = move.TargetSquare;
-        if (from < to)
-        {
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            tiles[from + 1] = tiles[from + 3];
-            tiles[from + 3] = 0;
-            if (whiteTurn)
-                WhitePieces[WhitePieces.FindIndex(i => i == from + 3)] = from + 1;
-            else
-                BlackPieces[BlackPieces.FindIndex(i => i == from + 3)] = from + 1;
-        }
-        else
-        {
-
-            //Debug.Log(from - 4);
-            //Debug.Log(WhitePieces.Contains(from - 4));
-            tiles[to] = tiles[from];
-            tiles[from] = 0;
-            tiles[from - 1] = tiles[from - 4];
-            tiles[from - 4] = 0;
-            if (whiteTurn)
-                WhitePieces[WhitePieces.FindIndex(i => i == from - 4)] = from - 1;
-            else
-                BlackPieces[BlackPieces.FindIndex(i => i == from - 4)] = from - 1;
-        }
-    }
     #endregion
 
     #region OuterFuncs
-    //!DEPRECATED
+
+    /*
+    *
+    */
     public bool UnmakeMove(UIManager uiManager)
     {
         try
@@ -1184,7 +954,7 @@ public class Board
                 uiManager.reinstatePiece(reinstateindex);
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
             uiManager.gameText.text = s;
-            //lastMove = move;
+            PropriataryDataReset();
 
             return true;
         }
@@ -1194,72 +964,36 @@ public class Board
             return false;
         }
     }
+
+    /*
+    *
+    */
     public bool UnmakeMove()
     {
         return UnmakeMoveInnerV2();
     }
 
-    private bool revertCasteling(int from, int to)
-    {
-        try
-        {
-
-            if (from < to)
-            {
-                tiles[from] = tiles[to];
-                tiles[to] = 0;
-                tiles[from + 3] = tiles[from + 1];
-                tiles[from + 1] = 0;
-                if (whiteTurn)
-                    WhitePieces[WhitePieces.FindIndex(i => i == from + 1)] = from + 3;
-                else
-                    BlackPieces[BlackPieces.FindIndex(i => i == from + 1)] = from + 3;
-            }
-            else
-            {
-
-                //Debug.Log(from - 4);
-                //Debug.Log(WhitePieces.Contains(from - 4));
-                tiles[from] = tiles[to];
-                tiles[to] = 0;
-                tiles[from - 4] = tiles[from - 1];
-                tiles[from - 1] = 0;
-                if (whiteTurn)
-                    WhitePieces[WhitePieces.FindIndex(i => i == from - 1)] = from - 4;
-                else
-                    BlackPieces[BlackPieces.FindIndex(i => i == from - 1)] = from - 4;
-            }
-            return true;
-
-        }
-        catch (Exception ex)
-        {
-
-            Debug.LogError("FAIL During revertCasteling ex: " + ex);
-            return false;
-        }
-    }
-
+    /*
+    *
+    */
     public bool useMove(Move move, UIManager uiManager)
     {
-        //if (!hasGeneratedMoves)
-        //{
-        //    Debug.LogError("NO NEW MOVES GENERATED");
-        //    return false;
-        //}
+
         return MoveInnerV2(move, uiManager);
     }
 
+    /*
+    *
+    */
     public bool useMove(Move move)
     {
-        //if (!hasGeneratedMoves)
-        //{
-        //    Debug.LogError("NO NEW MOVES GENERATED");
-        //    return false;
-        //}
+
         return MoveInnerV2(move);
     }
 
+    /*
+    *
+    */
     public bool tryMove(int from, int to, UIManager uiManager)
     {
 
@@ -1278,6 +1012,9 @@ public class Board
         return false;
     }
 
+    /*
+    *
+    */
     public bool tryMove(int from, int to)
     {
         if (!hasGeneratedMoves)
@@ -1299,21 +1036,33 @@ public class Board
     #endregion
 
     #region GetStateInfo
+    /*
+    *
+    */
     public bool isCheckMate()
     {
         return Moves.Count == 0 && (whiteTurn ? WhiteInCheck : BlackInCheck);
     }
 
+    /*
+    *
+    */
     public bool isDraw()
     {
         return fiftyCount == 50;
     }
 
+    /*
+    *
+    */
     public bool isStalemate()
     {
         return Moves.Count == 0 && (whiteTurn ? !WhiteInCheck : !BlackInCheck);
     }
 
+    /*
+    *
+    */
     public Move getMove(int from, int to)
     {
         Move move1 = new Move(-1, -1, -1);
@@ -1323,11 +1072,14 @@ public class Board
             return move1;
         }
         foreach (Move move in Moves)
-            if (move.TargetSquare == to && move.TargetSquare == from)
+            if (move.TargetSquare == to && move.StartSquare == from)
                 return move;
         return move1;
     }
 
+    /*
+    *
+    */
     public bool containsMove(Move move)
     {
         if (!hasGeneratedMoves)
@@ -1354,27 +1106,18 @@ public class Board
     #endregion
 
     #region Refresh
-    //TODO OPTIMIZE 
-    //*
 
 
+    /*
+    *Sorts the moves by start position
+    ! Uses unoptimized code
+    */
     public void refreshMoveMap()
     {
-        MoveMap = moveGenerator.sortMovesBasedOnPosition();
+        moveMap = moveGenerator.sortMovesBasedOnPosition();
     }
 
-    public void refreshPieces()
-    {
-        whitePieces = new List<int>();
-        blackPieces = new List<int>();
-        for (int ii = 0; ii < 64; ii++)
-        {
-            if (Piece.IsWhite(tiles[ii]))
-                whitePieces.Add(ii);
-            else if (Piece.IsBlack(tiles[ii]))
-                blackPieces.Add(ii);
-        }
-    }
+
 
     private void debugPrintMoves()
     {
@@ -1391,7 +1134,11 @@ public class Board
     }
     #endregion
 
-    #region NewMethods
+    #region Post v8.1
+
+    /*
+    *Called when a new board is initialized
+    */
     public void LoadPosition()
     {
         Initialize();
@@ -1438,12 +1185,14 @@ public class Board
         // Initialize zobrist key
         //ZobristKey = Zobrist.CalculateZobristKey(this);
     }
-    //TODO USE THIS and replace OnStart
+
+
+    /*
+    *Called when a new board is initialized
+    */
     private void Initialize()
     {
         moveGenerator = new MoveUtills();
-        BlackCap = new bool[64];
-        WhiteCap = new bool[64];
         KingSquares = new int[2];
         ColorIndex = whiteTurn ? 0 : 1;
         //ColorToMove = whiteTurn ? WHITE : BLACK;
@@ -1476,6 +1225,9 @@ public class Board
             };
     }
 
+    /*
+    ? Should this be public or private?
+    */
     PieceTable GetPieceTable(int pieceType, int colourIndex)
     {
         if (pieceType == 0 || pieceType == 1 || pieceType == 4 || pieceType == 8 || pieceType == 9 || pieceType == 12 || pieceType < 0 || pieceType > 15)
@@ -1483,6 +1235,10 @@ public class Board
         return allPieceTables[colourIndex * 8 + pieceType];
     }
 
+    /*
+    * Precondition for fetching moves
+    !Is NOT called automatically after each move (This would cause massive preformance issues)
+    */
     public void generateNewMoves()
     {
         if (hasGeneratedMoves)
@@ -1491,15 +1247,38 @@ public class Board
         if (whiteTurn)
         {
             WhiteInCheck = moveGenerator.InCheck;
-            BlackCap = BoardUtills.BitBoardToBoolArray(moveGenerator.CurrentAttackMap);
         }
         else
         {
             BlackInCheck = moveGenerator.InCheck;
-            WhiteCap = BoardUtills.BitBoardToBoolArray(moveGenerator.CurrentAttackMap);
         }
-        refreshMoveMap();
         hasGeneratedMoves = true;
     }
+
+    /*
+    *Sets oponent capturable bool array equal to the 
+    * bitboard from the move generator
+    */
+    public void RefreshCapturableMap()
+    {
+        if (whiteTurn)
+            blackCap = BoardUtills.BitBoardToBoolArray(moveGenerator.CurrentAttackMap);
+        else
+            whiteCap = BoardUtills.BitBoardToBoolArray(moveGenerator.CurrentAttackMap);
+    }
+
+    /*
+    *Resets data so that invalid game state is not presented 
+    *Will probally trigger GC
+    !Uses unoptimzed code
+    *@RequiresUIM
+    */
+    public void PropriataryDataReset()
+    {
+        whiteCap = null;
+        blackCap = null;
+        moveMap = null;
+    }
+
     #endregion
 }
