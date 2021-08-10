@@ -40,13 +40,20 @@ public class UIManager : MonoBehaviour
     public Color dangerTintOffset = new Color(100, 0, 0);
     public Color lastMoveTintOffset = new Color(100, 0, 100);
 
-
+    [Header("Promotion Menu")]
     public GameObject promotionMenu;
     public GameObject promotionMenuExit;
     public GameObject promotionMenuQueen;
     public GameObject promotionMenuKnight;
     public GameObject promotionMenuRook;
     public GameObject promotionMenuBishop;
+
+    [Header("Background")]
+    [SerializeField]
+    private GameObject background1;
+    [SerializeField]
+    private GameObject background2;
+
 
     public Dictionary<int, int> pieceTypeToSprite = new Dictionary<int, int>()
     {
@@ -115,9 +122,11 @@ public class UIManager : MonoBehaviour
         tintedSquares = new List<int>();
         generateBoardUI();
         menuManager = MenuManager.instance;
-
+        background1.SetActive(true);
+        background2.SetActive(false);
         audioSource.PlayOneShot(OnStartSound, 0.2f);
         audioSource.SetScheduledEndTime(AudioSettings.dspTime + (1f));
+
     }
 
     private void generateBoardUI()
@@ -313,7 +322,7 @@ public class UIManager : MonoBehaviour
         if (gameManager.ended)
         {
             if (Input.GetKeyDown(KeyCode.R))
-                gameManager.resetBoard();
+                gameManager.onResetGame();
             if (Input.GetKeyDown(KeyCode.Escape))
             { gameManager.onStoppingGame(); menuManager.showMainMenu(); }
 
@@ -668,7 +677,10 @@ public class UIManager : MonoBehaviour
         //GameText/Score
         ShowScore();
         //AI menu
+        Debug.Log("Started");
         AIManager.instance.showAIMenu();
+        background1.SetActive(false);
+        background2.SetActive(true);
         //
     }
 
@@ -685,7 +697,11 @@ public class UIManager : MonoBehaviour
         //GameHistory
         GameHistoryPanel.instance.resetHistory();
         GameHistoryPanel.instance.activate();
-
+        if (lastMoveStart != -1 && lastMoveTarget != -1)
+        {
+            tiles[lastMoveStart].revertLastMoveTint();
+            tiles[lastMoveTarget].revertLastMoveTint();
+        }
     }
 
     public void HideInGameUI()
@@ -693,6 +709,14 @@ public class UIManager : MonoBehaviour
         GameHistoryPanel.instance.deactivate();
         AIManager.instance.hideAIMenu();
         winText.text = "";
+        Debug.Log("Stopped");
+        background1.SetActive(true);
+        background2.SetActive(false);
+        if (lastMoveStart != -1 && lastMoveTarget != -1)
+        {
+            tiles[lastMoveStart].revertLastMoveTint();
+            tiles[lastMoveTarget].revertLastMoveTint();
+        }
         hideBoard();
     }
 

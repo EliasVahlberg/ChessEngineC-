@@ -161,7 +161,8 @@ public class MenuManager : MonoBehaviour
                 inGameDisconnectButton.gameObject.SetActive(false);
             }
             playDefaultStart.gameObject.SetActive(false);
-            resetButton.gameObject.SetActive(true);
+            //resetButton.gameObject.SetActive(true);
+            playusingFen.gameObject.SetActive(false);
             forfitButton.gameObject.SetActive(true);
             openNetworkMenuButton.gameObject.SetActive(false);
             openSettingsMenuButton.gameObject.SetActive(false);
@@ -172,10 +173,11 @@ public class MenuManager : MonoBehaviour
         }
         else
         {
+            playusingFen.gameObject.SetActive(true);
             returnMainMenuButton.gameObject.SetActive(false);
             inGameDisconnectButton.gameObject.SetActive(false);
             forfitButton.gameObject.SetActive(false);
-            resetButton.gameObject.SetActive(false);
+            //resetButton.gameObject.SetActive(false);
             openSettingsMenuButton.gameObject.SetActive(true);
             playDefaultStart.gameObject.SetActive(true);
             openNetworkMenuButton.gameObject.SetActive(true);

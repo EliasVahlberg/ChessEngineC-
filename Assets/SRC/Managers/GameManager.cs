@@ -374,6 +374,7 @@ public class GameManager : MonoBehaviour
 
     public void onResetGame()
     {
+        UIManager.instance.ShowInGameUI();
         whiteForfit = false;
         blackForfit = false;
         UIManager.instance.ResetInGameUI();
