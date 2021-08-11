@@ -1,31 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SettingsManager : MonoBehaviour
 {
-    [HideInInspector]
-    public UIManager uiManager;
-    [HideInInspector]
-    public GameManager gameManager;
-    [HideInInspector]
-    public MenuManager menuManager;
+
 
     #region MenuItems
     public Toggle fullscreenToggle;
     public Slider volumeSlider;
+    public Slider cursorSlider;
     public Button backButton;
+    public Button reloadSceneButton;
     public GameObject canvas;
     public bool showing = false;
 
+
     #endregion
+    [SerializeField]
+    private Texture2D cursorTexture;
+    private int cursorTextureOriginalHeight;
+    private int cursorTextureOriginalWidth;
     public static SettingsManager instance;
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
+
         }
         else if (instance != this)
         {
@@ -36,9 +40,10 @@ public class SettingsManager : MonoBehaviour
 
     void Start()
     {
-        uiManager = UIManager.instance;
-        gameManager = GameManager.instance;
-        menuManager = MenuManager.instance;
+
+        cursorTextureOriginalHeight = cursorTexture.height;
+        cursorTextureOriginalWidth = cursorTexture.width;
+        cursorSlider.onValueChanged.AddListener(changeCursorSize);
         volumeSlider.onValueChanged.AddListener(changeVolume);
         fullscreenToggle.onValueChanged.AddListener(changeFullscreen);
         backButton.onClick.AddListener(hideSettingsMenu);
@@ -71,11 +76,41 @@ public class SettingsManager : MonoBehaviour
         if (showing)
         {
             canvas.SetActive(false);
-            if (menuManager.isInLobby)
-                menuManager.showLobby();
+            if (MenuManager.instance.isInLobby)
+                MenuManager.instance.showLobby();
             else
-                menuManager.showMainMenu();
+                MenuManager.instance.showMainMenu();
             showing = false;
         }
+    }
+
+    public void changeCursorSize(float val)
+    {
+        CursorMode mode = CursorMode.ForceSoftware;
+
+        int height = (int)(cursorTextureOriginalHeight * val);
+        int width = (int)(cursorTextureOriginalHeight * val);
+        int xspot = width / 2;
+        int yspot = height / 2;
+        Vector2 hotSpot = new Vector2(xspot, yspot);
+        Cursor.SetCursor(Resize(cursorTexture, width, height), hotSpot, mode);
+    }
+    private Texture2D Resize(Texture2D texture2D, int targetX, int targetY)
+    {
+        RenderTexture rt = new RenderTexture(targetX, targetY, 24);
+        RenderTexture.active = rt;
+        Graphics.Blit(texture2D, rt);
+        Texture2D result = new Texture2D(targetX, targetY);
+        result.ReadPixels(new Rect(0, 0, targetX, targetY), 0, 0);
+        result.Apply();
+        //result.alphaIsTransparency = true;
+
+
+        return result;
+    }
+    public void ReloadScene()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
     }
 }

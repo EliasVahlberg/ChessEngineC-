@@ -708,6 +708,7 @@ public class UIManager : MonoBehaviour
     {
         GameHistoryPanel.instance.deactivate();
         AIManager.instance.hideAIMenu();
+        HideScore();
         winText.text = "";
         Debug.Log("Stopped");
         background1.SetActive(true);
