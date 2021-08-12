@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17df374a44e7654458619eeba4f64cac, type: 3}
   m_Name: SearchAIGen3V1
   m_EditorClassIdentifier: 
-  AIName: SG3V1
+  AIName: Brutus
   settings: {fileID: 11400000, guid: a7431ee65f8619c40a30dbbf84707a60, type: 2}
