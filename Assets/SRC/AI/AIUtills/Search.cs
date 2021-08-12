@@ -19,6 +19,7 @@ namespace ChessAI
         private const int MINIMUM_MATE_SCORE = int.MaxValue / 4;
         private const int transpositionTableSize = 64000;
         private static readonly Move INVAL_MOVE = new Move(0);
+        public bool useCoinToss = false;
 
         private Board board;
         private AISettings settings;
@@ -33,6 +34,7 @@ namespace ChessAI
         int currentSearchDepth;
         bool abortSearch;
         SearchDiagnostics sD;
+
         #region SearchInfo
 
 
@@ -51,7 +53,8 @@ namespace ChessAI
         {
             this.board = board;
             this.settings = settings;
-            evaluator = new Evaluator();
+
+            evaluator = new Evaluator(settings.captureWeight, settings.weightMapWeight, settings.useWeightMap);
             tt = new TranspositionTable(board, transpositionTableSize);
             moveOrderer = new MoveOrderer(tt);
             sD = new SearchDiagnostics();
@@ -120,8 +123,6 @@ namespace ChessAI
 
         }
 
-
-
         private int SearchRecurrRecurr(int depth, int maxDepth, int alpha, int beta)
         {
             if (abortSearch)
@@ -173,6 +174,8 @@ namespace ChessAI
                     nPrunes++;
                     return beta;
                 }
+                if (val == alpha && useCoinToss)
+                    val += (CoinToss() ? 1 : 0);
                 if (val > alpha)
                 {
                     evalType = TranspositionTable.Exact;
@@ -236,6 +239,12 @@ namespace ChessAI
         public (Move move, int eval) GetResult()
         {
             return (bestMove, bestVal);
+        }
+
+
+        public bool CoinToss()
+        {
+            return (((board.ZobristKey + ((ulong)board.Moves.Count) + ((ulong)searchStopwatch.ElapsedTicks)) >> ((int)(board.ZobristKey % 64))) & 0b01) == 1;
         }
 
         [System.Serializable]

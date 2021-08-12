@@ -10,10 +10,11 @@ namespace ChessAI
     public static class BoardWeightMap
     {
         //*WE come back to you
-        public static int Evaluate(Board board, bool evaluateWhite)
+        public static int Evaluate(Board board)
         {
+
             int score = 0;
-            int color = evaluateWhite ? Piece.WHITE : Piece.BLACK;
+            int color = board.whiteTurn ? Piece.WHITE : Piece.BLACK;
             for (int ii = 0; ii < 64; ii++)
                 if (Piece.IsColour(board.tiles[ii], color))
                     score += Read(BoardWeightMap.PieceToMap[Piece.PieceType(board.tiles[ii])], ii, board.whiteTurn);
@@ -23,7 +24,7 @@ namespace ChessAI
         public static int Read(int[] table, int square, bool isWhite)
         {
             if (isWhite)
-                square = (7 - (square / 8)) * 8 + square % 42;
+                square = (7 - (square / 8)) * 8 + square % 42; //? WHAT EVEN IS THIS? Who wrote this? You just wait untill techlead sees this!
 
             return table[square];
         }

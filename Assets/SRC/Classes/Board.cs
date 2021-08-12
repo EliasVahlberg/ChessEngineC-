@@ -754,8 +754,7 @@ public class Board
         int mTo = move.TargetSquare, mFrom = move.StartSquare;
         try
         {
-
-
+            HashHistory.Push(ZobristKey);
             bool WhiteToMove = currGameState.WhiteTurn();
             uint newCastleState = currGameState.CastleRights();
             uint oldCastleState = currGameState.CastleRights();
@@ -921,6 +920,7 @@ public class Board
 
 
             hasGeneratedMoves = false;
+
             //Debug.Log("Zobrist Key MakeMove: " + ZobristKey + "\n " + move.ToString());
 
             return true;
@@ -1239,6 +1239,7 @@ public class Board
             turn--;
 
             hasGeneratedMoves = false;
+            HashHistory.Pop();
 
             //if (!inSearch && RepetitionPositionHistory.Count > 0)
             //    RepetitionPositionHistory.Pop();

@@ -22,6 +22,7 @@ namespace ChessAI
         public AISettings settings;
 
         private Search search;
+        private static int repetitionMaxLength = 10;
 
         CancellationTokenSource cancelSearchTimer;
 
@@ -57,6 +58,7 @@ namespace ChessAI
             //if (search == null)
 
             search = new Search(new Board(board.boardToFEN()), settings);
+            search.useCoinToss = hasRepetitions(board);
 
 
             if (board.Moves.Count == 0)
@@ -77,6 +79,21 @@ namespace ChessAI
             //Debug.Log(this.Name + " : " + maxVal);
             return PENDING_SEARCH_MOVE;
         }
+        private bool hasRepetitions(Board board)
+        {
+            ulong[] hashHistory = board.HashHistory.ToArray();
+            for (int ii = 0; ii < Math.Min(hashHistory.Length, repetitionMaxLength); ii++)
+            {
+                for (int jj = ii + 1; jj < Math.Min(hashHistory.Length, repetitionMaxLength); jj++)
+                {
+                    if (hashHistory[ii] == hashHistory[jj])
+                        return true;
+                }
+
+            }
+            return false;
+        }
+
         void StartSearchNonThreaded()
         {
             search.SearchRecurr();
@@ -93,6 +110,7 @@ namespace ChessAI
             }
 
         }
+
         void OnSearchComplete(Move move)
         {
             // Cancel search timer in case search finished before timer ran out (can happen when a mate is found)

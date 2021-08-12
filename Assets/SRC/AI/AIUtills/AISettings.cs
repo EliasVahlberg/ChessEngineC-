@@ -26,6 +26,11 @@ namespace ChessAI
         public TextAsset book;
         public int maxBookPly = 10;
 
+        public bool useWeightMap = true;
+        public int weightMapWeight = 1;
+
+        public int captureWeight = 100;
+
         //public MoveGenerator.PromotionMode promotionsToSearch;
 
         //public Search.SearchDiagnostics diagnostics;

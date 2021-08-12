@@ -34,7 +34,7 @@ namespace ChessAI
             {
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
-                val = BoardWeightMap.Evaluate(newBoard, board.whiteTurn) * MapPlacementWeight;
+                val = BoardWeightMap.Evaluate(newBoard) * MapPlacementWeight;
                 val += -bsGen.V4CaptureScore(newBoard.tiles, newBoard.whiteTurn) * CaptureWeight;
                 if (ii != 0)
                     allSame &= maxV == val;

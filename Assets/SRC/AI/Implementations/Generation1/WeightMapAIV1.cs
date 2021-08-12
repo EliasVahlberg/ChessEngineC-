@@ -32,7 +32,7 @@ namespace ChessAI
             {
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
-                val = BoardWeightMap.Evaluate(newBoard, board.whiteTurn);
+                val = BoardWeightMap.Evaluate(newBoard);
                 if (ii != 0)
                     allSame &= maxV == val;
                 maxI = maxV > val ? maxI : ii;
