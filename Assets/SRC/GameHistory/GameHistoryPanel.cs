@@ -57,6 +57,10 @@ public class GameHistoryPanel : MonoBehaviour
             return;
         }
         int piece = GameManager.instance.board.tiles[move.TargetSquare];
+
+        //Debug.Log(move.TargetSquare);
+        //Debug.Log(piece);
+        //Debug.Log(UIManager.instance.pieceTypeToSprite[piece]);
         Sprite moved = UIManager.instance.piceSprites[UIManager.instance.pieceTypeToSprite[piece]];
         if (wasEP)
         {

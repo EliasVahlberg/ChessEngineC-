@@ -486,9 +486,11 @@ public class Board
     */
     private bool MoveInnerV2(Move move, UIManager uiManager)
     {
+        int from = 0, to = 0;
         try
         {
-            int from = move.StartSquare, to = move.TargetSquare;
+            from = move.StartSquare;
+            to = move.TargetSquare;
             int enPas = -1;
             if (move.moveFlag == Move.Flag.EnPassantCapture)
                 enPas = enPassantAble;
@@ -537,6 +539,7 @@ public class Board
         catch (Exception _ex)
         {
             Debug.Log("EXCEPTION DURING MoveInnerUI, ex:" + _ex.ToString());
+            Debug.Log("FROM:" + from + " , To:" + to);
             return false;
         }
     }
@@ -748,6 +751,7 @@ public class Board
     */
     private bool MoveInnerV3(Move move)
     {
+        int mTo = move.TargetSquare, mFrom = move.StartSquare;
         try
         {
 
@@ -926,6 +930,7 @@ public class Board
         catch (Exception _ex)
         {
             Debug.LogError("EXCEPTION DURING MoveInnerV2, ex:" + _ex.ToString());
+            Debug.LogError("FROM: " + mFrom + " , TO: " + mTo);
             return false;
         }
 

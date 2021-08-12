@@ -57,6 +57,8 @@ public class GameManager : MonoBehaviour
     public bool aiWaitingToMove = false;
     public static int DEFAULT_AI_DELAY_MS = 50;
     public DateTime aiDelayStart;
+    public bool aiPendingSearchMove = false;
+    public bool isWhiteAIPending = false;
     #endregion
 
     #region State
@@ -229,10 +231,10 @@ public class GameManager : MonoBehaviour
         }
         else if (blackAIPlaying && !board.whiteTurn)
         {
-            if (board.Moves.Count == 0)
-            {
-                Debug.Log("Black AI Lost");
-            }
+            //if (board.Moves.Count == 0)
+            //{
+            //    Debug.Log("Black AI Lost");
+            //}
             //Debug.Log("Black AI:" + bAI.Name);
             return AIManager.instance.SelectMove(bAI, board);
         }
@@ -241,6 +243,7 @@ public class GameManager : MonoBehaviour
 
     public bool playAIMove()
     {
+        isWhiteAIPending = board.whiteTurn;
         if (ended || !started)
             return false;
         if (isAIPaused)
@@ -251,6 +254,13 @@ public class GameManager : MonoBehaviour
         { return false; }
 
         Move move = getAIMove();
+        if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
+        {
+            Debug.Log("PENDING");
+            aiPendingSearchMove = true;
+
+            return false;
+        }
         if (move.StartSquare == 0 && move.TargetSquare == 0)
         {
             return false;
@@ -269,6 +279,31 @@ public class GameManager : MonoBehaviour
         aiDelayStart = DateTime.Now;
         newTurnFlag = true;
         return true;
+    }
+
+    public void checkPendingMove()
+    {
+        Move move = (isWhiteAIPending ? wAI.SelectMove(null) : bAI.SelectMove(null));
+        if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
+        {
+            //Debug.Log("PENDING...");
+            //aiPendingSearchMove = true;
+            return;
+        }
+        board.useMove(move, uiManager);
+        aiPendingSearchMove = false;
+        string winMes;
+        if ((winMes = isEndGameCondition()) != "")
+        {
+            uiManager.winText.text = winMes;
+            AIManager.instance.toggleAIPaus();
+            return;
+
+        }
+        //Debug.Log("FIFTY COUNT = " + board.fiftyCount);
+        aiDelayStart = DateTime.Now;
+        newTurnFlag = true;
+
     }
 
     private void pausAI()
@@ -557,9 +592,13 @@ public class GameManager : MonoBehaviour
     {
         if (started)
         {
-            if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
+            if (aiPendingSearchMove)
+                checkPendingMove();
+            else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
+            {
                 if (useAIDelay && aiWaitingToMove)
                     playAIMove();
+            }
             if (newTurnFlag)
                 onNewTurn(board.lastMove, !board.whiteTurn);
         }

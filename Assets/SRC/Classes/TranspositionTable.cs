@@ -1,6 +1,5 @@
 namespace SimpleChess
 {
-    // Thanks to 
     /*
     @File TranspositionTable.cs
     @author Sebastian Lague 
@@ -114,7 +113,7 @@ namespace SimpleChess
 
         int CorrectMateScoreForStorage(int score, int numPlySearched)
         {
-            if (Search.IsMateScore(score))
+            if (ChessAI.Search.IsMateScore(score))
             {
                 int sign = System.Math.Sign(score);
                 return (score * sign + numPlySearched) * sign;
@@ -124,7 +123,7 @@ namespace SimpleChess
 
         int CorrectRetrievedMateScore(int score, int numPlySearched)
         {
-            if (Search.IsMateScore(score))
+            if (ChessAI.Search.IsMateScore(score))
             {
                 int sign = System.Math.Sign(score);
                 return (score * sign - numPlySearched) * sign;

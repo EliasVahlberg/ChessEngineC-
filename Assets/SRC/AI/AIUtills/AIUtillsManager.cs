@@ -38,11 +38,16 @@ namespace ChessAI
         {
             if (board.tiles == prevTiles)
                 throw new ArgumentException("Pointer to tiles array is the same as prevTiles... This proves nothing");
-
+            bool mutated = false;
             for (int ii = 0; ii < 64; ii++)
             {
                 if (board.tiles[ii] != prevTiles[ii])
-                    return false;
+                {
+                    mutated = true;
+                    Debug.LogError("position: " + ii + "is changed");
+                    Debug.LogError("Is =" + prevTiles[ii] + " Should be =" + board.tiles[ii]);
+
+                }
             }
             if (board.currGameState.gameStateValue != prevGamestate.gameStateValue)
                 return false;
