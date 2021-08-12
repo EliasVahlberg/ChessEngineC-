@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/*
+    @File NetworkUIManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class NetworkUIManager : MonoBehaviour
 {
     public static NetworkUIManager instance;

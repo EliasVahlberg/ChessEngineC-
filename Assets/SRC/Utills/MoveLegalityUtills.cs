@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static MoveData;
 using static Piece;
+//!Deprecated
 public class MoveLegalityUtills
 {
     // public static bool IsLegal(int pos, int target, Board board)

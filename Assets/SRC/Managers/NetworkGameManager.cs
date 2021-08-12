@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+/*
+    @File NetworkGameManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 public class NetworkGameManager : MonoBehaviour
 {
     public static NetworkGameManager instance;

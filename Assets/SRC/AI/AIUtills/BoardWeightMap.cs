@@ -2,6 +2,11 @@ using System.Collections.Generic;
 
 namespace ChessAI
 {
+    /*
+    @File BoardWeightMap.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    */
     public static class BoardWeightMap
     {
         //*WE come back to you

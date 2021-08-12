@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
+/*
+    @File SettingsManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class SettingsManager : MonoBehaviour
 {
 

@@ -2,7 +2,13 @@ using System;
 using UnityEngine;
 namespace Command
 {
-    [CreateAssetMenu(fileName = "new Log Command", menuName = "Utilities/DeveloperConsole/Commands/Send To Server")]
+    /*
+    @File SendToServer.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    */
+
+    [CreateAssetMenu(fileName = "new Send to server Command", menuName = "Utilities/DeveloperConsole/Commands/Send To Server")]
     public class SendToServer : ConsoleCommand
     {
         public override string Process(string[] args)

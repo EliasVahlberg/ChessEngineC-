@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Command
 {
+    /*
+    @File ConnectToServerCommand.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    */
     [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/DeveloperConsole/Commands/Connect To Server")]
     public class ConnectToServerCommand : ConsoleCommand
     {

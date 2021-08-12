@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
+    /*
+    @File SimpleSearchAIGen2V1.cs
+    @author Elias Vahlberg 
+    @Date 2021-08 
+    */
     [CreateAssetMenu(fileName = "AI", menuName = "Utilities/AI GEN 2/Simple Search AI")]
     public class SimpleSearchAIGen2V1 : IAIObject
     {

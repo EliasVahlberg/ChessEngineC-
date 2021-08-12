@@ -7,6 +7,11 @@ using static UnityEngine.UI.Dropdown;
 
 namespace ChessAI
 {
+    /*
+    @File IAManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    */
     public class AIManager : MonoBehaviour
     {
 

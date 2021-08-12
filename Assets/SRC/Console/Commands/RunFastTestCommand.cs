@@ -2,7 +2,13 @@ using System;
 using UnityEngine;
 namespace Command
 {
-    [CreateAssetMenu(fileName = "new Log Command", menuName = "Utilities/DeveloperConsole/Commands/Run Fast Test Command")]
+    /*
+    @File RunFastTestCommand.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    */
+
+    [CreateAssetMenu(fileName = "new Run Test Command", menuName = "Utilities/DeveloperConsole/Commands/Run Fast Test Command")]
     public class RunFastTestCommand : ConsoleCommand
     {
         public override string Process(string[] args)

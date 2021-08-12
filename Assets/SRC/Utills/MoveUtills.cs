@@ -5,6 +5,12 @@ using UnityEngine;
 using static MoveData;
 using static Piece;
 
+/*
+    @File MoveUtills.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Sebastian Lague 
+*/
 public class MoveUtills
 {
     #region New

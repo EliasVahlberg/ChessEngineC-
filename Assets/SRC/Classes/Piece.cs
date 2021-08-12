@@ -1,5 +1,11 @@
 using System.Collections.Generic;
 
+/*
+@File Piece.cs
+@author Elias Vahlberg 
+@Date 2021-07
+@Credit Sebastian Lague 
+*/
 public static class Piece
 {
     public static string[] PositionRepresentation = {

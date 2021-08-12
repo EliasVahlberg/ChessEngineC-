@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
+    /*
+    @File WeightSearchAIV1.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    !Deprecated
+    */
     [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/Weight&Search AI V1")]
     public class WeightSearchAIV1 : IAIObject
     {

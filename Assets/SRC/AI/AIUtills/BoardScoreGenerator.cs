@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace ChessAI
 {
+    /*
+    @File BoardScoreGenerator.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    */
     public class BoardScoreGenerator
     {
         //NONE = 0 = 0b000

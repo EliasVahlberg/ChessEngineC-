@@ -2,6 +2,12 @@ using System;
 using UnityEngine;
 namespace Command
 {
+    /*
+@File RunTestCommand.cs
+@author Elias Vahlberg 
+@Date 2021-07
+*/
+
     [CreateAssetMenu(fileName = "new Log Command", menuName = "Utilities/DeveloperConsole/Commands/Run Test Command")]
     public class RunTestCommand : ConsoleCommand
     {

@@ -1,5 +1,11 @@
 using UnityEngine;
 
+/*
+@File PieceTable.cs
+@author Elias Vahlberg 
+@Date 2021-07
+@Credit Sebastian Lague 
+*/
 public class PieceTable
 {
 

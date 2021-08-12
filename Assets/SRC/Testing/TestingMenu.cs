@@ -8,7 +8,11 @@ using System.Text;
 namespace Testing
 {
 
-
+    /*
+        @File TestingMenu.cs
+        @author Elias Vahlberg 
+        @Date 2021-07
+    */
     public class TestingMenu : MonoBehaviour
     {
         [HideInInspector] static public TestingMenu instance;

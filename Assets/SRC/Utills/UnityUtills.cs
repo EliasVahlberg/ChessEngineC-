@@ -1,6 +1,11 @@
 //using UnityEditor;
 using UnityEngine;
 
+/*
+    @File UnityUtills.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 namespace Utills
 {
     public static class UnityUtills

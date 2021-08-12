@@ -6,6 +6,11 @@ using Utills;
 
 namespace ChessAI
 {
+    /*
+    @File SearchAIGen2V3.cs
+    @author Elias Vahlberg 
+    @Date 2021-08 
+    */
     [CreateAssetMenu(fileName = "SearchAIGen2V3", menuName = "Utilities/AI GEN 2/Search AI V3")]
     public class SearchAIGen2V3 : IAIObject
     {

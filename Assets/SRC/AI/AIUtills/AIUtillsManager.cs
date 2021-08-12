@@ -3,7 +3,11 @@ using System;
 using UnityEngine;
 namespace ChessAI
 {
-
+    /*
+    @File AIUtillsManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    */
     public class AIUtillsManager : MonoBehaviour
     {
 

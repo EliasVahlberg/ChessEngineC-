@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Utills;
 
+/*
+    @File MoveTest.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public readonly struct PerftCheckResult
 {
     public readonly long nTotalNodes;

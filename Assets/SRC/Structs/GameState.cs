@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/*
+    @File GameState.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public struct GameState
 {
     //27-32     28      27      22-26   16-22       10-16     4-10        0-4  

@@ -6,6 +6,12 @@ using System.Net;
 using System.Net.Sockets;
 using GameClient;
 
+/*
+    @File Client.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 public class Client : MonoBehaviour
 {
     public static Client instance;

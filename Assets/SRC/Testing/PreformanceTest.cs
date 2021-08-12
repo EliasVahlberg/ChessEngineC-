@@ -8,6 +8,11 @@ using Utills;
 namespace Testing
 {
 
+    /*
+        @File PreformanceTest.cs
+        @author Elias Vahlberg 
+        @Date 2021-07
+    */
     public readonly struct PreformanceTestResult
     {
         //TODO maby fix for mac and Linux

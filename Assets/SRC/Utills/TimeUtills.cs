@@ -1,6 +1,11 @@
 using System;
 using System.Collections.Generic;
 
+/*
+    @File TimeUtills.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 namespace Utills
 {
     public class TimeUtills

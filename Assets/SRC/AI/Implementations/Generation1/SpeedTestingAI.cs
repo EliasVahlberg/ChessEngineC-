@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
+    /*
+    @File SpeedTestingAI.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    !Deprecated
+    */
     [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/Speed testing AI")]
     public class SpeedTestingAI : IAIObject
     {

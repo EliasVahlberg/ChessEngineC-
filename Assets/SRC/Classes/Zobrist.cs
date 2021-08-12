@@ -5,6 +5,12 @@ using System.IO;
 using UnityEngine;
 namespace SimpleChess
 {
+    /*
+    @File Zobrist.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Sebastian Lague 
+    */
     public static class Zobrist
     {
         const int seed = unchecked((int)0xFEDCCDEF);
@@ -19,20 +25,47 @@ namespace SimpleChess
 
         static System.Random prng = new System.Random(seed);
 
-
+        /*
+        !Unoptimized should use StringBuilder
+        */
         static void WriteRandomNumbers()
         {
             prng = new System.Random(seed);
             string randNumStr = "";
             int numOfNums = 64 * 8 * 2 + castlingR.Length + 9 + 1;
+
+            for (int i = 0; i < numOfNums; i++)
+            {
+                randNumStr += RandUL();
+                if (i != numOfNums - 1)
+                {
+                    randNumStr += ',';
+                }
+            }
+
+            StreamWriter writer = new StreamWriter(randomNumbersPath);
+            writer.Write(randNumStr);
+            writer.Close();
         }
 
         static Queue<ulong> ReadRandomNumbers()
         {
+            if (!File.Exists(randomNumbersPath))
+            {
+                Debug.Log("Create");
+                WriteRandomNumbers();
+            }
             Queue<ulong> randomNumbers = new Queue<ulong>();
             StreamReader reader = new StreamReader(randomNumbersPath);
             string numbersString = reader.ReadToEnd();
             reader.Close();
+            if (numbersString == null)
+            {
+                //! Is kindoff an StackOF exception waiting to happen but I ain't scared
+                Debug.Log("Create");
+                WriteRandomNumbers();
+                return ReadRandomNumbers();
+            }
 
             string[] numberStrings = numbersString.Split(',');
             for (int i = 0; i < numberStrings.Length; i++)
@@ -64,8 +97,11 @@ namespace SimpleChess
 
             sideToMove = randomNumbers.Dequeue();
         }
-
-        /// Calculate zobrist key from current board position. This should only be used after setting board from fen; during search the key should be updated incrementally.
+        /*
+        *@OnBoardInit
+        !Not to be used to update the hash
+        */
+        //Calculate zobrist key from current board position. This should only be used after setting board from fen; during search the key should be updated incrementally.
         public static ulong CalculateZobristKey(Board board)
         {
             ulong hash = 0;
@@ -81,8 +117,8 @@ namespace SimpleChess
                 }
             }
 
-            int epIndex = board.currGameState.EnPassant();
-            if (epIndex != -1)
+            int epIndex = board.currGameState.EnPassant() % 8;
+            if (board.currGameState.EnPassant() != 0)
             {
                 hash ^= ePFile[epIndex];
             }
@@ -101,6 +137,7 @@ namespace SimpleChess
         {
             get
             {
+                //*Makes sure that it doesn't land just anywhere
                 return Path.Combine(Application.streamingAssetsPath, randomNumbersFileName);
             }
         }

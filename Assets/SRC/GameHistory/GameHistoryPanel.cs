@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    @File GameHistoryPanel.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class GameHistoryPanel : MonoBehaviour
 {
     public GameObject canvas;

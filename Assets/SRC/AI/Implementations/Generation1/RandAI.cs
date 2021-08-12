@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
+    /*
+    @File RandAI.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    !Deprecated
+    */
     [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/RandAI")]
     public class RandAI : IAIObject
     {

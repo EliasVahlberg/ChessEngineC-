@@ -1,6 +1,11 @@
 using UnityEngine;
 namespace Command
 {
+    /*
+    @File LogCommand.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    */
     [CreateAssetMenu(fileName = "new Log Command", menuName = "Utilities/DeveloperConsole/Commands/Log Command")]
     public class LogCommand : ConsoleCommand
     {

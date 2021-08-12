@@ -2,8 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ChessAI;
+using SimpleChess;
 using UnityEngine;
 
+/*
+    @File GameManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class GameManager : MonoBehaviour
 {
     //TODO Remove

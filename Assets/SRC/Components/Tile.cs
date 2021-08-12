@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    @File Tile.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class Tile : MonoBehaviour
 {
     public int position;

@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    @File MoveData.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Sebastian Lague 
+*/
 public static class MoveData
 {
     public const int NORTH_I = 0, SOUTH_I = 1, WEST_I = 2, EAST_I = 3, NORTHWEST_I = 4, SOUTHEAST_I = 5, NORTHEAST_I = 6, SOUTHWEST_I = 7;

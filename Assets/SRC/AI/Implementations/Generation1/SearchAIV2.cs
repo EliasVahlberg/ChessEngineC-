@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ChessAI
 {
+    /*
+    @File SearchAIV2.cs
+    @author Elias Vahlberg 
+    @Date 2021-07 
+    !Deprecated
+    */
     [CreateAssetMenu(fileName = "ConnectToServer", menuName = "Utilities/AI/Search AI V2")]
     public class SearchAIV2 : IAIObject
     {

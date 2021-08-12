@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using GameClient;
 using UnityEngine;
 
+/*
+    @File ClientSend.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 public class ClientSend : MonoBehaviour
 {
     private static void SendTCPData(Packet _packet)

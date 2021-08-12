@@ -5,6 +5,11 @@ using Testing;
 using UnityEngine;
 using UnityEngine.UI;
 
+/*
+    @File UIManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class UIManager : MonoBehaviour
 {
     #region Constants

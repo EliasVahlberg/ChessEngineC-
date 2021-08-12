@@ -4,6 +4,12 @@ using System.Net;
 using GameClient;
 using UnityEngine;
 
+/*
+    @File ClientHandle.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 public class ClientHandle : MonoBehaviour
 {
     #region TCP_PACKETS

@@ -2,6 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+/*
+    @File Packet.cs
+    @author Tom Weiland & Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 namespace GameClient
 {
     /// <summary>Sent from server to client.</summary>

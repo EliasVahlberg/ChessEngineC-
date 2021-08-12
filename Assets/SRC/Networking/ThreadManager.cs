@@ -2,6 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    @File ThreadManager.cs
+    @author Tom Weiland & Elias Vahlberg 
+    @Date 2021-07
+    @Credit Tom Weiland
+*/
 public class ThreadManager : MonoBehaviour
 {
     private static readonly List<Action> executeOnMainThread = new List<Action>();

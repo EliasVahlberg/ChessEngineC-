@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    @File FENUtills.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public static class FENUtills
 {
     public const string DEFAULT_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

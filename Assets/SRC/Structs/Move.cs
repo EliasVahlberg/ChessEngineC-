@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 //TODO Optimize move
 //https://github.com/SebLague/Chess-AI/blob/main/Assets/Scripts/Core/Move.cs
+/*
+    @File Move.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+    @Credit Sebastian Lague 
+*/
 public readonly struct Move
 {
 

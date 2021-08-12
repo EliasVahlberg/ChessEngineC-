@@ -4,6 +4,12 @@ using MLAPI;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+/*
+    @File MenuManager.cs
+    @author Elias Vahlberg 
+    @Date 2021-07
+*/
 public class MenuManager : MonoBehaviour
 {
     public static MenuManager instance;

@@ -2,9 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using SimpleChess;
 using UnityEngine;
 using static Piece;
 
+/*
+@File Board.cs
+@author Elias Vahlberg 
+@Date 2021-07
+@Credit Sebastian Lague 
+*/
 public class Board
 {
     public const int BlackIndex = 1;
@@ -485,7 +492,7 @@ public class Board
             int enPas = -1;
             if (move.moveFlag == Move.Flag.EnPassantCapture)
                 enPas = enPassantAble;
-            if (!MoveInnerV2(move))//MoveInner(move))
+            if (!MoveInnerV3(move))//MoveInner(move))
             { Debug.Log("FAILMOVE"); return false; }
 
             switch (move.moveFlag)
@@ -535,7 +542,7 @@ public class Board
     }
 
     /*
-    *
+    * V2: Does NOT update the zobrist hash
     */
     private bool MoveInnerV2(Move move)
     {
@@ -735,8 +742,197 @@ public class Board
 
     }
 
+
     /*
-    *
+    * V3: Updates the zobrist hash
+    */
+    private bool MoveInnerV3(Move move)
+    {
+        try
+        {
+
+
+            bool WhiteToMove = currGameState.WhiteTurn();
+            uint newCastleState = currGameState.CastleRights();
+            uint oldCastleState = currGameState.CastleRights();
+            int fiftyMoveCounter = currGameState.FiftyTurnCount();
+            gameStateHistory.Push(currGameState);
+            GameState nextGameState = new GameState(0);//new GameState(currGameState.gameStateValue);
+
+            int ColorToMove = (whiteTurn) ? WHITE : BLACK;
+            int opponentColourIndex = 1 - ColorIndex;
+            int moveFrom = move.StartSquare;
+            int moveTo = move.TargetSquare;
+
+            int capturedPieceType = Piece.PieceType(tiles[moveTo]);
+            int movePiece = tiles[moveFrom];
+            int movePieceType = Piece.PieceType(movePiece);
+
+            int moveFlag = move.moveFlag;
+            bool isPromotion = move.isPromotion();
+            bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
+
+
+
+            // Handle captures
+            if (capturedPieceType != 0)
+            {
+                nextGameState.SetPrevCapturedIndex(moveTo);
+                nextGameState.SetPrevCapturedType(capturedPieceType);
+            }
+            if (capturedPieceType != 0 && !isEnPassant)
+            {
+                ZobristKey ^= Zobrist.piecesArr[capturedPieceType, opponentColourIndex, moveTo];
+                GetPieceTable(capturedPieceType, opponentColourIndex).RemovePieceAtSquare(moveTo);
+            }
+
+            // Move pieces in piece lists
+            if (movePieceType == Piece.KING)
+            {
+                KingSquares[ColorIndex] = moveTo;
+                newCastleState &= (whiteTurn) ? 0b1100U : 0b0011U;
+            }
+            else
+            {
+
+                GetPieceTable(movePieceType, ColorIndex).MovePiece(moveFrom, moveTo);
+            }
+
+            int pieceOnTargetSquare = movePiece;
+
+            // Handle promotion
+            if (isPromotion)
+            {
+                int promoteType = 0;
+                switch (moveFlag)
+                {
+                    case Move.Flag.PromoteToQueen:
+                        promoteType = Piece.QUEEN;
+                        queens[ColorIndex].AddPieceAtSquare(moveTo);
+                        break;
+                    case Move.Flag.PromoteToRook:
+                        promoteType = Piece.ROOK;
+                        rooks[ColorIndex].AddPieceAtSquare(moveTo);
+                        break;
+                    case Move.Flag.PromoteToBishop:
+                        promoteType = Piece.BISHOP;
+                        bishops[ColorIndex].AddPieceAtSquare(moveTo);
+                        break;
+                    case Move.Flag.PromoteToKnight:
+                        promoteType = Piece.KNIGHT;
+                        knights[ColorIndex].AddPieceAtSquare(moveTo);
+                        break;
+
+                }
+                pieceOnTargetSquare = promoteType | ColorToMove;
+                pawns[ColorIndex].RemovePieceAtSquare(moveTo);
+            }
+            else
+            {
+                //*Special moves (EP and castling)
+                switch (moveFlag)
+                {
+                    case Move.Flag.EnPassantCapture:
+                        int epPawnSquare = moveTo + ((ColorToMove == Piece.WHITE) ? -8 : 8);
+                        nextGameState.SetPrevCapturedIndex(epPawnSquare);
+                        nextGameState.SetPrevCapturedType(PAWN);
+                        tiles[epPawnSquare] = 0; // clear ep capture square
+                        pawns[opponentColourIndex].RemovePieceAtSquare(epPawnSquare);
+                        ZobristKey ^= Zobrist.piecesArr[Piece.PAWN, opponentColourIndex, epPawnSquare];
+                        break;
+                    case Move.Flag.Castling:
+                        bool kingside = moveTo == BoardUtills.g1 || moveTo == BoardUtills.g8;
+                        int castlingRookFromIndex = (kingside) ? moveTo + 1 : moveTo - 2;
+                        int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
+
+                        tiles[castlingRookFromIndex] = 0;
+                        tiles[castlingRookToIndex] = Piece.ROOK | ColorToMove;
+
+                        rooks[ColorIndex].MovePiece(castlingRookFromIndex, castlingRookToIndex);
+                        ZobristKey ^= Zobrist.piecesArr[Piece.ROOK, ColorIndex, castlingRookFromIndex];
+                        ZobristKey ^= Zobrist.piecesArr[Piece.ROOK, ColorIndex, castlingRookToIndex];
+                        break;
+                }
+            }
+
+            //* Move the actual pieces
+            tiles[moveTo] = pieceOnTargetSquare;
+            tiles[moveFrom] = 0;
+
+            //* Pawn moved two forwards -> Can EP capture next turn
+            if (moveFlag == Move.Flag.PawnTwoForward)
+            {
+                nextGameState.SetEnPassant(moveTo);
+                ZobristKey ^= Zobrist.ePFile[moveTo % 8];
+            }
+
+            //*Moving rook impact on castle rights
+            if (oldCastleState != 0)
+            {
+                if (moveTo == BoardUtills.h1 || moveFrom == BoardUtills.h1)
+                {
+                    newCastleState &= ~(0b0001U);
+                }
+                else if (moveTo == BoardUtills.a1 || moveFrom == BoardUtills.a1)
+                {
+                    newCastleState &= ~(0b0010U);
+                }
+                if (moveTo == BoardUtills.h8 || moveFrom == BoardUtills.h8)
+                {
+                    newCastleState &= ~(0b0100U);
+                }
+                else if (moveTo == BoardUtills.a8 || moveFrom == BoardUtills.a8)
+                {
+                    newCastleState &= ~(0b1000U);
+                }
+            }
+
+            //* Update Hash with new piece pos and side to move
+            ZobristKey ^= Zobrist.sideToMove;
+            ZobristKey ^= Zobrist.piecesArr[movePieceType, ColorIndex, moveFrom];
+            ZobristKey ^= Zobrist.piecesArr[Piece.PieceType(pieceOnTargetSquare), ColorIndex, moveTo];
+
+            if (currGameState.EnPassant() != 0)
+                ZobristKey ^= Zobrist.ePFile[currGameState.EnPassant() % 8];
+
+            if (newCastleState != currGameState.CastleRights())
+            {
+                //* Remove old castling rights
+                ZobristKey ^= Zobrist.castlingR[currGameState.CastleRights()];
+                //* Add new castling rights
+                ZobristKey ^= Zobrist.castlingR[newCastleState];
+            }
+            if (movePieceType == Piece.PAWN || capturedPieceType != NONE)
+            {
+                fiftyMoveCounter = 0;
+            }
+            nextGameState.SetCastleRights(newCastleState);
+            nextGameState.PrevMove = move;
+            nextGameState.SetWhiteTurn(!whiteTurn);
+            nextGameState.SetFiftyTurnCount(fiftyMoveCounter + 1);
+            currGameState = nextGameState;
+            ColorIndex = 1 - ColorIndex;
+            Turn++;
+            whiteTurn = !whiteTurn;
+
+
+            hasGeneratedMoves = false;
+            //Debug.Log("Zobrist Key MakeMove: " + ZobristKey + "\n " + move.ToString());
+
+            return true;
+
+
+        }
+        catch (Exception _ex)
+        {
+            Debug.LogError("EXCEPTION DURING MoveInnerV2, ex:" + _ex.ToString());
+            return false;
+        }
+
+    }
+
+    /*
+    * V2: Does NOT update the zobrist hash
     */
     private bool UnmakeMoveInnerV2()
     {
@@ -894,7 +1090,166 @@ public class Board
         }
 
     }
+    /*
+    * V3: Updates the zobrist hash
+    */
+    private bool UnmakeMoveInnerV3()
+    {
+        try
+        {
 
+
+            if (gameStateHistory.Count == 0)
+            {
+                Debug.Log("FAIL in UnmakeMoveInnerV2");
+                Debug.Log("FIRST RECORDED TURN REACHED");
+                return false;
+            }
+            Move move = currGameState.PrevMove;
+            //int opponentColour = ColourToMove;
+            //int ColourToMoveIndex = whiteTurn ? 0 : 1;
+            int opponentColourIndex = ColorIndex;
+            bool undoingWhiteMove = !whiteTurn;
+            int ColourToMove = whiteTurn ? BLACK : WHITE; // side who made the move we are undoing
+            int OpponentColour = (undoingWhiteMove) ? BLACK : WHITE;
+            ColorIndex = 1 - ColorIndex;
+            whiteTurn = !whiteTurn;
+
+            uint originalCastleState = currGameState.CastleRights();
+
+
+
+            int capturedPiece = currGameState.PrevCapturedType();// | (OpponentColour);
+
+            capturedPiece |= capturedPiece == 0 ? 0 : OpponentColour;
+            int capturedPieceType = PieceType(capturedPiece);
+
+            int movedFrom = move.StartSquare;
+            int movedTo = move.TargetSquare;
+            int moveFlags = move.moveFlag;
+            bool isEnPassant = moveFlags == Move.Flag.EnPassantCapture;
+            bool isPromotion = move.isPromotion();
+
+            int toSquarePieceType = Piece.PieceType(tiles[movedTo]);
+            int movedPieceType = (isPromotion) ? PAWN : toSquarePieceType;
+
+
+
+            // Update zobrist key with new piece position and side to move
+            ZobristKey ^= Zobrist.sideToMove;
+            //* Add piece back
+            ZobristKey ^= Zobrist.piecesArr[movedPieceType, ColorIndex, movedFrom];
+            //* remove piece
+            ZobristKey ^= Zobrist.piecesArr[toSquarePieceType, ColorIndex, movedTo];
+
+
+            if (currGameState.EnPassant() != 0)
+                ZobristKey ^= Zobrist.ePFile[currGameState.EnPassant() % 8];
+
+
+            if (capturedPieceType != 0 && !isEnPassant)
+            {
+                ZobristKey ^= Zobrist.piecesArr[capturedPieceType, opponentColourIndex, movedTo];
+                GetPieceTable(capturedPieceType, opponentColourIndex).AddPieceAtSquare(movedTo);
+            }
+
+            // Update king index
+            if (movedPieceType == KING)
+            {
+                KingSquares[ColorIndex] = movedFrom;
+            }
+            else if (!isPromotion)
+            {
+
+                GetPieceTable(movedPieceType, ColorIndex).MovePiece(movedTo, movedFrom);
+            }
+
+
+            // put back moved piece
+            tiles[movedFrom] = movedPieceType | ColourToMove; // note that if move was a pawn promotion, this will put the promoted piece back instead of the pawn. Handled in special move switch
+            tiles[movedTo] = capturedPiece == 0 ? 0 : capturedPiece | (OpponentColour); // will be 0 if no piece was captured
+
+            if (isPromotion)
+            {
+
+                pawns[ColorIndex].AddPieceAtSquare(movedFrom);
+
+
+
+                switch (moveFlags)
+                {
+                    case Move.Flag.PromoteToQueen:
+                        queens[ColorIndex].RemovePieceAtSquare(movedTo);
+                        break;
+                    case Move.Flag.PromoteToKnight:
+                        knights[ColorIndex].RemovePieceAtSquare(movedTo);
+                        break;
+                    case Move.Flag.PromoteToRook:
+                        rooks[ColorIndex].RemovePieceAtSquare(movedTo);
+                        break;
+                    case Move.Flag.PromoteToBishop:
+                        bishops[ColorIndex].RemovePieceAtSquare(movedTo);
+                        break;
+                }
+            }
+            else if (isEnPassant)
+            {
+                int epIndex = movedTo + ((ColourToMove == WHITE) ? -8 : 8);
+                tiles[movedTo] = 0;
+                tiles[epIndex] = (int)PAWN | (OpponentColour);
+                pawns[opponentColourIndex].AddPieceAtSquare(epIndex);
+                ZobristKey ^= Zobrist.piecesArr[Piece.PAWN, opponentColourIndex, epIndex];
+
+            }
+            else if (moveFlags == Move.Flag.Castling)
+            {
+                //*If prev was castling
+
+                bool kingside = movedTo == 6 || movedTo == 62;
+                int castlingRookFromIndex = (kingside) ? movedTo + 1 : movedTo - 2;
+                int castlingRookToIndex = (kingside) ? movedTo - 1 : movedTo + 1;
+
+                tiles[castlingRookToIndex] = 0;
+                tiles[castlingRookFromIndex] = ROOK | ColourToMove;
+                rooks[ColorIndex].MovePiece(castlingRookToIndex, castlingRookFromIndex);
+                ZobristKey ^= Zobrist.piecesArr[Piece.ROOK, ColorIndex, castlingRookFromIndex];
+                ZobristKey ^= Zobrist.piecesArr[Piece.ROOK, ColorIndex, castlingRookToIndex];
+
+            }
+
+            currGameState = gameStateHistory.Pop(); // sets current state to previous state in history
+
+
+            //int newEnPassantFile = (int)(currentGameState >> 4) & 15;
+            if (currGameState.EnPassant() != 0)
+                ZobristKey ^= Zobrist.ePFile[currGameState.EnPassant() % 8];
+
+
+            if (currGameState.CastleRights() != originalCastleState)
+            {
+                ZobristKey ^= Zobrist.castlingR[originalCastleState]; // remove old castling rights state
+                ZobristKey ^= Zobrist.castlingR[currGameState.CastleRights()]; // add new castling rights state
+            }
+
+            turn--;
+
+            hasGeneratedMoves = false;
+
+            //if (!inSearch && RepetitionPositionHistory.Count > 0)
+            //    RepetitionPositionHistory.Pop();
+            //TODO IMPLEMENT ^
+            //Debug.LogError("Zobrist Key UnmakeMove: " + ZobristKey + "\n " + move.ToString());
+
+            return true;
+
+        }
+        catch (Exception _ex)
+        {
+            Debug.LogError("FAIL in UnmakeMoveInnerV2, _ex:" + _ex);
+            return false;
+        }
+
+    }
     #endregion
 
     #region OuterFuncs
@@ -911,7 +1266,7 @@ public class Board
             int enPas = -1;
             bool reinstate = currGameState.PrevCapturedType() != 0;
             int reinstateindex = currGameState.PrevCapturedIndex();
-            if (!UnmakeMoveInnerV2())
+            if (!UnmakeMoveInnerV3())
                 return false;
             if (move.moveFlag == Move.Flag.EnPassantCapture)
                 enPas = move.TargetSquare + ((whiteTurn) ? -8 : 8); ;
@@ -970,7 +1325,7 @@ public class Board
     */
     public bool UnmakeMove()
     {
-        return UnmakeMoveInnerV2();
+        return UnmakeMoveInnerV3();
     }
 
     /*
@@ -988,7 +1343,7 @@ public class Board
     public bool useMove(Move move)
     {
 
-        return MoveInnerV2(move);
+        return MoveInnerV3(move);
     }
 
     /*
@@ -1028,7 +1383,7 @@ public class Board
         {
             if (move.TargetSquare == to)
             {
-                return MoveInnerV2(move);
+                return MoveInnerV3(move);
             }
         }
         return false;
@@ -1134,7 +1489,7 @@ public class Board
     }
     #endregion
 
-    #region Post v8.1
+    #region Post v1.0
 
     /*
     *Called when a new board is initialized
@@ -1182,8 +1537,8 @@ public class Board
             }
         }
 
-        // Initialize zobrist key
-        //ZobristKey = Zobrist.CalculateZobristKey(this);
+        //* INIT: zobrist key
+        ZobristKey = Zobrist.CalculateZobristKey(this);
     }
 
 
