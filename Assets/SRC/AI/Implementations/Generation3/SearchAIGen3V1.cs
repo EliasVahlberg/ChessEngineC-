@@ -65,7 +65,7 @@ namespace ChessAI
             #region Before_ValidCopy
 
             tilesCopy = new int[64];
-            Array.Copy(board.tiles, tilesCopy, 64);
+            Array.Copy(privateBoard.tiles, tilesCopy, 64);
             gameStateCopy = new GameState(privateBoard.currGameState.gameStateValue, privateBoard.currGameState.PrevMove);
             #endregion
 
@@ -108,7 +108,8 @@ namespace ChessAI
                 moveFound = true;
 
                 logInfo = "<color=yellow>" + search.LogDebugInfo() + "</color>";
-                GameManager.instance.AIPendingComplete = true;
+                if (GameManager.instance.started && !GameManager.instance.ended)
+                    GameManager.instance.AIPendingComplete = true;
             }
             else
             {

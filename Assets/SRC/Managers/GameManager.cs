@@ -273,6 +273,12 @@ public class GameManager : MonoBehaviour
 
     public void checkPendingMove()
     {
+        if (!started || ended)
+        {
+            aiPendingSearchMove = false;
+            aiPendingComplete = false;
+            return;
+        }
         Move move = (isWhiteAIPending ? wAI.SelectMove(null) : bAI.SelectMove(null));
         if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
         {
@@ -316,6 +322,7 @@ public class GameManager : MonoBehaviour
         wAI = null;
         bAI = null;
         aiDelayMs = DEFAULT_AI_DELAY_MS;
+        AIManager.instance.resetAIManager();
     }
 
     #endregion
@@ -610,7 +617,7 @@ public class GameManager : MonoBehaviour
         {
             if (aiPendingSearchMove && !aiPendingComplete)
             { }
-            else if (aiPendingComplete)
+            else if (aiPendingSearchMove && aiPendingComplete)
                 checkPendingMove();
             else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
             {

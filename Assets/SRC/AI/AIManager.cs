@@ -105,7 +105,18 @@ namespace ChessAI
         {
             letAITakeOver(aiSelect.value);
         }
-
+        public void resetAIManager()
+        {
+            isBlackAIActive = false;
+            isWhiteAIActive = false;
+            activeBlackAI = null;
+            activeWhiteAI = null;
+            wAINameDisplay.text = "";
+            bAINameDisplay.text = "";
+            toggleAIPausButton.gameObject.SetActive(false);
+            aiSelect.gameObject.SetActive(true);
+            letAIPlayButton.gameObject.SetActive(true);
+        }
         public void toggleAIPaus()
         {
             GameManager.instance.toggleAIPaus();
