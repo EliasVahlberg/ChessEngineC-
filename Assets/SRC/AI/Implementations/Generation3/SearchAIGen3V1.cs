@@ -16,59 +16,57 @@ namespace ChessAI
     [CreateAssetMenu(fileName = "SearchAIGen3V1", menuName = "Utilities/AI GEN 3/Search AI V1")]
     public class SearchAIGen3V1 : IAIObject
     {
+        private Board privateBoard;
         private Move bestMove;
         private int bestVal;
 
         public AISettings settings;
 
         private Search search;
-        private static int repetitionMaxLength = 10;
+        private static int repetitionMaxLength = 5;
 
         CancellationTokenSource cancelSearchTimer;
-
+        [System.NonSerialized]
         private bool moveFound = false;
+        [System.NonSerialized]
         private bool started = false;
         private int[] tilesCopy;
         private GameState gameStateCopy;
-        private void Awake()
-        {
+        private string logInfo;
 
-            moveFound = false;
-            started = false;
-        }
         public override Move SelectMove(Board board)
         {
-            //if (started && moveFound)
-            //    Debug.Log("START&MOVE");
-            //if (!(started && moveFound))
-            //    Debug.Log("NOSTART&MOVE");
+            if (privateBoard == null)
+                privateBoard = board;
             if (started)
             {
                 if (moveFound)
                 {
-                    //if (!AIUtillsManager.instance.BoardIntegrityCheck(GameManager.instance.board, tilesCopy, gameStateCopy))
-                    //    throw new InvalidOperationException("Board was mutated during selection of moves");
+                    if (!AIUtillsManager.instance.BoardIntegrityCheck(privateBoard, tilesCopy, gameStateCopy))
+                        throw new InvalidOperationException("Board was mutated during selection of moves");
                     started = false;
                     moveFound = false;
+                    if (logInfo != null)
+                        ConsoleHistory.instance.addLogHistory(logInfo);
                     return bestMove;
                 }
                 else
                     return PENDING_SEARCH_MOVE;
             }
-            //if (search == null)
+            if (search == null)
+                search = new Search(privateBoard, settings);//search = new Search(new Board(board.boardToFEN()), settings);
 
-            search = new Search(new Board(board.boardToFEN()), settings);
-            search.useCoinToss = hasRepetitions(board);
+            //search.useCoinToss = hasRepetitions(privateBoard);
 
 
-            if (board.Moves.Count == 0)
+            if (privateBoard.Moves.Count == 0)
                 throw new ArgumentNullException("board.Moves", "EndgameConditions are handeled by the game manager and not the AI");
 
             #region Before_ValidCopy
 
             tilesCopy = new int[64];
             Array.Copy(board.tiles, tilesCopy, 64);
-            gameStateCopy = new GameState(board.currGameState.gameStateValue, board.currGameState.PrevMove);
+            gameStateCopy = new GameState(privateBoard.currGameState.gameStateValue, privateBoard.currGameState.PrevMove);
             #endregion
 
             started = true;
@@ -79,6 +77,7 @@ namespace ChessAI
             //Debug.Log(this.Name + " : " + maxVal);
             return PENDING_SEARCH_MOVE;
         }
+
         private bool hasRepetitions(Board board)
         {
             ulong[] hashHistory = board.HashHistory.ToArray();
@@ -107,6 +106,13 @@ namespace ChessAI
                 search.StoppSearch();
                 (bestMove, bestVal) = search.GetResult();
                 moveFound = true;
+
+                logInfo = "<color=yellow>" + search.LogDebugInfo() + "</color>";
+                GameManager.instance.AIPendingComplete = true;
+            }
+            else
+            {
+                throw new InvalidOperationException("Someting went wrong when searching for move");
             }
 
         }
@@ -117,6 +123,7 @@ namespace ChessAI
             cancelSearchTimer?.Cancel();
             this.bestMove = move;
             moveFound = true;
+            GameManager.instance.AIPendingComplete = true;
             Debug.LogError("SearchAbort early");
         }
 

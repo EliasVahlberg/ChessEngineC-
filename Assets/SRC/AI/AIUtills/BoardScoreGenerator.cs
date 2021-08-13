@@ -24,15 +24,15 @@ namespace ChessAI
         const int WHITE = 0b01000;
         const int BLACK = 0b10000;
         const int COLOR_MASK = 0b11000;
-        public static int captureWeight = 1;
+        const int ENDGAME_START_VALUE = 16;      //4 pawns+  1 horse +  2 sliding;
         public static int[] pieceScoreArr = new int[]{
             0,
-            int.MaxValue/2,
-            1*captureWeight,
-            3*captureWeight,
-            3*captureWeight,
-            5*captureWeight,
-            9*captureWeight
+            1,//int.MaxValue/2,
+            1,
+            3,
+            3,
+            5,
+            9
             };
         public static Dictionary<int, int> pieceScore = new Dictionary<int, int>()
         {
@@ -192,6 +192,20 @@ namespace ChessAI
             score += factor * pieceScoreBW[tiles[63]];
             return score;
 
+        }
+
+        public int EndgameValue(int[] tiles, bool whiteTurn)
+        {
+            int score = 0;
+            int factor = (whiteTurn ? 1 : -1);
+            int n = 0;
+            for (int ii = 0; ii < 64; ii++)
+            {
+                n = factor * pieceScoreBW[tiles[ii]];
+                if (n < 0)
+                    score -= n;
+            }
+            return score < ENDGAME_START_VALUE ? ENDGAME_START_VALUE - score : 0;
         }
     }
 }

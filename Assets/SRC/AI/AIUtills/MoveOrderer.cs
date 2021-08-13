@@ -1,7 +1,5 @@
 
-using System;
 using SimpleChess;
-using UnityEngine;
 
 namespace ChessAI
 {
@@ -14,15 +12,22 @@ namespace ChessAI
     {
         private TranspositionTable tt;
         private const int CAPTURE_VAL_MULTIPLIER = 2;
+        private const int UNSAFE_POS_MULTIPLIER = 1;
 
         public MoveOrderer(TranspositionTable tt)
         {
             this.tt = tt;
         }
 
-        public void Order(Board board)
+        public void Order(Board board, bool usePrevSearch = false)
         {
             board.generateNewMoves();
+            Move prevBest = Search.INVAL_MOVE;
+            if (usePrevSearch)
+            {
+                prevBest = tt.GetStoredMove();
+            }
+
             int[] moveScoreEstimates = new int[board.Moves.Count];
 
             for (int ii = 0; ii < board.Moves.Count; ii++)
@@ -37,16 +42,22 @@ namespace ChessAI
 
                 }
                 if (move.moveFlag == Move.Flag.PromoteToQueen)
-                {
                     moveScoreEstimate += BoardScoreGenerator.pieceScore[Piece.QUEEN];
-                }
-                if (move.moveFlag == Move.Flag.PromoteToKnight)
-                {
+                else if (move.moveFlag == Move.Flag.PromoteToKnight)
                     moveScoreEstimate += BoardScoreGenerator.pieceScore[Piece.KNIGHT];
-                }
+                else if (move.moveFlag == Move.Flag.PromoteToBishop)
+                    moveScoreEstimate += BoardScoreGenerator.pieceScore[Piece.BISHOP];
+                else if (move.moveFlag == Move.Flag.PromoteToRook)
+                    moveScoreEstimate += BoardScoreGenerator.pieceScore[Piece.ROOK];
+
+                if (!board.MoveGenerator.isSafePosition(move.TargetSquare))
+                    moveScoreEstimate -= BoardScoreGenerator.pieceScore[movePieceT] * UNSAFE_POS_MULTIPLIER;
                 moveScoreEstimates[ii] = moveScoreEstimate;
+                if (move.Equals(prevBest))
+                    moveScoreEstimates[ii] += 10000;
 
             }
+            //TODO Implement better sorting
             for (int ii = 0; ii < board.Moves.Count - 1; ii++)
             {
                 for (int jj = ii + 1; jj > 0; jj--)

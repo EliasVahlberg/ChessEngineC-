@@ -75,7 +75,7 @@ namespace ChessAI
             {
                 if (gameManager.board.whiteTurn)
                 {
-                    activeWhiteAI = aIs[index];
+                    activeWhiteAI = Instantiate(aIs[index]);
                     isWhiteAIActive = true;
                     gameManager.wAI = activeWhiteAI;
                     gameManager.whiteAIPlaying = true;
@@ -89,7 +89,7 @@ namespace ChessAI
                 }
                 else
                 {
-                    activeBlackAI = aIs[index];
+                    activeBlackAI = Instantiate(aIs[index]);
                     isBlackAIActive = true;
                     gameManager.bAI = activeBlackAI;
                     gameManager.blackAIPlaying = true;
@@ -117,11 +117,11 @@ namespace ChessAI
         }
         public Move SelectMove(IAIObject ai, Board board)
         {
-            timeID = TimeUtills.Instance.startMeasurement();
+            //timeID = TimeUtills.Instance.startMeasurement();
             Move move = ai.SelectMove(board);
-            long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
+            //long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
             //Debug.Log(ai.Name + " took :" + td + "ms");
-            ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");
+            //ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");
             return move;
         }
     }

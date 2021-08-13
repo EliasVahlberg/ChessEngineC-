@@ -28,6 +28,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public Board board;
 
+    private Board whiteBoard;
+    private Board blackBoard;
+
 
     #region Move_Net
     public int myColor = 0;
@@ -57,8 +60,10 @@ public class GameManager : MonoBehaviour
     public bool aiWaitingToMove = false;
     public static int DEFAULT_AI_DELAY_MS = 50;
     public DateTime aiDelayStart;
-    public bool aiPendingSearchMove = false;
-    public bool isWhiteAIPending = false;
+    private bool aiPendingSearchMove = false;
+    private bool aiPendingComplete = false;
+    public bool AIPendingComplete { get => aiPendingComplete; set => aiPendingComplete = value; }
+    private bool isWhiteAIPending = false;
     #endregion
 
     #region State
@@ -125,6 +130,7 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    //TODO Fix new board system
     #region Network
 
     public void resetSentMove()
@@ -137,7 +143,7 @@ public class GameManager : MonoBehaviour
     {
         if (myColor == board.ColorTurn)
         {
-            if (!board.useMove(sentMove, uiManager) && !board.isCheckMate())
+            if (!SynchronizedUseMove(sentMove) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
             else
                 newTurnFlag = true;
@@ -145,7 +151,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            if (!board.useMove(recivedMove, uiManager) && !board.isCheckMate())
+            if (!SynchronizedUseMove(recivedMove) && !board.isCheckMate())
                 Debug.Log("MOVE FAIL: { from = " + recivedMove.StartSquare + ", to = " + recivedMove.TargetSquare + " }");
             else
                 newTurnFlag = true;
@@ -221,23 +227,9 @@ public class GameManager : MonoBehaviour
     private Move getAIMove()
     {
         if (whiteAIPlaying && board.whiteTurn)
-        {
-            //if (board.Moves.Count == 0)
-            //{
-            //    Debug.Log("White AI Lost");
-            //}
-            //Debug.Log("White AI:" + wAI.Name);
-            return AIManager.instance.SelectMove(wAI, board);
-        }
+            return AIManager.instance.SelectMove(wAI, whiteBoard);
         else if (blackAIPlaying && !board.whiteTurn)
-        {
-            //if (board.Moves.Count == 0)
-            //{
-            //    Debug.Log("Black AI Lost");
-            //}
-            //Debug.Log("Black AI:" + bAI.Name);
-            return AIManager.instance.SelectMove(bAI, board);
-        }
+            return AIManager.instance.SelectMove(bAI, blackBoard);
         return new Move(0);
     }
 
@@ -265,7 +257,7 @@ public class GameManager : MonoBehaviour
         {
             return false;
         }
-        board.useMove(move, uiManager);
+        SynchronizedUseMove(move);
 
         string winMes;
         if ((winMes = isEndGameCondition()) != "")
@@ -275,9 +267,7 @@ public class GameManager : MonoBehaviour
             return false;
 
         }
-        //Debug.Log("FIFTY COUNT = " + board.fiftyCount);
         aiDelayStart = DateTime.Now;
-        newTurnFlag = true;
         return true;
     }
 
@@ -286,21 +276,11 @@ public class GameManager : MonoBehaviour
         Move move = (isWhiteAIPending ? wAI.SelectMove(null) : bAI.SelectMove(null));
         if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
         {
-            //Debug.Log("PENDING...");
-            //aiPendingSearchMove = true;
-            return;
+            throw new ArgumentNullException("NO MOVE FOUND HERE");
         }
-        board.useMove(move, uiManager);
+        SynchronizedUseMove(move);
         aiPendingSearchMove = false;
-        string winMes;
-        if ((winMes = isEndGameCondition()) != "")
-        {
-            uiManager.winText.text = winMes;
-            AIManager.instance.toggleAIPaus();
-            return;
-
-        }
-        //Debug.Log("FIFTY COUNT = " + board.fiftyCount);
+        aiPendingComplete = false;
         aiDelayStart = DateTime.Now;
         newTurnFlag = true;
 
@@ -371,6 +351,8 @@ public class GameManager : MonoBehaviour
             return;
         }
         board.generateNewMoves();
+        whiteBoard.generateNewMoves();
+        blackBoard.generateNewMoves();
         //Debug.Log("NUM MOVES:" + board.Moves.Count);
         uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
 
@@ -399,6 +381,8 @@ public class GameManager : MonoBehaviour
     {
 
         board.generateNewMoves();
+        whiteBoard.generateNewMoves();
+        blackBoard.generateNewMoves();
         UIManager.instance.ShowInGameUI();
 
 
@@ -407,6 +391,8 @@ public class GameManager : MonoBehaviour
     public void onStoppingGame()
     {
         board = null;
+        whiteBoard = null;
+        blackBoard = null;
         UIManager.instance.ResetInGameUI();
         UIManager.instance.HideInGameUI();
         ended = false;
@@ -441,7 +427,7 @@ public class GameManager : MonoBehaviour
 
                 if (selectedPiece == selectedMoveTo)
                     return;
-                Move move = board.getMove(selectedPiece, selectedMoveTo);
+                Move move = (board.whiteTurn) ? whiteBoard.getMove(selectedPiece, selectedMoveTo) : blackBoard.getMove(selectedPiece, selectedMoveTo);
                 Debug.Log(move.ToString());
                 if (move.MoveValue == 0)
                 {
@@ -454,18 +440,12 @@ public class GameManager : MonoBehaviour
                     UIManager.instance.onPromotionSelectEnter(move);
                     return; //Await response
                 }
-                if (!board.tryMove(selectedPiece, selectedMoveTo, uiManager) && !board.isCheckMate())
-                    Debug.Log("MOVE FAIL: { from = " + selectedPiece + ", to = " + selectedMoveTo + " }");
-                else
-                    newTurnFlag = true;
-
-                string winMes;
-                if ((winMes = isEndGameCondition()) != "")
-                    uiManager.winText.text = winMes;
+                SynchronizedUseMove(move);
 
             }
             else
             {
+                //TODO FIX for multiplayer
                 if (board.ColorTurn == myColor)
                 {
                     if (!moveSent)
@@ -504,32 +484,26 @@ public class GameManager : MonoBehaviour
         if (option == 0)
             return;
         Debug.Log(start + ", " + target + ", " + option);
+        Move promMove = new Move(0);
         switch (option)
         {
             case Piece.QUEEN:
-                if (!board.useMove(new Move(start, target, Move.Flag.PromoteToQueen), UIManager.instance))
-                { Debug.Log("FAILED IN PROMOTION MOVE, Q"); return; }
+                promMove = new Move(start, target, Move.Flag.PromoteToQueen);
                 break;
             case Piece.KNIGHT:
-                if (!board.useMove(new Move(start, target, Move.Flag.PromoteToKnight), UIManager.instance))
-                { Debug.Log("FAILED IN PROMOTION MOVE, N"); return; }
+                promMove = new Move(start, target, Move.Flag.PromoteToKnight);
                 break;
             case Piece.ROOK:
-                if (!board.useMove(new Move(start, target, Move.Flag.PromoteToRook), UIManager.instance))
-                { Debug.Log("FAILED IN PROMOTION MOVE, R"); return; }
+                promMove = new Move(start, target, Move.Flag.PromoteToRook);
                 break;
             case Piece.BISHOP:
-                if (!board.useMove(new Move(start, target, Move.Flag.PromoteToBishop), UIManager.instance))
-                { Debug.Log("FAILED IN PROMOTION MOVE, B"); return; }
+                promMove = new Move(start, target, Move.Flag.PromoteToBishop);
                 break;
             default:
                 Debug.Log("FAILED IN PROMOTION MOVE");
                 return;
         }
-        newTurnFlag = true;
-        string winMes;
-        if ((winMes = isEndGameCondition()) != "")
-            uiManager.winText.text = winMes;
+        SynchronizedUseMove(promMove);
 
     }
 
@@ -538,26 +512,29 @@ public class GameManager : MonoBehaviour
         if (isNetworked)
             return;
         int val = -Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)];
-        if (board.UnmakeMove(uiManager))
+        if (SynchronizedUnmakeMove())
         {
-            //Debug.Log("UNMADE");
             UIManager.instance.updateScore(val, !board.whiteTurn);
             uiManager.playUndoSound();
             GameHistoryPanel.instance.removeLast();
         }
         else { Debug.Log("UNDOFAIL"); }
-        board.generateNewMoves();
+
     }
 
     public void resetBoard()
     {
 
         board = createBoard();
+        whiteBoard = createBoard();
+        blackBoard = createBoard();
         started = true;
         UIManager.instance.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
         UIManager.instance.gameText.text = s;
         board.generateNewMoves();
+        whiteBoard.generateNewMoves();
+        blackBoard.generateNewMoves();
 
     }
 
@@ -565,34 +542,75 @@ public class GameManager : MonoBehaviour
     {
 
         board = createBoard(fen);
+        whiteBoard = createBoard(fen);
+        blackBoard = createBoard(fen);
         started = true;
         UIManager.instance.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
         UIManager.instance.gameText.text = s;
         board.generateNewMoves();
+        whiteBoard.generateNewMoves();
+        blackBoard.generateNewMoves();
     }
 
     public void forfit()
     {
-
-
         uiManager.winText.text = isEndGameCondition();
-
-
         started = false;
         ended = true;
 
     }
 
-
-
     #endregion
 
+    #region SynchronizedBoardActions
+    public bool SynchronizedUseMove(Move move)
+    {
+        if (!board.useMove(move, UIManager.instance))
+            Debug.LogError("MANAGER BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");
+        else if (!whiteBoard.useMove(move))
+            Debug.LogError("WHITE BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");
+        else if (!blackBoard.useMove(move))
+            Debug.LogError("BLACK BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");
+        else
+        {
+            newTurnFlag = true;
+            string winMes;
+            if ((winMes = isEndGameCondition()) != "")
+                uiManager.winText.text = winMes;
+
+            return true;
+
+        }
+        return false;
+    }
+
+    public bool SynchronizedUnmakeMove()
+    {
+        if (!board.UnmakeMove(uiManager))
+            Debug.LogError("MANAGER BOARD:{Unmake Move FAIL}");
+        else if (!whiteBoard.UnmakeMove())
+            Debug.LogError("WHITE BOARD:{Unmake Move FAIL}");
+        else if (!blackBoard.UnmakeMove())
+            Debug.LogError("BLACK BOARD:{Unmake Move FAIL}");
+        else
+        {
+            board.generateNewMoves();
+            whiteBoard.generateNewMoves();
+            blackBoard.generateNewMoves();
+            return true;
+        }
+        return false;
+    }
+
+    #endregion
     private void Update()
     {
         if (started)
         {
-            if (aiPendingSearchMove)
+            if (aiPendingSearchMove && !aiPendingComplete)
+            { }
+            else if (aiPendingComplete)
                 checkPendingMove();
             else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
             {

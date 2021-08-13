@@ -1,6 +1,4 @@
 
-using System;
-
 namespace ChessAI
 {
     /*
@@ -27,12 +25,24 @@ namespace ChessAI
             useBWM = useWeightMap;
 
         }
-
+        public int Evaluate(Board board, bool coin)
+        {
+            return Evaluate(board) + (coin ? 1 : -1);
+        }
         public int Evaluate(Board board)
         {
             int val = BSG_W * bsg.V4CaptureScore(board.tiles, board.whiteTurn);
             if (useBWM)
-                val += BoardWeightMap.Evaluate(board) * BWM_W;
+            {
+                int endgameVal = bsg.EndgameValue(board.tiles, board.whiteTurn);
+                if (endgameVal != 0)
+                {
+
+                    val += BoardWeightMap.Evaluate(board, endgameVal) * BWM_W;
+                }
+                else
+                    val += BoardWeightMap.Evaluate(board) * BWM_W;
+            }
             return val;
         }
     }

@@ -21,6 +21,21 @@ namespace ChessAI
 
             return score;
         }
+        public static int Evaluate(Board board, int endgameVal)
+        {
+
+            int score = 0;
+            int color = board.whiteTurn ? Piece.WHITE : Piece.BLACK;
+            for (int ii = 0; ii < 64; ii++)
+            {
+                if (Piece.IsColour(board.tiles[ii], color) && Piece.IsType(board.tiles[ii], Piece.KING))
+                    score += Read(kingEnd, ii, board.whiteTurn);
+                else if (Piece.IsColour(board.tiles[ii], color))
+                    score += Read(BoardWeightMap.PieceToMap[Piece.PieceType(board.tiles[ii])], ii, board.whiteTurn);
+            }
+
+            return score;
+        }
         public static int Read(int[] table, int square, bool isWhite)
         {
             if (isWhite)

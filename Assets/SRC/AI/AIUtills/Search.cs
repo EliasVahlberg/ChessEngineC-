@@ -18,7 +18,7 @@ namespace ChessAI
         private const int DIRECT_MATE_SCORE = int.MaxValue / 2;
         private const int MINIMUM_MATE_SCORE = int.MaxValue / 4;
         private const int transpositionTableSize = 64000;
-        private static readonly Move INVAL_MOVE = new Move(0);
+        public static readonly Move INVAL_MOVE = new Move(0);
         public bool useCoinToss = false;
 
         private Board board;
@@ -70,10 +70,10 @@ namespace ChessAI
 
         public void SearchRecurr()
         {
-            Debug.Log("SearchStart");
+            //Debug.Log("SearchStart");
             ResetSearchInfo();
-            if (settings.clearTTEachMove)
-                tt.Clear();
+
+            tt.Clear();
 
             currentSearchDepth = 0;
             abortSearch = false;
@@ -88,8 +88,7 @@ namespace ChessAI
 
                     if (abortSearch)
                     {
-                        LogDebugInfo();
-                        Debug.Log("ABORT");
+
                         break;
                     }
                     else
@@ -130,7 +129,21 @@ namespace ChessAI
                 return 0;
             }
             nNodes++;
+            if (depth < maxDepth)
+            {
+                if (board.HashHistory.Contains(board.ZobristKey))
+                {
+                    return 0;
+                }
 
+                alpha = Math.Max(alpha, -DIRECT_MATE_SCORE + (maxDepth - depth));
+                beta = Math.Min(beta, DIRECT_MATE_SCORE - (maxDepth - depth));
+                if (alpha >= beta)
+                {
+                    //Debug.Log("BetterMateFound");
+                    return alpha;
+                }
+            }
             int ttVal = tt.LookupEvaluation(depth, maxDepth - depth, alpha, beta);
             if (ttVal != TranspositionTable.lookupFailed)
             {
@@ -144,14 +157,12 @@ namespace ChessAI
             }
 
             if (depth == 0)
-                return evaluator.Evaluate(board);
+                return evaluator.Evaluate(board, CoinToss());
 
             moveOrderer.Order(board);
 
             if (board.Moves.Count == 0)
-                return board.CurrentInCheck ? NEG_INF : 0;
-            if (board.Moves.Count == 0 && board.CurrentInCheck)
-                return 0;
+                return board.CurrentInCheck ? -(DIRECT_MATE_SCORE - (maxDepth - depth)) : 0;
 
             Move bestMoveThisPos = INVAL_MOVE;
 
@@ -161,11 +172,10 @@ namespace ChessAI
             foreach (Move move in board.Moves)
             {
 
-                if (!board.useMove(move))
+                if (!board.useMove(move, isSearchMove: true))
                     throw new ArgumentException("FAIL MAKE");
-
                 int val = -SearchRecurrRecurr(depth - 1, maxDepth, -beta, -alpha);
-                if (!board.UnmakeMove())
+                if (!board.UnmakeMove(isSearchMove: true))
                     throw new ArgumentException("FAIL UNMAKE");
                 if (val >= beta)
                 {
@@ -189,7 +199,7 @@ namespace ChessAI
                 }
             }
 
-
+            //Store best eval (for deeper search)
             tt.StoreEvaluation(depth, maxDepth - depth, beta, evalType, bestMoveThisPos);
             return alpha;
         }
@@ -208,16 +218,16 @@ namespace ChessAI
             abortSearch = true;
         }
 
-        void LogDebugInfo()
+        public string LogDebugInfo()
         {
-            Debug.Log("str1");
             AnnounceMate();
-            Debug.Log("str2");
+
             string str1 = "Depth reached: " + sD.lastCompletedDepth;
             str1 += "\n Best move: " + sD.move + " Eval: " + sD.eval + "Search time:" + searchStopwatch.ElapsedMilliseconds + " ms.";
             str1 += "\n Num nodes: " + nNodes + "num Qnodes:" + nQNodes + "num cutoffs:" + nPrunes + "num TThits" + nTPos;
             //ConsoleHistory.instance.addLogHistory("<color=yellow>" + str1 + "</color>");
             Debug.Log(str1);
+            return str1;
         }
 
         void AnnounceMate()

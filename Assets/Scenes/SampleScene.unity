@@ -13718,8 +13718,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4244812610246898768, guid: 4e9d7cd19d2c28a4ebcf4baabf1af154, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 1be6abd0df4cb0446ab05c04b4b808ce, type: 2}
+    - target: {fileID: 4244812610246898768, guid: 4e9d7cd19d2c28a4ebcf4baabf1af154, type: 3}
       propertyPath: m_hasFontAssetChanged
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4244812610703286664, guid: 4e9d7cd19d2c28a4ebcf4baabf1af154, type: 3}
       propertyPath: m_hasFontAssetChanged
@@ -19515,6 +19519,8 @@ MonoBehaviour:
   isAIPaused: 0
   aiDelayMs: 50
   aiWaitingToMove: 0
+  aiPendingSearchMove: 0
+  isWhiteAIPending: 0
   newTurnFlag: 0
   selectedMoveTo: -1
   selectedPiece: -1

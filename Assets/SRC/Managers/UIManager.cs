@@ -88,6 +88,7 @@ public class UIManager : MonoBehaviour
     public AudioSource audioSource;
     private int internalAudioCounter1 = 0;
     private int internalAudioCounter2 = 0;
+    public float OnStartSoundVolume = 0.1f;
     #endregion
 
     #region StateVariables
@@ -129,7 +130,7 @@ public class UIManager : MonoBehaviour
         menuManager = MenuManager.instance;
         background1.SetActive(true);
         background2.SetActive(false);
-        audioSource.PlayOneShot(OnStartSound, 0.2f);
+        audioSource.PlayOneShot(OnStartSound, OnStartSoundVolume);
         audioSource.SetScheduledEndTime(AudioSettings.dspTime + (1f));
 
     }

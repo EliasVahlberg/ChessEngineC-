@@ -28,6 +28,7 @@ public class Board
     *
     */
     private MoveUtills moveGenerator;
+    public MoveUtills MoveGenerator { get => moveGenerator; }
 
     /*
     *
@@ -749,12 +750,11 @@ public class Board
     /*
     * V3: Updates the zobrist hash
     */
-    private bool MoveInnerV3(Move move)
+    private bool MoveInnerV3(Move move, bool isSearchMove = false)
     {
         int mTo = move.TargetSquare, mFrom = move.StartSquare;
         try
         {
-            HashHistory.Push(ZobristKey);
             bool WhiteToMove = currGameState.WhiteTurn();
             uint newCastleState = currGameState.CastleRights();
             uint oldCastleState = currGameState.CastleRights();
@@ -917,6 +917,19 @@ public class Board
             ColorIndex = 1 - ColorIndex;
             Turn++;
             whiteTurn = !whiteTurn;
+            if (!isSearchMove)
+            {
+                //Irreversible actions
+                if (movePieceType == Piece.PAWN || capturedPieceType != 0)
+                {
+                    HashHistory.Clear();
+                }
+                else
+                {
+                    HashHistory.Push(ZobristKey);
+
+                }
+            }
 
 
             hasGeneratedMoves = false;
@@ -1098,7 +1111,7 @@ public class Board
     /*
     * V3: Updates the zobrist hash
     */
-    private bool UnmakeMoveInnerV3()
+    private bool UnmakeMoveInnerV3(bool isSearchMove = false)
     {
         try
         {
@@ -1239,10 +1252,10 @@ public class Board
             turn--;
 
             hasGeneratedMoves = false;
-            HashHistory.Pop();
+            if (!isSearchMove && HashHistory.Count > 0)
+                HashHistory.Pop();
 
-            //if (!inSearch && RepetitionPositionHistory.Count > 0)
-            //    RepetitionPositionHistory.Pop();
+
             //TODO IMPLEMENT ^
             //Debug.LogError("Zobrist Key UnmakeMove: " + ZobristKey + "\n " + move.ToString());
 
@@ -1329,9 +1342,9 @@ public class Board
     /*
     *
     */
-    public bool UnmakeMove()
+    public bool UnmakeMove(bool isSearchMove = false)
     {
-        return UnmakeMoveInnerV3();
+        return UnmakeMoveInnerV3(isSearchMove);
     }
 
     /*
@@ -1346,10 +1359,10 @@ public class Board
     /*
     *
     */
-    public bool useMove(Move move)
+    public bool useMove(Move move, bool isSearchMove = false)
     {
 
-        return MoveInnerV3(move);
+        return MoveInnerV3(move, isSearchMove);
     }
 
     /*
