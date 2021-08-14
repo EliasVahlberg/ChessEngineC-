@@ -18883,6 +18883,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1189781319}
   m_CullTransparentMesh: 1
+--- !u!1 &1191335774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1191335776}
+  - component: {fileID: 1191335775}
+  m_Layer: 0
+  m_Name: BookBuild
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1191335775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191335774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d7aa47c153d02e49a92185c7867dc48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxPlyToRecord: 10
+  minMovePlayCount: 10
+  gamesFile: {fileID: 4900000, guid: 580c542d35263e84b946c48e2823d8dd, type: 3}
+  bookFile: {fileID: 4900000, guid: 5bb12a6ab517aa843a4f9ddca423a5bc, type: 3}
+  append: 0
+--- !u!4 &1191335776
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191335774}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1735.8081, y: 486.39374, z: -170.13974}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 20
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1191678365
 GameObject:
   m_ObjectHideFlags: 0

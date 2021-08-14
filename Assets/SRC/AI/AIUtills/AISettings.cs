@@ -22,6 +22,8 @@ namespace ChessAI
         //public bool endlessSearchMode;
         public bool clearTTEachMove;
 
+        public bool useQuiescenceSearch = true;
+
         public bool useBook;
         public TextAsset book;
         public int maxBookPly = 10;

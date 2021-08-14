@@ -367,6 +367,12 @@ public class Board
     public Board()
     {
         tiles = new int[64];
+
+    }
+
+    public static Board DefaultBoard()
+    {
+        return new Board(FENUtills.DEFAULT_START_FEN);
     }
 
     /*
@@ -1618,6 +1624,20 @@ public class Board
         if (hasGeneratedMoves)
             return;
         moveGenerator.Generate(this);
+        if (whiteTurn)
+        {
+            WhiteInCheck = moveGenerator.InCheck;
+        }
+        else
+        {
+            BlackInCheck = moveGenerator.InCheck;
+        }
+        hasGeneratedMoves = true;
+    }
+
+    public void generateNonQuietMoves()
+    {
+        moveGenerator.GenerateCaptureMoves(this);
         if (whiteTurn)
         {
             WhiteInCheck = moveGenerator.InCheck;

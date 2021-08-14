@@ -18,8 +18,9 @@ MonoBehaviour:
   useFixedDepthSearch: 0
   searchTimeMillis: 500
   clearTTEachMove: 0
-  useBook: 0
-  book: {fileID: 0}
+  useQuiescenceSearch: 1
+  useBook: 1
+  book: {fileID: 4900000, guid: 5bb12a6ab517aa843a4f9ddca423a5bc, type: 3}
   maxBookPly: 10
   useWeightMap: 1
   weightMapWeight: 3

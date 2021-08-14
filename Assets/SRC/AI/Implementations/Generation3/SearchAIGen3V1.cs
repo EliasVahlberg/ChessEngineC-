@@ -21,7 +21,7 @@ namespace ChessAI
         private int bestVal;
 
         public AISettings settings;
-
+        private OppeningsBook oppeningsBook;
         private Search search;
         private static int repetitionMaxLength = 5;
 
@@ -52,6 +52,16 @@ namespace ChessAI
                 }
                 else
                     return PENDING_SEARCH_MOVE;
+            }
+            if (settings.useBook && board.Turn < settings.maxBookPly)
+            {
+                Move move = GetBookMove(board);
+
+                if (!move.Equals(Search.INVAL_MOVE))
+                {
+                    Debug.Log("BOOK MOVE: " + move.ToString());
+                    return move;
+                }
             }
             if (search == null)
                 search = new Search(privateBoard, settings);//search = new Search(new Board(board.boardToFEN()), settings);
@@ -128,6 +138,15 @@ namespace ChessAI
             Debug.LogError("SearchAbort early");
         }
 
+        Move GetBookMove(Board board)
+        {
+            if (oppeningsBook == null)
+                oppeningsBook = BookBuilder.LoadOppeningsBookFromFile(settings.book);
+            Debug.Log("FOUND : " + oppeningsBook.Contains(board.ZobristKey));
+            if (oppeningsBook.Contains(board.ZobristKey))
+                return oppeningsBook.GetRandomMove(board.ZobristKey);
+            return Search.INVAL_MOVE;
+        }
     }
 
 }

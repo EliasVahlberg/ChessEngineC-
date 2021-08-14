@@ -58,6 +58,7 @@ namespace ChessAI
             tt = new TranspositionTable(board, transpositionTableSize);
             moveOrderer = new MoveOrderer(tt);
             sD = new SearchDiagnostics();
+
             //invalidMove = Move.InvalidMove;
             //int s = TranspositionTable.Entry.GetSize();
             //Debug.Log ("TT entry: " + s + " bytes. Total size: " + ((s * transpositionTableSize) / 1000f) + " mb.");
@@ -131,6 +132,7 @@ namespace ChessAI
             nNodes++;
             if (depth < maxDepth)
             {
+                //TODO FIX SO IT DOESN't USE REPEAT
                 if (board.HashHistory.Contains(board.ZobristKey))
                 {
                     return 0;
@@ -157,7 +159,7 @@ namespace ChessAI
             }
 
             if (depth == 0)
-                return evaluator.Evaluate(board, CoinToss());
+                return settings.useQuiescenceSearch ? QuiescenceSearch(alpha, beta) : evaluator.Evaluate(board, CoinToss());
 
             moveOrderer.Order(board);
 
@@ -165,6 +167,7 @@ namespace ChessAI
                 return board.CurrentInCheck ? -(DIRECT_MATE_SCORE - (maxDepth - depth)) : 0;
 
             Move bestMoveThisPos = INVAL_MOVE;
+
 
             int evalType = TranspositionTable.UpperBound;
 
@@ -201,6 +204,40 @@ namespace ChessAI
 
             //Store best eval (for deeper search)
             tt.StoreEvaluation(depth, maxDepth - depth, beta, evalType, bestMoveThisPos);
+            return alpha;
+        }
+        /*
+        * This prevents bad captures at max search depth
+        */
+        int QuiescenceSearch(int alpha, int beta)
+        {
+            int val = evaluator.Evaluate(board);
+            nNodes++;
+            if (val >= beta)
+                return beta;
+            if (val > alpha)
+                alpha = val;
+            board.generateNonQuietMoves();
+            moveOrderer.Order(board, usePrevSearch: false);
+            foreach (Move move in board.Moves)
+            {
+                if (!board.useMove(move, isSearchMove: true))
+                    throw new ArgumentException("FAIL MAKE");
+                val = -QuiescenceSearch(-beta, -alpha);
+                if (!board.UnmakeMove(isSearchMove: true))
+                    throw new ArgumentException("FAIL UNMAKE");
+                nQNodes++;
+                if (val >= beta)
+                {
+                    nPrunes++;
+                    return beta;
+                }
+                if (val > alpha)
+                {
+                    alpha = val;
+                }
+            }
+
             return alpha;
         }
 
