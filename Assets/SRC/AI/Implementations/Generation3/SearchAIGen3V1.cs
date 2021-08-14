@@ -53,9 +53,9 @@ namespace ChessAI
                 else
                     return PENDING_SEARCH_MOVE;
             }
-            if (settings.useBook && board.Turn < settings.maxBookPly)
+            if (settings.useBook && privateBoard.Turn < settings.maxBookPly)
             {
-                Move move = GetBookMove(board);
+                Move move = GetBookMove(privateBoard);
 
                 if (!move.Equals(Search.INVAL_MOVE))
                 {

@@ -573,6 +573,7 @@ public class GameManager : MonoBehaviour
     #region SynchronizedBoardActions
     public bool SynchronizedUseMove(Move move)
     {
+        Debug.Log("Move Used : " + move.ToString());
         if (!board.useMove(move, UIManager.instance))
             Debug.LogError("MANAGER BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");
         else if (!whiteBoard.useMove(move))
@@ -619,13 +620,13 @@ public class GameManager : MonoBehaviour
             { }
             else if (aiPendingSearchMove && aiPendingComplete)
                 checkPendingMove();
+            else if (newTurnFlag)
+                onNewTurn(board.lastMove, !board.whiteTurn);
             else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
             {
                 if (useAIDelay && aiWaitingToMove)
                     playAIMove();
             }
-            if (newTurnFlag)
-                onNewTurn(board.lastMove, !board.whiteTurn);
         }
     }
 

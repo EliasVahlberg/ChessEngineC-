@@ -765,6 +765,7 @@ public class MoveUtills
 
         if (cas1)
         {
+
             Moves.Add(new Move(kingSquare, squaresBetween[0][1], Move.Flag.Castling));
             //Debug.Log("CAS K");
         }

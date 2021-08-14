@@ -1119,6 +1119,7 @@ public class Board
     */
     private bool UnmakeMoveInnerV3(bool isSearchMove = false)
     {
+        int mTo = currGameState.PrevMove.TargetSquare, mFrom = currGameState.PrevMove.StartSquare;
         try
         {
 
@@ -1270,7 +1271,8 @@ public class Board
         }
         catch (Exception _ex)
         {
-            Debug.LogError("FAIL in UnmakeMoveInnerV2, _ex:" + _ex);
+            Debug.LogError("FAIL in UnmakeMoveInnerV3, _ex:" + _ex);
+            Debug.LogError("FROM: " + mFrom + " , TO: " + mTo);
             return false;
         }
 

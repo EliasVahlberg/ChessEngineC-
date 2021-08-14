@@ -16,7 +16,7 @@ MonoBehaviour:
   useIterativeDeepening: 1
   useTranspositionTable: 1
   useFixedDepthSearch: 0
-  searchTimeMillis: 500
+  searchTimeMillis: 1000
   clearTTEachMove: 0
   useQuiescenceSearch: 1
   useBook: 1
