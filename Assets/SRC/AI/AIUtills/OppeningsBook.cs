@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace ChessAI
 {
+    [System.Serializable]
     public class OppeningsBook
     {
         public Dictionary<ulong, PositionPage> pages;

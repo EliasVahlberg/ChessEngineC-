@@ -73,6 +73,11 @@ namespace ChessAI
         }
 
 
+        [ContextMenu("Get Games File")]
+        void GetGamesFile()
+        {
+            FileUtills.GetDirectoryFromFileExplorer();
+        }
         public static OppeningsBook LoadOppeningsBookFromFile(TextAsset bookFile)
         {
             OppeningsBook book = new OppeningsBook();

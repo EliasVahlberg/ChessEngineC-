@@ -573,6 +573,8 @@ public class GameManager : MonoBehaviour
     #region SynchronizedBoardActions
     public bool SynchronizedUseMove(Move move)
     {
+
+        Debug.Log("Actual : " + board.ZobristKey);
         Debug.Log("Move Used : " + move.ToString());
         if (!board.useMove(move, UIManager.instance))
             Debug.LogError("MANAGER BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");

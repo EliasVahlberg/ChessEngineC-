@@ -142,9 +142,13 @@ namespace ChessAI
         {
             if (oppeningsBook == null)
                 oppeningsBook = BookBuilder.LoadOppeningsBookFromFile(settings.book);
-            Debug.Log("FOUND : " + oppeningsBook.Contains(board.ZobristKey));
             if (oppeningsBook.Contains(board.ZobristKey))
+            {
+                Debug.Log("FOUND : " + board.ZobristKey);
                 return oppeningsBook.GetRandomMove(board.ZobristKey);
+            }
+
+            Debug.Log("NOT FOUND : " + board.ZobristKey);
             return Search.INVAL_MOVE;
         }
     }

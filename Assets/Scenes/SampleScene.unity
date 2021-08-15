@@ -3111,7 +3111,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1246563574}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.81333333
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -19935,6 +19935,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1191335776}
   - component: {fileID: 1191335775}
+  - component: {fileID: 1191335777}
   m_Layer: 0
   m_Name: BookBuild
   m_TagString: Untagged
@@ -19954,8 +19955,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d7aa47c153d02e49a92185c7867dc48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPlyToRecord: 10
-  minMovePlayCount: 10
+  maxPlyToRecord: 15
+  minMovePlayCount: 2
   gamesFile: {fileID: 4900000, guid: 580c542d35263e84b946c48e2823d8dd, type: 3}
   bookFile: {fileID: 4900000, guid: 5bb12a6ab517aa843a4f9ddca423a5bc, type: 3}
   append: 0
@@ -19973,6 +19974,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 20
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1191335777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191335774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f5a4c686a0436743bb7e3021b9e41a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputFiles: []
+  outputFile: {fileID: 0}
+  append: 0
 --- !u!1 &1191678365
 GameObject:
   m_ObjectHideFlags: 0
@@ -26592,7 +26608,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8538768617023512044, guid: fb6027b724e0f66489ab16fd73bd7cd1, type: 3}
       propertyPath: m_text
-      value: Number of Book moves (max=10)
+      value: Number of Book moves (max=15)
       objectReference: {fileID: 0}
     - target: {fileID: 8538768617023512044, guid: fb6027b724e0f66489ab16fd73bd7cd1, type: 3}
       propertyPath: m_fontSize
