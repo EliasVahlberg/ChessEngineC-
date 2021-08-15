@@ -14,12 +14,54 @@ namespace ChessAI
         public TextAsset gamesFile;
         public TextAsset bookFile;
         public bool append = false;
+        public string externalBookPath;
+
+
+        public static BookBuilder instance;
+        private void Awake()
+        {
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else if (instance != this)
+            {
+                Debug.Log("SAMEINSTACE ");
+                Destroy(this);
+            }
+        }
         [ContextMenu("Build Book")]
         void BuildBook()
         {
+            string bookString = BuildBookRuntime(gamesFile.text, maxPlyToRecord, minMovePlayCount);
+            FileWriter.WriteToTextAsset_EditorOnly(bookFile, bookString, append);
+
+        }
+
+        #region Build_RUNTIME
+
+        [ContextMenu("Build Book From External PGN")]
+        public void PreBuildAndSaveBookRuntime()
+        {
+            FileUtills.instance.GetFilesFromFileExplorer("Text files (*.pgn) | *.pgn", str => BuildAndSaveBookRuntime(str));
+        }
+        public void BuildAndSaveBookRuntime(string[] PGNGames)
+        {
+
+            string bookString = BuildBookRuntime(PGNGames[0], maxPlyToRecord, minMovePlayCount);
+            FileUtills.instance.SaveToFile("Text files (*.book) | *.book", bookString, str => BuildAndSaveBookRuntimeCallback(str));
+
+        }
+        public void BuildAndSaveBookRuntimeCallback(string path)
+        {
+            externalBookPath = path;
+        }
+
+        public static string BuildBookRuntime(string gamesString, int maxPlyToRecord, int minMovePlayCount)
+        {
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             OppeningsBook book = new OppeningsBook();
-            StringReader reader = new StringReader(gamesFile.text);
+            StringReader reader = new StringReader(gamesString);
             string pgn;
             Board board;
 
@@ -68,21 +110,29 @@ namespace ChessAI
                 }
             }
             Debug.Log("PAGES LOADED: " + book.pages.Count);
-            FileWriter.WriteToTextAsset_EditorOnly(bookFile, bookString, append);
             Debug.Log("Created book: " + sw.ElapsedMilliseconds + " ms.");
+            return bookString;
         }
+        #endregion
+
+        #region LoadRuntime
 
 
-        [ContextMenu("Get Games File")]
-        void GetGamesFile()
+        [ContextMenu("Load External Book PGN")]
+        public void LoadExternalBookRuntime()
         {
-            FileUtills.GetDirectoryFromFileExplorer();
+            FileUtills.instance.GetFilesFromFileExplorer("Text files (*.book) | *.book", str => LoadExternalBookRuntimeCallback(str));
         }
-        public static OppeningsBook LoadOppeningsBookFromFile(TextAsset bookFile)
+        public void LoadExternalBookRuntimeCallback(string[] data) //TODO make it do something
+        {
+            OppeningsBook externalbook = LoadExternalOppeningsBook(data[0]);
+            if (externalbook != null)
+                Debug.Log("SUCSESS");
+        }
+        public static OppeningsBook LoadExternalOppeningsBook(string bookString)
         {
             OppeningsBook book = new OppeningsBook();
-            var reader = new StringReader(bookFile.text);
-
+            var reader = new StringReader(bookString);
             string line;
             while (!string.IsNullOrEmpty(line = reader.ReadLine()))
             {
@@ -106,6 +156,12 @@ namespace ChessAI
 
             return book;
         }
+        #endregion
+        public OppeningsBook LoadOppeningsBookFromFile(TextAsset bookFile)
+        {
+            return LoadExternalOppeningsBook(bookFile.text);
+        }
+
     }
 
 }

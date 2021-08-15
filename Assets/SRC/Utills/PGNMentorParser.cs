@@ -1,12 +1,11 @@
+using System.Collections;
 using System.IO;
 using UnityEngine;
 /*
 @File TranspositionTable.cs
-@author Sebastian Lague 
+@author Elias Vahlberg & Sebastian Lague 
 Original: https://github.com/SebLague/Chess-AI/blob/main/Assets/Scripts/Other/Book/MultiPGNParser.cs
-*I do not claim to have written or helped 
-* contribute to this code in any way shape or form
-* //EV
+
 */
 namespace Utills
 {
@@ -14,21 +13,79 @@ namespace Utills
 
     public class PGNMentorParser : MonoBehaviour
     {
-        public TextAsset[] inputFiles;
+        //public TextAsset[] inputFiles;
+        public static PGNMentorParser instance;
+        private void Awake()
+        {
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else if (instance != this)
+            {
+                Debug.Log("SAMEINSTACE ");
+                Destroy(this);
+            }
+        }
+        public string[] PGNArray;
+        public string combinedPGN;
         public TextAsset outputFile;
+        public string externalOutputPath;
         public bool append;
 
-        [ContextMenu("Parse All")]
+        //[ContextMenu("Parse All")]
         void ParseAll()
         {
             string allGames = "";
-            foreach (var f in inputFiles)
+            if (PGNArray.Length == 0)
+                return;
+            if (outputFile == null)
+                return;
+            for (int ii = 0; ii < PGNArray.Length; ii++)
             {
-                allGames += Parse(f.text);
+                allGames += Parse(PGNArray[ii]);
             }
 
             FileWriter.WriteToTextAsset_EditorOnly(outputFile, allGames, append);
         }
+        [ContextMenu("Save PGN")]
+        void ParseAllRuntime()
+        {
+            string allGames = "";
+            if (PGNArray.Length == 0)
+                return;
+
+            for (int ii = 0; ii < PGNArray.Length; ii++)
+            {
+                allGames += Parse(PGNArray[ii]);
+                Debug.Log(ii);
+            }
+            SavePGNToFile(allGames);
+
+
+        }
+        [ContextMenu("Get Games Files")]
+        void GetGamesFiles()
+        {
+            FileUtills.instance.GetFilesFromFileExplorer("Text files (*.pgn) | *.pgn", str => GetGamesFilesCallback(str));
+        }
+
+        void SavePGNToFile(string content)
+        {
+            Debug.Log("ENTER");
+            FileUtills.instance.SaveToFile("Text files (*.pgn) | *.pgn", content, path => StartCoroutine(SavePGNToFileAssyncCallback(path)));
+        }
+        IEnumerator SavePGNToFileAssyncCallback(string path)
+        {
+            externalOutputPath = path;
+            Debug.Log("DONE");
+            yield return null;
+        }
+        void GetGamesFilesCallback(string[] fileContents)
+        {
+            PGNArray = fileContents;
+        }
+
         string Parse(string text)
         {
 
@@ -71,4 +128,5 @@ namespace Utills
 
         }
     }
+
 }
