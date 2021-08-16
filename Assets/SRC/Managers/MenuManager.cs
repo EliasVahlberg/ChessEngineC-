@@ -18,8 +18,7 @@ public class MenuManager : MonoBehaviour
     private UIManager uiManager;
     [HideInInspector]
     private GameManager gameManager;
-    [HideInInspector]
-    private SettingsManager settingsManager;
+
     [Header("Main Menu")]
     public Button playDefaultStart, playusingFen, resetButton, openNetworkMenuButton, quitButton, forfitButton, openSettingsMenuButton, returnMainMenuButton, inGameDisconnectButton;
     public Text inputText;
@@ -55,9 +54,9 @@ public class MenuManager : MonoBehaviour
 
     void Start()
     {
-        uiManager = FindObjectOfType<UIManager>();
-        gameManager = FindObjectOfType<GameManager>();
-        settingsManager = FindObjectOfType<SettingsManager>();
+        uiManager = UIManager.instance;
+        gameManager = GameManager.instance;
+
 
         playDefaultStart.onClick.AddListener(defaultStart);
         playusingFen.onClick.AddListener(usingFen);
@@ -142,7 +141,7 @@ public class MenuManager : MonoBehaviour
 
     public void hideMainMenu()
     {
-        if (gameManager.started || showingNetworkMenu || settingsManager.showing)
+        if (gameManager.started || showingNetworkMenu || SettingsManager.instance.showing)
         {
             canvas.SetActive(false);
             resetButton.gameObject.SetActive(false);
@@ -255,9 +254,9 @@ public class MenuManager : MonoBehaviour
 
     public void showSettingsMenu()
     {
-        if (!settingsManager.showing)
+        if (!SettingsManager.instance.showing)
         {
-            settingsManager.showSettingsMenu();
+            SettingsManager.instance.showSettingsMenu();
             hideMainMenu();
         }
     }
@@ -336,7 +335,7 @@ public class MenuManager : MonoBehaviour
     public void showSettingsMenuLobby()
     {
         hideLobby();
-        settingsManager.showSettingsMenu();
+        SettingsManager.instance.showSettingsMenu();
     }
     #endregion
 }

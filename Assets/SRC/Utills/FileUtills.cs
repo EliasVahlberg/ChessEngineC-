@@ -38,6 +38,19 @@ namespace Utills
 
 
 
+        public void GetPathFromFileExplorer(string filter, Action<string> callback)
+        {
+            if (SystemInfo.operatingSystem.Contains("Windows") || SystemInfo.operatingSystem.Contains("windows"))
+            {
+                BrowserProperties bp = new BrowserProperties("Get Directory");
+                bp.filter = filter;
+                fileBrowser = new FileBrowser();
+                fileBrowser.OpenFileBrowser(bp, path => { callback(path); });
+
+            }
+            else
+                Debug.LogError("This feature only works for windows, sorry.");
+        }
 
 
         //* filter EXAMPLE : "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
@@ -84,6 +97,7 @@ namespace Utills
             }
 
         }
+
         IEnumerator LoadMultiData(string[] paths, Action<String[]> callback) //TODO LoadMultiData(string[] paths, Action<string[]>) 
         {
             target = new string[paths.Length];
@@ -125,6 +139,7 @@ namespace Utills
             else
                 Debug.LogError("This feature only works for windows, sorry.");
         }
+
         IEnumerator SaveToFileCallback(string path, Action<string> assyncCallbackTwo)
         {
             using (UnityWebRequest webRequest = UnityWebRequest.Get(path))

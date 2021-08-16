@@ -141,7 +141,7 @@ namespace ChessAI
         Move GetBookMove(Board board)
         {
             if (oppeningsBook == null)
-                oppeningsBook = BookBuilder.instance.LoadOppeningsBookFromFile(settings.book);
+                oppeningsBook = settings.GetOppeningsBook();
             if (oppeningsBook.Contains(board.ZobristKey))
             {
                 Debug.Log("FOUND : " + board.ZobristKey);

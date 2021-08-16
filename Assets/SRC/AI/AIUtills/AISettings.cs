@@ -25,7 +25,9 @@ namespace ChessAI
         public bool useQuiescenceSearch = true;
 
         public bool useBook;
+        public bool useExternalBook;
         public TextAsset book;
+        public string externalBookPath;
         public int maxBookPly = 10;
 
         public bool useWeightMap = true;
@@ -36,6 +38,10 @@ namespace ChessAI
         //public MoveGenerator.PromotionMode promotionsToSearch;
 
         //public Search.SearchDiagnostics diagnostics;
+        public OppeningsBook GetOppeningsBook()
+        {
+            return useExternalBook ? BookBuilder.LoadExternalBookRuntime(externalBookPath) : BookBuilder.LoadOppeningsBookFromFile(book);
+        }
 
         public void RequestAbortSearch()
         {

@@ -14,7 +14,8 @@ namespace ChessAI
         public TextAsset gamesFile;
         public TextAsset bookFile;
         public bool append = false;
-        public string externalBookPath;
+        public string externalBookPath = null;
+        public AISettings targetSettings;
 
 
         public static BookBuilder instance;
@@ -45,6 +46,7 @@ namespace ChessAI
         {
             FileUtills.instance.GetFilesFromFileExplorer("Text files (*.pgn) | *.pgn", str => BuildAndSaveBookRuntime(str));
         }
+
         public void BuildAndSaveBookRuntime(string[] PGNGames)
         {
 
@@ -52,6 +54,7 @@ namespace ChessAI
             FileUtills.instance.SaveToFile("Text files (*.book) | *.book", bookString, str => BuildAndSaveBookRuntimeCallback(str));
 
         }
+
         public void BuildAndSaveBookRuntimeCallback(string path)
         {
             externalBookPath = path;
@@ -117,18 +120,41 @@ namespace ChessAI
 
         #region LoadRuntime
 
-
+        //!DEPRECATED
         [ContextMenu("Load External Book PGN")]
-        public void LoadExternalBookRuntime()
+        public void GetExternalBookPath()
         {
             FileUtills.instance.GetFilesFromFileExplorer("Text files (*.book) | *.book", str => LoadExternalBookRuntimeCallback(str));
         }
+
+        //!DEPRECATED
         public void LoadExternalBookRuntimeCallback(string[] data) //TODO make it do something
         {
             OppeningsBook externalbook = LoadExternalOppeningsBook(data[0]);
             if (externalbook != null)
                 Debug.Log("SUCSESS");
+            if (targetSettings != null)
+            {
+
+            }
         }
+
+        public static OppeningsBook LoadExternalBookRuntime(string path)
+        {
+            StreamReader streamReader = null;
+            try
+            {
+                streamReader = new StreamReader(path);
+                return LoadExternalOppeningsBook(streamReader.ReadToEnd());
+            }
+            catch (System.Exception)
+            {
+                if (streamReader != null)
+                    streamReader.Close();
+                throw;
+            }
+        }
+
         public static OppeningsBook LoadExternalOppeningsBook(string bookString)
         {
             OppeningsBook book = new OppeningsBook();
@@ -156,8 +182,9 @@ namespace ChessAI
 
             return book;
         }
+
         #endregion
-        public OppeningsBook LoadOppeningsBookFromFile(TextAsset bookFile)
+        public static OppeningsBook LoadOppeningsBookFromFile(TextAsset bookFile)
         {
             return LoadExternalOppeningsBook(bookFile.text);
         }

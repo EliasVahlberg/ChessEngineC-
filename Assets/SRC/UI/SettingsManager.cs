@@ -15,10 +15,11 @@ public class SettingsManager : MonoBehaviour
     #region MenuItems
     public Toggle fullscreenToggle;
     public Slider volumeSlider;
+    public Toggle mute;
     public Slider cursorSlider;
     public Button backButton;
     public Button reloadSceneButton;
-    public GameObject canvas;
+    public TabManager tabManager;
     public bool showing = false;
 
 
@@ -53,33 +54,59 @@ public class SettingsManager : MonoBehaviour
         backButton.onClick.AddListener(hideSettingsMenu);
         volumeSlider.SetValueWithoutNotify(AudioListener.volume);
         fullscreenToggle.SetIsOnWithoutNotify(Screen.fullScreen);
-        canvas.SetActive(false);
+        tabManager.Deactivate();
     }
+
     private void changeVolume(float value)
     {
         PlayerPrefs.SetFloat("volume", value);
         AudioListener.volume = PlayerPrefs.GetFloat("volume", 0.5f);
         volumeSlider.SetValueWithoutNotify(value);
     }
+    private bool muted = false;
+    private float prev = 0;
+    public void Mute()
+    {
+
+        if (!muted)
+        {
+            prev = volumeSlider.value;
+            PlayerPrefs.SetFloat("volume", 0);
+            AudioListener.volume = PlayerPrefs.GetFloat("volume", 0.5f);
+            volumeSlider.SetValueWithoutNotify(0);
+            muted = true;
+        }
+        else
+        {
+            PlayerPrefs.SetFloat("volume", prev);
+            AudioListener.volume = PlayerPrefs.GetFloat("volume", 0.5f);
+            volumeSlider.SetValueWithoutNotify(prev);
+            muted = false;
+        }
+    }
+
     private void changeFullscreen(bool value)
     {
         PlayerPrefs.SetInt("fullscreen", value ? 1 : 0);
         Screen.fullScreen = PlayerPrefs.GetInt("fullscreen", 0) == 1;
         fullscreenToggle.SetIsOnWithoutNotify(value);
     }
+
     public void showSettingsMenu()
     {
         if (!showing)
         {
-            canvas.SetActive(true);
+            tabManager.Activate();
+            tabManager.Show(tabManager.CurrentlyShowing);
             showing = true;
         }
     }
+
     public void hideSettingsMenu()
     {
         if (showing)
         {
-            canvas.SetActive(false);
+            tabManager.Deactivate();
             if (MenuManager.instance.isInLobby)
                 MenuManager.instance.showLobby();
             else
@@ -99,6 +126,7 @@ public class SettingsManager : MonoBehaviour
         Vector2 hotSpot = new Vector2(xspot, yspot);
         Cursor.SetCursor(Resize(cursorTexture, width, height), hotSpot, mode);
     }
+
     private Texture2D Resize(Texture2D texture2D, int targetX, int targetY)
     {
         RenderTexture rt = new RenderTexture(targetX, targetY, 24);
@@ -112,9 +140,11 @@ public class SettingsManager : MonoBehaviour
 
         return result;
     }
+
     public void ReloadScene()
     {
         Scene scene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(scene.name);
     }
+
 }

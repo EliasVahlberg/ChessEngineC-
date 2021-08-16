@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace Utills
             FileWriter.WriteToTextAsset_EditorOnly(outputFile, allGames, append);
         }
         [ContextMenu("Save PGN")]
-        void ParseAllRuntime()
+        public void ParseAllRuntime()
         {
             string allGames = "";
             if (PGNArray.Length == 0)
@@ -64,10 +65,15 @@ namespace Utills
 
 
         }
-        [ContextMenu("Get Games Files")]
-        void GetGamesFiles()
+        [ContextMenu("Load PGN Files")]
+        public void GetGamesFiles()
         {
             FileUtills.instance.GetFilesFromFileExplorer("Text files (*.pgn) | *.pgn", str => GetGamesFilesCallback(str));
+        }
+        public void GetGamesFiles(Action assyncReturn)
+        {
+            FileUtills.instance.GetFilesFromFileExplorer("Text files (*.pgn) | *.pgn", str => GetGamesFilesCallback(str));
+            this.assyncReturn = assyncReturn;
         }
 
         void SavePGNToFile(string content)
@@ -81,9 +87,13 @@ namespace Utills
             Debug.Log("DONE");
             yield return null;
         }
+        private Action assyncReturn;
         void GetGamesFilesCallback(string[] fileContents)
         {
             PGNArray = fileContents;
+            if (assyncReturn != null)
+                assyncReturn();
+            assyncReturn = null;
         }
 
         string Parse(string text)
