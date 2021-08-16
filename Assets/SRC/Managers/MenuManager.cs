@@ -222,13 +222,13 @@ public class MenuManager : MonoBehaviour
 
     public void showNetworkMenu()
     {
-
-        if (!showingNetworkMenu)
-        {
-            networkMenuCanvas.SetActive(true);
-            showingNetworkMenu = true;
-            hideMainMenu();
-        }
+        //!REIMPLEMENT When it is working again
+        //if (!showingNetworkMenu)
+        //{
+        //    networkMenuCanvas.SetActive(true);
+        //    showingNetworkMenu = true;
+        //    hideMainMenu();
+        //}
     }
 
     public void hideNetworkMenu()
