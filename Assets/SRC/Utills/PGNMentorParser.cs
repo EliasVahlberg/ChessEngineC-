@@ -49,6 +49,7 @@ namespace Utills
 
             FileWriter.WriteToTextAsset_EditorOnly(outputFile, allGames, append);
         }
+#if UNITY_STANDALONE_WIN
         [ContextMenu("Save PGN")]
         public void ParseAllRuntime()
         {
@@ -95,7 +96,7 @@ namespace Utills
                 assyncReturn();
             assyncReturn = null;
         }
-
+#endif
         string Parse(string text)
         {
 

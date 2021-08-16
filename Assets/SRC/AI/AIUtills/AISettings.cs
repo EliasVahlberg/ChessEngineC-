@@ -38,10 +38,18 @@ namespace ChessAI
         //public MoveGenerator.PromotionMode promotionsToSearch;
 
         //public Search.SearchDiagnostics diagnostics;
+#if UNITY_STANDALONE_WIN
         public OppeningsBook GetOppeningsBook()
         {
             return useExternalBook ? BookBuilder.LoadExternalBookRuntime(externalBookPath) : BookBuilder.LoadOppeningsBookFromFile(book);
         }
+#else
+        public OppeningsBook GetOppeningsBook()
+        {
+            return BookBuilder.LoadOppeningsBookFromFile(book);
+        }
+
+#endif
 
         public void RequestAbortSearch()
         {

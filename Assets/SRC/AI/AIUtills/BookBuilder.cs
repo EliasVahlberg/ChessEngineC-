@@ -40,7 +40,8 @@ namespace ChessAI
         }
 
         #region Build_RUNTIME
-
+#if UNITY_STANDALONE_WIN
+        
         [ContextMenu("Build Book From External PGN")]
         public void PreBuildAndSaveBookRuntime()
         {
@@ -59,6 +60,7 @@ namespace ChessAI
         {
             externalBookPath = path;
         }
+#endif
 
         public static string BuildBookRuntime(string gamesString, int maxPlyToRecord, int minMovePlayCount)
         {
@@ -122,6 +124,7 @@ namespace ChessAI
 
         //!DEPRECATED
         [ContextMenu("Load External Book PGN")]
+#if UNITY_STANDALONE_WIN
         public void GetExternalBookPath()
         {
             FileUtills.instance.GetFilesFromFileExplorer("Text files (*.book) | *.book", str => LoadExternalBookRuntimeCallback(str));
@@ -154,6 +157,7 @@ namespace ChessAI
                 throw;
             }
         }
+#endif
 
         public static OppeningsBook LoadExternalOppeningsBook(string bookString)
         {

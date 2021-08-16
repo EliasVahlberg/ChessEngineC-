@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE_WIN
 using System.IO;
 
 using UnityEngine;
@@ -164,3 +165,4 @@ namespace Utills
 
     }
 }
+#endif

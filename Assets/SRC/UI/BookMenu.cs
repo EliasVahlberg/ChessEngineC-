@@ -72,7 +72,7 @@ public class BookMenu : MonoBehaviour
         if (int.TryParse(input, out n))
             BookBuilder.instance.minMovePlayCount = n;
     }
-
+#if UNITY_STANDALONE_WIN
     public void ParsePGNFiles()
     {
         Debug.Log("LOAD");
@@ -115,4 +115,5 @@ public class BookMenu : MonoBehaviour
     }
 
 
+#endif
 }
