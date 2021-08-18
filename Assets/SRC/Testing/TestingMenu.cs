@@ -148,9 +148,9 @@ namespace Testing
             if (MenuManager.instance.showing)
             {
                 int ii = 0;
-                foreach (IAIObject ai in AIManager.instance.AIs)
+                foreach (IAIPlayer ai in AIManager.instance.AIs)
                 {
-                    string str = "AI [" + ii + "] :" + ai.Name;
+                    string str = "AI [" + ii + "] :" + ai.Name();
                     aiOptions.Add(new OptionData(str));
                     ii++;
                 }
@@ -172,20 +172,20 @@ namespace Testing
 
         public void runAIPerfTest()
         {
-            IAIObject wAI = AIManager.instance.AIs[wAISelect.value];
-            IAIObject bAI = AIManager.instance.AIs[bAISelect.value];
+            IAIPlayer wAI = AIManager.instance.AIs[wAISelect.value];
+            IAIPlayer bAI = AIManager.instance.AIs[bAISelect.value];
             int moves = (selectNumberOfMoves.value + 1) * 10;
             PreformanceTestResult result;
             if (useStartingFenEngineTest.isOn)
             {
                 string fen = startingFenEngineTest.text;
-                result = PreformanceTest.startAIMoveTest(wAI, bAI, fen, moves);
+                //esult = PreformanceTest.startAIMoveTest(wAI, bAI, fen, moves);
             }
             else
             {
-                result = PreformanceTest.startAIMoveTest(wAI, bAI, moves);
+                //result = PreformanceTest.startAIMoveTest(wAI, bAI, moves);
             }
-            PrintResultAIPerft(result);
+            //PrintResultAIPerft(result);
         }
 
         private void PrintResultAIPerft(PreformanceTestResult result)

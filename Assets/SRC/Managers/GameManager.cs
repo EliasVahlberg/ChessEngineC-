@@ -32,7 +32,9 @@ public class GameManager : MonoBehaviour
     public Board board;
 
     private Board whiteBoard;
+    public Board WhiteBoard { get => whiteBoard; }
     private Board blackBoard;
+    public Board BlackBoard { get => blackBoard; }
 
 
     #region Move_Net
@@ -53,8 +55,8 @@ public class GameManager : MonoBehaviour
 
     #region AI Variables
     public List<IAI> aiList;
-    public IAIObject wAI;
-    public IAIObject bAI;
+    public IAIPlayer wAI;
+    public IAIPlayer bAI;
     public bool whiteAIPlaying = false;
     public bool blackAIPlaying = false;
     public bool useAIDelay = true;
@@ -93,6 +95,8 @@ public class GameManager : MonoBehaviour
     {
         get { return NetworkUIManager.instance.IsConnected(); }
     }
+
+
     #endregion
 
     public static GameManager instance;
@@ -234,13 +238,12 @@ public class GameManager : MonoBehaviour
 
     #region AI
 
-    private Move getAIMove()
+    private void getAIMove()
     {
         if (whiteAIPlaying && board.whiteTurn)
-            return AIManager.instance.SelectMove(wAI, whiteBoard);
+            AIManager.instance.RequestMove(wAI);
         else if (blackAIPlaying && !board.whiteTurn)
-            return AIManager.instance.SelectMove(bAI, blackBoard);
-        return new Move(0);
+            AIManager.instance.RequestMove(bAI);
     }
 
     public bool playAIMove()
@@ -252,32 +255,11 @@ public class GameManager : MonoBehaviour
             return false;
         Thread.Sleep(aiDelayMs);
 
-        Move move = getAIMove();
-        if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
-        {
-            Debug.Log("PENDING");
-            aiPendingSearchMove = true;
-
-            return false;
-        }
-        if (move.StartSquare == 0 && move.TargetSquare == 0)
-        {
-            return false;
-        }
-
-        GameEventSystem.current.MoveRequestComplete(move);
-        string winMes;
-        if ((winMes = isEndGameCondition()) != "")
-        {
-            uiManager.winText.text = winMes;
-            AIManager.instance.toggleAIPaus();
-            return false;
-
-        }
-        aiDelayStart = DateTime.Now;
+        getAIMove();
         return true;
     }
 
+    //!Deprecated
     public void checkPendingMove()
     {
         if (!started || ended)
@@ -286,7 +268,7 @@ public class GameManager : MonoBehaviour
             aiPendingComplete = false;
             return;
         }
-        Move move = (board.whiteTurn ? wAI.SelectMove(null) : bAI.SelectMove(null));
+        Move move = new Move(0);//(board.whiteTurn ? wAI.SelectMove(null) : bAI.SelectMove(null));
         if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
         {
             throw new ArgumentNullException("NO MOVE FOUND HERE");

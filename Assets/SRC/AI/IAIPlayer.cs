@@ -8,8 +8,10 @@ namespace ChessAI
     @author Elias Vahlberg 
     @Date 2021-07 
     */
+
     public interface IAIPlayer
     {
+        string Name();
         void Initialize(Board board, AISettings settings);
 
         //Start search
@@ -23,6 +25,8 @@ namespace ChessAI
 
         //Submit move to the game manager
         void SubmitMove(Move move);
+
+        IAIPlayer GetInstance();
     }
 }
 

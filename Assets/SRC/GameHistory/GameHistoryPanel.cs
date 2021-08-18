@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /*
     @File GameHistoryPanel.cs
@@ -15,6 +16,8 @@ public class GameHistoryPanel : MonoBehaviour
     public bool showing = false;
     public static GameHistoryPanel instance;
     private Stack<GameObject> historyItemStack;
+    [SerializeField]
+    private ScrollRect scrollRect;
     private void Awake()
     {
         if (instance == null)
@@ -75,6 +78,15 @@ public class GameHistoryPanel : MonoBehaviour
         else
             item.init(msg, fen, moved);
         historyItemStack.Push(item.gameObject);
+        Canvas.ForceUpdateCanvases();
+
+        //item.GetComponent<VerticalLayoutGroup>().CalculateLayoutInputVertical();
+        //item.GetComponent<ContentSizeFitter>().SetLayoutVertical();
+        //
+        //scrollRect.content.GetComponent<VerticalLayoutGroup>().CalculateLayoutInputVertical();
+        //scrollRect.content.GetComponent<ContentSizeFitter>().SetLayoutVertical();
+
+        scrollRect.verticalNormalizedPosition = 0;
     }
     public void removeLast()
     {

@@ -18,14 +18,22 @@ namespace ChessAI
         [HideInInspector] public static AIManager instance;
         [SerializeField] private GameObject canvas;
         [Header("UI")]
-        [SerializeField] private IAIObject[] aIs = new IAIObject[0];
-        [SerializeField] private IAIPlayer[] aIs2 = new IAIPlayer[0];
-        [HideInInspector] public IAIObject[] AIs { get { return aIs; } }
+
+        [SerializeField]
+        private AISettings[] aISettings;
+
+        private IAIPlayer[] aIs = new IAIPlayer[0];
+        public IAIPlayer[] AIs { get => aIs; }
+
+        //[SerializeField] private IAIObject[] aIs = new IAIObject[0];
+        //[HideInInspector] public IAIObject[] AIs { get { return aIs; } }
+
+
         public bool showing = false;
         public bool isBlackAIActive = false;
         public bool isWhiteAIActive = false;
-        public IAIObject activeBlackAI = null;
-        public IAIObject activeWhiteAI = null;
+        public IAIPlayer activeBlackAI = null;
+        public IAIPlayer activeWhiteAI = null;
         public Button letAIPlayButton;
         public Button toggleAIPausButton;
         public Text wAINameDisplay;
@@ -50,20 +58,19 @@ namespace ChessAI
 
         private void Start()
         {
-            List<string> test = UnityUtills.GetAllEntities<IAIPlayer>();
-
-            foreach (string str in test)
-            {
-                Debug.Log(str);
-            }
-            aIs2 = UnityUtills.GetAllEntitiesAsClasses<IAIPlayer>().ToArray();
-            Debug.Log(aIs2.Length);
-            aIs = UnityUtills.GetAllInstances<IAIObject>();
+            //List<string> test = UnityUtills.GetAllEntities<IAIPlayer>();
+            //
+            //foreach (string str in test)
+            //{
+            //    Debug.Log(str);
+            //}
+            aIs = UnityUtills.GetAllEntitiesAsClasses<IAIPlayer>().ToArray();
+            //aISettings = UnityUtills.GetAllInstances<AISettings>();
 
             int ii = 0;
-            foreach (IAIObject ai in aIs)
+            foreach (IAIPlayer ai in aIs)
             {
-                string str = "AI [" + ii + "] :" + ai.Name;
+                string str = "AI [" + ii + "] :" + ai.Name();
                 aiOptions.Add(new OptionData(str));
                 ii++;
             }
@@ -87,12 +94,16 @@ namespace ChessAI
             {
                 if (gameManager.board.whiteTurn)
                 {
-                    activeWhiteAI = Instantiate(aIs[index]);
+
+                    activeWhiteAI = aIs[index].GetInstance();
+                    if (index >= aISettings.Length)
+                        throw new System.IndexOutOfRangeException("No settings available for AI[" + index + "]");
+                    activeWhiteAI.Initialize(GameManager.instance.WhiteBoard, aISettings[index]);
                     isWhiteAIActive = true;
                     gameManager.wAI = activeWhiteAI;
                     gameManager.whiteAIPlaying = true;
                     gameManager.aiWaitingToMove = true;
-                    wAINameDisplay.text = "<color=cyan><b>White AI: " + gameManager.wAI.Name + "</b></color>";
+                    wAINameDisplay.text = "<color=cyan><b>White AI: " + gameManager.wAI.Name() + "</b></color>";
 
 
                     wAINameDisplay.gameObject.SetActive(true);
@@ -101,11 +112,12 @@ namespace ChessAI
                 }
                 else
                 {
-                    activeBlackAI = Instantiate(aIs[index]);
+                    activeBlackAI = aIs[index].GetInstance();
+                    activeBlackAI.Initialize(GameManager.instance.BlackBoard, aISettings[index]);
                     isBlackAIActive = true;
                     gameManager.bAI = activeBlackAI;
                     gameManager.blackAIPlaying = true;
-                    bAINameDisplay.text = "<color=green><b>Black AI: " + gameManager.bAI.Name + "</b></color>";
+                    bAINameDisplay.text = "<color=green><b>Black AI: " + gameManager.bAI.Name() + "</b></color>";
                     bAINameDisplay.gameObject.SetActive(true);
                     gameManager.playAIMove();
                 }
@@ -138,14 +150,14 @@ namespace ChessAI
                 toggleAIPausButton.GetComponentInChildren<Text>().text = "<color=blue><b>Paus AI</b></color>";
 
         }
-        public Move SelectMove(IAIObject ai, Board board)
+        public void RequestMove(IAIPlayer ai)
         {
             //timeID = TimeUtills.Instance.startMeasurement();
-            Move move = ai.SelectMove(board);
+            ai.RequestMove();
             //long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
             //Debug.Log(ai.Name + " took :" + td + "ms");
             //ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");
-            return move;
+
         }
     }
 }

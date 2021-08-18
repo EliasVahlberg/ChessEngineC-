@@ -7,6 +7,7 @@ namespace ChessAI
 {
     public class CompundAIGen4V1 : IAIPlayer
     {
+        private static readonly string AI_NAME = "Ivan";
         #region State
 
         private bool isSearching = false;
@@ -40,13 +41,21 @@ namespace ChessAI
         private GameState gameStateCopy;
         #endregion
 
-
+        public IAIPlayer GetInstance()
+        {
+            return new CompundAIGen4V1();
+        }
+        public string Name()
+        {
+            return AI_NAME;
+        }
         public void Initialize(Board board, AISettings settings)
         {
             this.board = board;
             this.settings = settings;
             search = new Search(board, settings);
             isInitialized = true;
+
         }
 
         public void RequestMove()

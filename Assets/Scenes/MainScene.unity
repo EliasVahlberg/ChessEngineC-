@@ -470,7 +470,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.3443396, b: 0.3443396, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -8881,11 +8881,11 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 30
   m_Viewport: {fileID: 1974934367}
   m_HorizontalScrollbar: {fileID: 104022040}
   m_VerticalScrollbar: {fileID: 880250514}
-  m_HorizontalScrollbarVisibility: 2
+  m_HorizontalScrollbarVisibility: 0
   m_VerticalScrollbarVisibility: 2
   m_HorizontalScrollbarSpacing: -3
   m_VerticalScrollbarSpacing: -3
@@ -10864,7 +10864,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 15c761738c04fb84f94247a1a932296d, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -22551,6 +22551,7 @@ MonoBehaviour:
   content: {fileID: 330476907}
   historyItemPrefab: {fileID: 718323688904066516, guid: 1555895102d24654c9a7ddfb0955d0d9, type: 3}
   showing: 0
+  scrollRect: {fileID: 392876595}
 --- !u!1 &1057985927
 GameObject:
   m_ObjectHideFlags: 0
@@ -26775,8 +26776,6 @@ MonoBehaviour:
   sentFen: 
   sentIsWhite: 0
   fenSent: 0
-  wAI: {fileID: 0}
-  bAI: {fileID: 0}
   whiteAIPlaying: 0
   blackAIPlaying: 0
   useAIDelay: 1
@@ -27352,13 +27351,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvas: {fileID: 991862298}
-  aIs:
-  - {fileID: 0}
+  aISettings:
+  - {fileID: 11400000, guid: a7431ee65f8619c40a30dbbf84707a60, type: 2}
+  - {fileID: 11400000, guid: ae8073c4ac4fe364daced0c99b650ab4, type: 2}
   showing: 0
   isBlackAIActive: 0
   isWhiteAIActive: 0
-  activeBlackAI: {fileID: 0}
-  activeWhiteAI: {fileID: 0}
   letAIPlayButton: {fileID: 60134592}
   toggleAIPausButton: {fileID: 492837732}
   wAINameDisplay: {fileID: 645234123}
@@ -39848,7 +39846,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: f4c99a340a6e6504aa6e992b7a253612, type: 3}
     m_FontSize: 30
     m_FontStyle: 0
     m_BestFit: 0
