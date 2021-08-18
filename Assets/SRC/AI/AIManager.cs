@@ -19,6 +19,7 @@ namespace ChessAI
         [SerializeField] private GameObject canvas;
         [Header("UI")]
         [SerializeField] private IAIObject[] aIs = new IAIObject[0];
+        [SerializeField] private IAIPlayer[] aIs2 = new IAIPlayer[0];
         [HideInInspector] public IAIObject[] AIs { get { return aIs; } }
         public bool showing = false;
         public bool isBlackAIActive = false;
@@ -32,6 +33,7 @@ namespace ChessAI
         public Dropdown aiSelect;
         private List<OptionData> aiOptions = new List<OptionData>();
         private int timeID = 0;
+
         private void Awake()
         {
             if (instance == null)
@@ -45,8 +47,17 @@ namespace ChessAI
                 Destroy(this);
             }
         }
+
         private void Start()
         {
+            List<string> test = UnityUtills.GetAllEntities<IAIPlayer>();
+
+            foreach (string str in test)
+            {
+                Debug.Log(str);
+            }
+            aIs2 = UnityUtills.GetAllEntitiesAsClasses<IAIPlayer>().ToArray();
+            Debug.Log(aIs2.Length);
             aIs = UnityUtills.GetAllInstances<IAIObject>();
 
             int ii = 0;

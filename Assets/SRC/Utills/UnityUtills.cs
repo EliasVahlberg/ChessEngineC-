@@ -1,4 +1,5 @@
 //using UnityEditor;
+using System.Linq;
 using UnityEngine;
 
 /*
@@ -20,6 +21,38 @@ namespace Utills
             }
             return objs;
 
+        }
+        //public static void getAll<T>()
+        //{
+        //    var type = typeof(T);
+        //    var types = System.AppDomain.CurrentDomain.GetAssemblies()
+        //                    .Where(x => x.FullName.StartsWith("YourNamespace"))
+        //                    .SelectMany(x => x.GetTypes())
+        //                    .Where(x => x.IsClass && type.IsAssignableFrom(x));
+        //
+        //    foreach (System.Type t in types)
+        //    {
+        //        T obj = Container.Resolve(t) as T;
+        //    }
+        //}
+        public static System.Collections.Generic.List<string> GetAllEntities<T>()
+        {
+            return System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+                 .Where(x => typeof(T).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                 .Select(x => x.FullName).ToList();
+        }
+        public static System.Collections.Generic.List<T> GetAllEntitiesAsClasses<T>()
+        {
+            return System.AppDomain.CurrentDomain.GetAssemblies().
+                Where(obj => obj.GetTypes().
+                        Any(x => typeof(T).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)).
+                Select(obj =>
+                    ((T)obj.CreateInstance(
+                        obj.GetTypes().
+                        First(x => typeof(T).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract).FullName
+                    )
+                )
+            ).ToList();
         }
         //public static T[] GetAllInstances<T>() where T : ScriptableObject
         //{
