@@ -31,7 +31,7 @@ public class MoveUtills
     private ulong currentAttackMapNoPawns;
     private ulong currentSlidingAttackMap;
     private ulong currentKnightAttackMap;
-    private ulong currentPawnAttackMap;
+    public ulong currentPawnAttackMap;
     private ulong currentKingAttackMap;
     private ulong checkRayMap;
     private ulong pinRayMap;

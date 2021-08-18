@@ -80,6 +80,22 @@ namespace ChessAI
             {0b10110,-pieceScoreArr[5]},
             {0b10111,-pieceScoreArr[6]}
         };
+        private static readonly int[] pieceScoreBWArray =
+        {
+        0,0,0,0,0,0,0,0,0,
+        pieceScoreArr[1],
+        pieceScoreArr[2],
+        pieceScoreArr[3],
+        0,pieceScoreArr[4],
+        pieceScoreArr[5],
+        pieceScoreArr[6],
+        0,-pieceScoreArr[1],
+        -pieceScoreArr[2],
+        -pieceScoreArr[3],
+        0,-pieceScoreArr[4],
+        -pieceScoreArr[5],
+        -pieceScoreArr[6]
+        };
         //*Original
         //*Chris 100turn ms:{69, 58, 69, 65, 64, 65, 57, 55}
         //*SPEEDTST 100turn x 1000 ms: {2159, 2112, 2116, 2172, 2113, 2137, 2172}
@@ -193,6 +209,77 @@ namespace ChessAI
             return score;
 
         }
+        public int V5CaptureScore(int[] tiles, bool whiteTurn)
+        {
+            int score = 0;
+            int factor = (whiteTurn ? 1 : -1);
+            score += factor * pieceScoreBWArray[tiles[0]];
+            score += factor * pieceScoreBWArray[tiles[1]];
+            score += factor * pieceScoreBWArray[tiles[2]];
+            score += factor * pieceScoreBWArray[tiles[3]];
+            score += factor * pieceScoreBWArray[tiles[4]];
+            score += factor * pieceScoreBWArray[tiles[5]];
+            score += factor * pieceScoreBWArray[tiles[6]];
+            score += factor * pieceScoreBWArray[tiles[7]];
+            score += factor * pieceScoreBWArray[tiles[8]];
+            score += factor * pieceScoreBWArray[tiles[9]];
+            score += factor * pieceScoreBWArray[tiles[10]];
+            score += factor * pieceScoreBWArray[tiles[11]];
+            score += factor * pieceScoreBWArray[tiles[12]];
+            score += factor * pieceScoreBWArray[tiles[13]];
+            score += factor * pieceScoreBWArray[tiles[14]];
+            score += factor * pieceScoreBWArray[tiles[15]];
+            score += factor * pieceScoreBWArray[tiles[16]];
+            score += factor * pieceScoreBWArray[tiles[17]];
+            score += factor * pieceScoreBWArray[tiles[18]];
+            score += factor * pieceScoreBWArray[tiles[19]];
+            score += factor * pieceScoreBWArray[tiles[20]];
+            score += factor * pieceScoreBWArray[tiles[21]];
+            score += factor * pieceScoreBWArray[tiles[22]];
+            score += factor * pieceScoreBWArray[tiles[23]];
+            score += factor * pieceScoreBWArray[tiles[24]];
+            score += factor * pieceScoreBWArray[tiles[25]];
+            score += factor * pieceScoreBWArray[tiles[26]];
+            score += factor * pieceScoreBWArray[tiles[27]];
+            score += factor * pieceScoreBWArray[tiles[28]];
+            score += factor * pieceScoreBWArray[tiles[29]];
+            score += factor * pieceScoreBWArray[tiles[30]];
+            score += factor * pieceScoreBWArray[tiles[31]];
+            score += factor * pieceScoreBWArray[tiles[32]];
+            score += factor * pieceScoreBWArray[tiles[33]];
+            score += factor * pieceScoreBWArray[tiles[34]];
+            score += factor * pieceScoreBWArray[tiles[35]];
+            score += factor * pieceScoreBWArray[tiles[36]];
+            score += factor * pieceScoreBWArray[tiles[37]];
+            score += factor * pieceScoreBWArray[tiles[38]];
+            score += factor * pieceScoreBWArray[tiles[39]];
+            score += factor * pieceScoreBWArray[tiles[40]];
+            score += factor * pieceScoreBWArray[tiles[41]];
+            score += factor * pieceScoreBWArray[tiles[42]];
+            score += factor * pieceScoreBWArray[tiles[43]];
+            score += factor * pieceScoreBWArray[tiles[44]];
+            score += factor * pieceScoreBWArray[tiles[45]];
+            score += factor * pieceScoreBWArray[tiles[46]];
+            score += factor * pieceScoreBWArray[tiles[47]];
+            score += factor * pieceScoreBWArray[tiles[48]];
+            score += factor * pieceScoreBWArray[tiles[49]];
+            score += factor * pieceScoreBWArray[tiles[50]];
+            score += factor * pieceScoreBWArray[tiles[51]];
+            score += factor * pieceScoreBWArray[tiles[52]];
+            score += factor * pieceScoreBWArray[tiles[53]];
+            score += factor * pieceScoreBWArray[tiles[54]];
+            score += factor * pieceScoreBWArray[tiles[55]];
+            score += factor * pieceScoreBWArray[tiles[56]];
+            score += factor * pieceScoreBWArray[tiles[57]];
+            score += factor * pieceScoreBWArray[tiles[58]];
+            score += factor * pieceScoreBWArray[tiles[59]];
+            score += factor * pieceScoreBWArray[tiles[60]];
+            score += factor * pieceScoreBWArray[tiles[61]];
+            score += factor * pieceScoreBWArray[tiles[62]];
+            score += factor * pieceScoreBWArray[tiles[63]];
+            return score;
+
+        }
 
         public int EndgameValue(int[] tiles, bool whiteTurn)
         {
@@ -201,7 +288,7 @@ namespace ChessAI
             int n = 0;
             for (int ii = 0; ii < 64; ii++)
             {
-                n = factor * pieceScoreBW[tiles[ii]];
+                n = factor * pieceScoreBWArray[tiles[ii]];
                 if (n < 0)
                     score -= n;
             }

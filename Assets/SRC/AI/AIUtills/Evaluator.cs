@@ -31,7 +31,7 @@ namespace ChessAI
         }
         public int Evaluate(Board board)
         {
-            int val = BSG_W * bsg.V4CaptureScore(board.tiles, board.whiteTurn);
+            int val = BSG_W * bsg.V5CaptureScore(board.tiles, board.whiteTurn);
             if (useBWM)
             {
                 int endgameVal = bsg.EndgameValue(board.tiles, board.whiteTurn);

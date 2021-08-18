@@ -11,8 +11,9 @@ namespace ChessAI
     public class MoveOrderer
     {
         private TranspositionTable tt;
-        private const int CAPTURE_VAL_MULTIPLIER = 2;
+        private const int CAPTURE_VAL_MULTIPLIER = 15;
         private const int UNSAFE_POS_MULTIPLIER = 1;
+        private const int CAPTURED_BY_PAWN_MULTIPLIER = 20;
 
         public MoveOrderer(TranspositionTable tt)
         {
@@ -52,6 +53,8 @@ namespace ChessAI
 
                 if (!board.MoveGenerator.isSafePosition(move.TargetSquare))
                     moveScoreEstimate -= BoardScoreGenerator.pieceScore[movePieceT] * UNSAFE_POS_MULTIPLIER;
+                if (BoardUtills.ContainsTile(board.MoveGenerator.currentPawnAttackMap, move.TargetSquare))
+                    moveScoreEstimate -= CAPTURED_BY_PAWN_MULTIPLIER * BoardScoreGenerator.pieceScore[movePieceT];
                 moveScoreEstimates[ii] = moveScoreEstimate;
                 if (move.Equals(prevBest))
                     moveScoreEstimates[ii] += 10000;
