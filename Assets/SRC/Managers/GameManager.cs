@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using ChessAI;
 using SimpleChess;
 using UnityEngine;
@@ -13,6 +14,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     //TODO Remove
+    private readonly Move UNDO = new Move(63, 63);
+    private bool isUndo(Move move) { return move.StartSquare == 63 && move.TargetSquare == 63; }
     #region Managers
 
     [HideInInspector]
@@ -55,7 +58,9 @@ public class GameManager : MonoBehaviour
     public bool whiteAIPlaying = false;
     public bool blackAIPlaying = false;
     public bool useAIDelay = true;
+
     public bool isAIPaused = false;
+
     public int aiDelayMs = 50;
     public bool aiWaitingToMove = false;
     public static int DEFAULT_AI_DELAY_MS = 50;
@@ -67,6 +72,8 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region State
+
+    public bool humanPlayerTurn = true;
 
     public bool newTurnFlag = false;
 
@@ -113,6 +120,9 @@ public class GameManager : MonoBehaviour
         networkUIManager = NetworkUIManager.instance;
         uiManager.gameText.text = "";
         uiManager.winText.text = "";
+        GameEventSystem.current.onMoveRequest += GetMove;
+        GameEventSystem.current.onMoveRecieve += ReciveMoveState;
+        GameEventSystem.current.onMoveRecieveUI += ReciveMoveUI;
 
     }
 
@@ -240,10 +250,7 @@ public class GameManager : MonoBehaviour
             return false;
         if (isAIPaused)
             return false;
-        if (useAIDelay && aiDelayStart == null)
-            aiDelayStart = DateTime.Now;
-        if (useAIDelay && (((TimeSpan)(DateTime.Now - aiDelayStart)).TotalMilliseconds < aiDelayMs))
-        { return false; }
+        Thread.Sleep(aiDelayMs);
 
         Move move = getAIMove();
         if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
@@ -257,8 +264,8 @@ public class GameManager : MonoBehaviour
         {
             return false;
         }
-        SynchronizedUseMove(move);
 
+        GameEventSystem.current.MoveRequestComplete(move);
         string winMes;
         if ((winMes = isEndGameCondition()) != "")
         {
@@ -279,17 +286,22 @@ public class GameManager : MonoBehaviour
             aiPendingComplete = false;
             return;
         }
-        Move move = (isWhiteAIPending ? wAI.SelectMove(null) : bAI.SelectMove(null));
+        Move move = (board.whiteTurn ? wAI.SelectMove(null) : bAI.SelectMove(null));
         if (move.Equals(IAIObject.PENDING_SEARCH_MOVE))
         {
             throw new ArgumentNullException("NO MOVE FOUND HERE");
         }
-        SynchronizedUseMove(move);
+        GameEventSystem.current.MoveRecieveComplete(move);
         aiPendingSearchMove = false;
         aiPendingComplete = false;
         aiDelayStart = DateTime.Now;
         newTurnFlag = true;
 
+    }
+
+    public void RecivePendingMove(Move move)
+    {
+        GameEventSystem.current.MoveRequestComplete(move);
     }
 
     private void pausAI()
@@ -300,8 +312,9 @@ public class GameManager : MonoBehaviour
 
     private void resumeAI()
     {
-        if (blackAIPlaying || whiteAIPlaying)
-            isAIPaused = false;
+        isAIPaused = false;
+        if (board.whiteTurn && whiteAIPlaying || board.whiteTurn! && whiteAIPlaying!)
+            playAIMove();
     }
 
     public void toggleAIPaus()
@@ -425,6 +438,71 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Actions
+    public void GetMove(bool isWhiteTurn)
+    {
+        board.generateNewMoves();
+        whiteBoard.generateNewMoves();
+        blackBoard.generateNewMoves();
+
+        bool isAITurn = (whiteAIPlaying && isWhiteTurn || blackAIPlaying && !isWhiteTurn);
+        AIManager.instance.letAIPlayButton.gameObject.SetActive(!isAITurn);
+        AIManager.instance.aiSelect.gameObject.SetActive(!isAITurn);
+        AIManager.instance.toggleAIPausButton.gameObject.SetActive(isAITurn);
+
+        if (isAITurn)
+        {
+            humanPlayerTurn = false;
+            playAIMove();
+            aiWaitingToMove = true;
+        }
+        else
+        {
+            aiWaitingToMove = false;
+            humanPlayerTurn = true;
+        }
+    }
+    public void ReciveMoveState(Move move)
+    {
+        Debug.Log("IS UNDO : " + isUndo(move));
+        if (isUndo(move))
+        {
+            if (SynchronizedUnmakeMove())
+            {
+                UIManager.instance.updateScore(unmakeScoreDelta, !board.whiteTurn);
+                uiManager.playUndoSound();
+                GameHistoryPanel.instance.removeLast();
+            }
+            else { Debug.Log("UNDOFAIL"); }
+        }
+        else
+            SynchronizedUseMove(move);
+
+    }
+    public void ReciveMoveUI(Move move)
+    {
+        bool wasWhite = !board.whiteTurn;
+        try
+        {
+            if (!isUndo(move))
+            {
+                uiManager.LastMoveTint(move.StartSquare, move.TargetSquare);
+                Debug.Log(move.StartSquare + ", " + move.TargetSquare);
+                GameHistoryPanel.instance.addHistoryItem(board.boardToFEN(), move, wasWhite, board.lastMoveWasCapture);
+                if (board.lastMoveWasCapture)
+                    uiManager.updateScore(Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)], wasWhite);
+            }
+
+        }
+        catch (System.Exception _ex)
+        {
+            Debug.LogError(_ex);
+            throw;
+        }
+
+        uiManager.hideDanger();
+        GameEventSystem.current.MoveRecieveUIComplete(!wasWhite);
+    }
+
     public void selectPosition()
     {
         if (started)
@@ -447,7 +525,7 @@ public class GameManager : MonoBehaviour
                     UIManager.instance.onPromotionSelectEnter(move);
                     return; //Await response
                 }
-                SynchronizedUseMove(move);
+                GameEventSystem.current.MoveRequestComplete(move);
 
             }
             else
@@ -510,38 +588,33 @@ public class GameManager : MonoBehaviour
                 Debug.Log("FAILED IN PROMOTION MOVE");
                 return;
         }
-        SynchronizedUseMove(promMove);
+        GameEventSystem.current.MoveRequestComplete(promMove);
 
     }
+
+    private int unmakeScoreDelta = 0;
 
     public void UnmakeMove()
     {
         if (isNetworked)
             return;
-        int val = -Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)];
-        if (SynchronizedUnmakeMove())
-        {
-            UIManager.instance.updateScore(val, !board.whiteTurn);
-            uiManager.playUndoSound();
-            GameHistoryPanel.instance.removeLast();
-        }
-        else { Debug.Log("UNDOFAIL"); }
-
+        unmakeScoreDelta = -Piece.PieceValueDictionary[Piece.PieceType(board.lastMoveCaptured)];
+        GameEventSystem.current.MoveRequestComplete(UNDO);
     }
 
     public void resetBoard()
     {
-
-        board = createBoard();
-        whiteBoard = createBoard();
-        blackBoard = createBoard();
-        started = true;
-        UIManager.instance.generatePieceUI();
-        string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
-        UIManager.instance.gameText.text = s;
-        board.generateNewMoves();
-        whiteBoard.generateNewMoves();
-        blackBoard.generateNewMoves();
+        resetBoard(FENUtills.DEFAULT_START_FEN);
+        //board = createBoard();
+        //whiteBoard = createBoard();
+        //blackBoard = createBoard();
+        //started = true;
+        //UIManager.instance.generatePieceUI();
+        //string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
+        //UIManager.instance.gameText.text = s;
+        //board.generateNewMoves();
+        //whiteBoard.generateNewMoves();
+        //blackBoard.generateNewMoves();
 
     }
 
@@ -558,6 +631,8 @@ public class GameManager : MonoBehaviour
         board.generateNewMoves();
         whiteBoard.generateNewMoves();
         blackBoard.generateNewMoves();
+        GameEventSystem.current.StartGame(board.whiteTurn);
+
     }
 
     public void forfit()
@@ -574,7 +649,7 @@ public class GameManager : MonoBehaviour
     public bool SynchronizedUseMove(Move move)
     {
 
-        Debug.Log("Actual : " + board.ZobristKey);
+        //Debug.Log("Actual : " + board.ZobristKey);
         Debug.Log("Move Used : " + move.ToString());
         if (!board.useMove(move, UIManager.instance))
             Debug.LogError("MANAGER BOARD:{MOVE FAIL: { from = " + move.StartSquare + ", to = " + move.TargetSquare + " } }");
@@ -588,7 +663,7 @@ public class GameManager : MonoBehaviour
             string winMes;
             if ((winMes = isEndGameCondition()) != "")
                 uiManager.winText.text = winMes;
-
+            GameEventSystem.current.MoveRecieveComplete(move);
             return true;
 
         }
@@ -597,6 +672,7 @@ public class GameManager : MonoBehaviour
 
     public bool SynchronizedUnmakeMove()
     {
+
         if (!board.UnmakeMove(uiManager))
             Debug.LogError("MANAGER BOARD:{Unmake Move FAIL}");
         else if (!whiteBoard.UnmakeMove())
@@ -608,28 +684,30 @@ public class GameManager : MonoBehaviour
             board.generateNewMoves();
             whiteBoard.generateNewMoves();
             blackBoard.generateNewMoves();
+            GameEventSystem.current.MoveRecieveComplete(UNDO);
             return true;
         }
         return false;
     }
 
     #endregion
+
     private void Update()
     {
-        if (started)
-        {
-            if (aiPendingSearchMove && !aiPendingComplete)
-            { }
-            else if (aiPendingSearchMove && aiPendingComplete)
-                checkPendingMove();
-            else if (newTurnFlag)
-                onNewTurn(board.lastMove, !board.whiteTurn);
-            else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
-            {
-                if (useAIDelay && aiWaitingToMove)
-                    playAIMove();
-            }
-        }
+        //if (started)
+        //{
+        //    if (aiPendingSearchMove && !aiPendingComplete)
+        //    { }
+        //    else if (aiPendingSearchMove && aiPendingComplete)
+        //        checkPendingMove();
+        //    else if (newTurnFlag)
+        //        onNewTurn(board.lastMove, !board.whiteTurn);
+        //    else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
+        //    {
+        //        if (useAIDelay && aiWaitingToMove)
+        //            playAIMove();
+        //    }
+        //}
     }
 
 

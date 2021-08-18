@@ -44,8 +44,9 @@ namespace ChessAI
                 if (board.tiles[ii] != prevTiles[ii])
                 {
                     mutated = true;
-                    Debug.LogError("position: " + ii + "is changed");
-                    Debug.LogError("Is =" + prevTiles[ii] + " Should be =" + board.tiles[ii]);
+                    throw new ArgumentException("Is =" + prevTiles[ii] + " Should be =" + board.tiles[ii]);
+                    //Debug.LogError("position: " + ii + "is changed");
+                    //Debug.LogError("Is =" + prevTiles[ii] + " Should be =" + board.tiles[ii]);
 
                 }
             }

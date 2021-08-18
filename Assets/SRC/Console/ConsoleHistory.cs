@@ -41,24 +41,16 @@ public class ConsoleHistory : MonoBehaviour
     }
     public void addLogHistory(string textMes)
     {
-        try
+
+        if (logHistoryText.preferredHeight + 50 > logHistoryText.rectTransform.sizeDelta.y)
         {
-
-            if (logHistoryText.preferredHeight + 50 > logHistoryText.rectTransform.sizeDelta.y)
-            {
-                logHistoryText.rectTransform.sizeDelta += new Vector2(0, 50);
-                Vector3 v3 = logHistoryText.rectTransform.localPosition;
-                v3.y += 25f;
-                logHistoryText.rectTransform.localPosition = v3;
-            }
-            logHistoryText.text += "\n" + textMes;
-
+            logHistoryText.rectTransform.sizeDelta += new Vector2(0, 50);
+            Vector3 v3 = logHistoryText.rectTransform.localPosition;
+            v3.y += 25f;
+            logHistoryText.rectTransform.localPosition = v3;
         }
-        catch (System.Exception _ex)
-        {
+        logHistoryText.text += "\n" + textMes;
 
-            Debug.Log(_ex);
-            throw;
-        }
+
     }
 }

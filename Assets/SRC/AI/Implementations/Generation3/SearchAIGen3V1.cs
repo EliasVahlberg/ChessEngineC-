@@ -38,21 +38,6 @@ namespace ChessAI
         {
             if (privateBoard == null)
                 privateBoard = board;
-            if (started)
-            {
-                if (moveFound)
-                {
-                    if (!AIUtillsManager.instance.BoardIntegrityCheck(privateBoard, tilesCopy, gameStateCopy))
-                        throw new InvalidOperationException("Board was mutated during selection of moves");
-                    started = false;
-                    moveFound = false;
-                    if (logInfo != null)
-                        ConsoleHistory.instance.addLogHistory(logInfo);
-                    return bestMove;
-                }
-                else
-                    return PENDING_SEARCH_MOVE;
-            }
             if (settings.useBook && privateBoard.Turn < settings.maxBookPly)
             {
                 Move move = GetBookMove(privateBoard);
@@ -117,9 +102,12 @@ namespace ChessAI
                 (bestMove, bestVal) = search.GetResult();
                 moveFound = true;
 
+                //validate();
+                GameManager.instance.RecivePendingMove(bestMove);
                 logInfo = "<color=yellow>" + search.LogDebugInfo() + "</color>";
                 if (GameManager.instance.started && !GameManager.instance.ended)
                     GameManager.instance.AIPendingComplete = true;
+
             }
             else
             {
@@ -134,6 +122,8 @@ namespace ChessAI
             cancelSearchTimer?.Cancel();
             this.bestMove = move;
             moveFound = true;
+            validate();
+            GameManager.instance.RecivePendingMove(bestMove);
             GameManager.instance.AIPendingComplete = true;
             Debug.LogError("SearchAbort early");
         }
@@ -150,6 +140,15 @@ namespace ChessAI
 
             Debug.Log("NOT FOUND : " + board.ZobristKey);
             return Search.INVAL_MOVE;
+        }
+        private void validate()
+        {
+            if (!AIUtillsManager.instance.BoardIntegrityCheck(privateBoard, tilesCopy, gameStateCopy))
+                throw new InvalidOperationException("Board was mutated during selection of moves");
+            started = false;
+            moveFound = false;
+            if (logInfo != null)
+                ConsoleHistory.instance.addLogHistory(logInfo);
         }
     }
 

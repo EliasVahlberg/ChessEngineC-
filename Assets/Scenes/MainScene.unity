@@ -3953,7 +3953,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1246563574}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.81333333
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -22005,6 +22005,7 @@ GameObject:
   - component: {fileID: 1035657994}
   - component: {fileID: 1035657993}
   - component: {fileID: 1035657992}
+  - component: {fileID: 1035657996}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -22060,6 +22061,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1035657996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035657991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e9b3464764f56c499679bf40f37a3e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Running: 0
+  UsingUI: 1
+  MoveRequested: 0
+  MoveRecieved: 0
+  MoveRecievedUI: 0
 --- !u!1 &1036614969
 GameObject:
   m_ObjectHideFlags: 0
@@ -23188,7 +23206,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -49.99997}
+  m_AnchoredPosition: {x: 0, y: -50}
   m_SizeDelta: {x: 0, y: -100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1091527821
@@ -26003,7 +26021,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: []
-  target: []
 --- !u!1 &1191678365
 GameObject:
   m_ObjectHideFlags: 0
@@ -26766,6 +26783,7 @@ MonoBehaviour:
   isAIPaused: 0
   aiDelayMs: 50
   aiWaitingToMove: 0
+  humanPlayerTurn: 1
   newTurnFlag: 0
   selectedMoveTo: -1
   selectedPiece: -1
