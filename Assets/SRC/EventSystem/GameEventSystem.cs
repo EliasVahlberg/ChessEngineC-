@@ -57,6 +57,7 @@ public class GameEventSystem : MonoBehaviour
     public event Action<bool> onMoveRequest;
     public event Action<Move> onMoveRecieve;
     public event Action<Move> onMoveRecieveUI;
+    public event Action onStoppingGame;
     #endregion
 
     //*When UI is used
@@ -212,5 +213,13 @@ public class GameEventSystem : MonoBehaviour
 
     }
 
+    public void StoppingGame()
+    {
+        if (onStoppingGame != null)
+        {
+
+            onStoppingGame();
+        }
+    }
 
 }

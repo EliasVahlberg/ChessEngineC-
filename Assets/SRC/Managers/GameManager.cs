@@ -362,6 +362,7 @@ public class GameManager : MonoBehaviour
         {
             started = false;
             ended = true;
+            GameEventSystem.current.StoppingGame();
             return mes + " Press \"R\" to restart or \"ESC\" to go back.";
         }
         return mes;

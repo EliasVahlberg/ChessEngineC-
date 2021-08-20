@@ -12,11 +12,14 @@ public class GameClock : MonoBehaviour
     private float whiteTime;
     private float blackTime;
     private bool whiteTurn = true;
+    [SerializeField]
     private bool isActive = false;
+    [SerializeField]
     private bool isInitialized = false;
     private void Start()
     {
         GameEventSystem.current.onMoveRequest += switchTimer;
+        GameEventSystem.current.onStoppingGame += stop;
     }
     public void startClock(bool isWhiteFirst, int startingTimeSeconds, int startingTimeMinutes)
     {
@@ -65,6 +68,7 @@ public class GameClock : MonoBehaviour
 
     public void stop()
     {
+        isInitialized = false;
         isActive = false;
     }
     private void Update()
@@ -84,8 +88,6 @@ public class GameClock : MonoBehaviour
             {
                 timeSTR = "00:00";
                 GameManager.instance.playerTimeIsUp();
-                isInitialized = false;
-                isActive = false;
             }
             else
                 timeSTR = ((int)(whiteTime / 60)).ToString("00") + ":" + ((int)(whiteTime % 60)).ToString("00");
@@ -98,8 +100,6 @@ public class GameClock : MonoBehaviour
             {
                 timeSTR = "00:00";
                 GameManager.instance.playerTimeIsUp();
-                isInitialized = false;
-                isActive = false;
             }
             else
                 timeSTR = ((int)(blackTime / 60)).ToString("00") + ":" + ((int)(blackTime % 60)).ToString("00");
