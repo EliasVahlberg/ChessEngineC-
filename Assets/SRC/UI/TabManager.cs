@@ -43,7 +43,7 @@ public class TabManager : MonoBehaviour
     public void Show(int n)
     {
 
-        Debug.Log(n);
+
         if (tabs.Length > n)
         {
             if (tabs[currentlyShowing].IsShowing)

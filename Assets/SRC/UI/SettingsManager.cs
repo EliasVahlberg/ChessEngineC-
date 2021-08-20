@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -21,6 +22,15 @@ public class SettingsManager : MonoBehaviour
     public Button reloadSceneButton;
     public TabManager tabManager;
     public bool showing = false;
+
+    [SerializeField]
+    private Slider minutesSlider;
+    [SerializeField]
+    private TMP_Text minutesText;
+    [SerializeField]
+    private Slider secondsSlider;
+    [SerializeField]
+    private TMP_Text secondsText;
 
 
     #endregion
@@ -55,6 +65,13 @@ public class SettingsManager : MonoBehaviour
         volumeSlider.SetValueWithoutNotify(AudioListener.volume);
         fullscreenToggle.SetIsOnWithoutNotify(Screen.fullScreen);
         tabManager.Deactivate();
+
+        minutesText.text = GameManager.instance.TimeLimitMinutes.ToString("00");
+        secondsText.text = GameManager.instance.TimeLimitSeconds.ToString("00");
+        minutesSlider.SetValueWithoutNotify(GameManager.instance.TimeLimitMinutes);
+        secondsSlider.SetValueWithoutNotify(GameManager.instance.TimeLimitSeconds);
+        minutesSlider.onValueChanged.AddListener(setTimeLimitMinutes);
+        secondsSlider.onValueChanged.AddListener(setTimeLimitSeconds);
     }
 
     private void changeVolume(float value)
@@ -147,4 +164,14 @@ public class SettingsManager : MonoBehaviour
         SceneManager.LoadScene(scene.name);
     }
 
+    public void setTimeLimitMinutes(float value)
+    {
+        GameManager.instance.TimeLimitMinutes = ((int)value);
+        minutesText.text = GameManager.instance.TimeLimitMinutes.ToString("00");
+    }
+    public void setTimeLimitSeconds(float value)
+    {
+        GameManager.instance.TimeLimitSeconds = ((int)value);
+        secondsText.text = GameManager.instance.TimeLimitSeconds.ToString("00");
+    }
 }

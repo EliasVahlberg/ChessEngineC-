@@ -16,9 +16,10 @@ public class GameManager : MonoBehaviour
     //TODO Remove
     private static readonly Move UNDO = new Move(63, 63);
     [SerializeField]
-    private int timeLimitSeconds = 10;
+    private int timeLimitSeconds = 0;
+
     [SerializeField]
-    private int timeLimitMinutes = 0;
+    private int timeLimitMinutes = 10;
 
     private bool isUndo(Move move) { return move.StartSquare == 63 && move.TargetSquare == 63; }
     #region Managers
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour
     private bool whiteTimeOut = false;
 
     private bool blackTimeOut = false;
-
+    [SerializeField]
     private bool usingClock = true;
 
     public bool started = false;
