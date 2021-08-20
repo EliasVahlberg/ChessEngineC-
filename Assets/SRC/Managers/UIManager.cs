@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ChessAI;
 using Testing;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,7 +38,9 @@ public class UIManager : MonoBehaviour
     public string pieceTag = "Piece";
     public string menuTag = "Menu";
     public string pieceSortingLayer = "Piece";
-    public Text gameText;
+    [SerializeField]
+    private TMP_Text gameText;
+    public TMP_Text GameText { get => gameText; }
     public Text winText;
     public Color lightColor = Color.white;
     public Color darkColor = Color.black;
@@ -94,9 +97,11 @@ public class UIManager : MonoBehaviour
     #region StateVariables
 
     private int whitePointCounter = 0;
-    public Text whitePointText;
+    [SerializeField]
+    private TMP_Text whitePointText;
     private int blackPointCounter = 0;
-    public Text blackPointText;
+    [SerializeField]
+    private TMP_Text blackPointText;
     public GameObject pointsCanvas;
     private bool selectingPromotion = false;
 
@@ -362,7 +367,9 @@ public class UIManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Escape) && !gameManager.ended)
         {
-            if (menuManager.showing)
+            if (SettingsManager.instance.showing)
+            { SettingsManager.instance.hideSettingsMenu(); }
+            else if (menuManager.showing)
                 menuManager.hideMainMenu();
             else
                 menuManager.showMainMenu();
@@ -488,6 +495,9 @@ public class UIManager : MonoBehaviour
 
     public int lastMoveStart = -1;
     public int lastMoveTarget = -1;
+
+
+
     public void LastMoveTint(int from, int to)
     {
         if (lastMoveStart != -1 || lastMoveTarget != -1)
@@ -647,12 +657,12 @@ public class UIManager : MonoBehaviour
         if (isWhite)
         {
             whitePointCounter += value;
-            whitePointText.text = "White: " + whitePointCounter;
+            whitePointText.text = whitePointCounter.ToString();
         }
         else
         {
             blackPointCounter += value;
-            blackPointText.text = "Black: " + blackPointCounter;
+            blackPointText.text = blackPointCounter.ToString();
         }
     }
 

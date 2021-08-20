@@ -14,7 +14,12 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     //TODO Remove
-    private readonly Move UNDO = new Move(63, 63);
+    private static readonly Move UNDO = new Move(63, 63);
+    [SerializeField]
+    private int timeLimitSeconds = 10;
+    [SerializeField]
+    private int timeLimitMinutes = 0;
+
     private bool isUndo(Move move) { return move.StartSquare == 63 && move.TargetSquare == 63; }
     #region Managers
 
@@ -87,6 +92,12 @@ public class GameManager : MonoBehaviour
 
     public bool whiteForfit = false;
 
+    private bool whiteTimeOut = false;
+
+    private bool blackTimeOut = false;
+
+    private bool usingClock = true;
+
     public bool started = false;
 
     public bool ended = false;
@@ -95,6 +106,10 @@ public class GameManager : MonoBehaviour
     {
         get { return NetworkUIManager.instance.IsConnected(); }
     }
+
+    public int TimeLimitSeconds { get => timeLimitSeconds; set => timeLimitSeconds = value; }
+    public int TimeLimitMinutes { get => timeLimitMinutes; set => timeLimitMinutes = value; }
+    public bool UsingClock { get => usingClock; set => usingClock = value; }
 
 
     #endregion
@@ -122,7 +137,7 @@ public class GameManager : MonoBehaviour
         menuManager = MenuManager.instance;
         networkGameManager = NetworkGameManager.instance;
         networkUIManager = NetworkUIManager.instance;
-        uiManager.gameText.text = "";
+        uiManager.GameText.text = "";
         uiManager.winText.text = "";
         GameEventSystem.current.onMoveRequest += GetMove;
         GameEventSystem.current.onMoveRecieve += ReciveMoveState;
@@ -283,6 +298,8 @@ public class GameManager : MonoBehaviour
 
     public void RecivePendingMove(Move move)
     {
+        if (ended || !started)
+            return;
         GameEventSystem.current.MoveRequestComplete(move);
     }
 
@@ -336,6 +353,10 @@ public class GameManager : MonoBehaviour
             mes = "Black Forfit ! \n";
         else if (whiteForfit)
             mes = "White Forfit ! \n";
+        else if (whiteTimeOut)
+            mes = "White Time Is Up ! \n";
+        else if (blackTimeOut)
+            mes = "Black Time Is Up ! \n";
         if (mes != "")
         {
             started = false;
@@ -406,6 +427,8 @@ public class GameManager : MonoBehaviour
         UIManager.instance.ShowInGameUI();
         whiteForfit = false;
         blackForfit = false;
+        whiteTimeOut = false;
+        blackTimeOut = false;
         UIManager.instance.ResetInGameUI();
         ended = false;
         resetBoard();
@@ -443,6 +466,7 @@ public class GameManager : MonoBehaviour
             humanPlayerTurn = true;
         }
     }
+
     public void ReciveMoveState(Move move)
     {
         Debug.Log("IS UNDO : " + isUndo(move));
@@ -460,6 +484,7 @@ public class GameManager : MonoBehaviour
             SynchronizedUseMove(move);
 
     }
+
     public void ReciveMoveUI(Move move)
     {
         bool wasWhite = !board.whiteTurn;
@@ -609,7 +634,7 @@ public class GameManager : MonoBehaviour
         started = true;
         UIManager.instance.generatePieceUI();
         string s = "Turn:" + (board.Turn + 1) + "\n" + "Color: " + (board.whiteTurn ? "White" : "Black") + "\n" + "Check: " + (board.Check ? (board.WhiteInCheck ? "White" : "Black") : "None");
-        UIManager.instance.gameText.text = s;
+        UIManager.instance.GameText.text = s;
         board.generateNewMoves();
         whiteBoard.generateNewMoves();
         blackBoard.generateNewMoves();
@@ -625,6 +650,19 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public void playerTimeIsUp()
+    {
+        if (usingClock)
+        {
+            if (board.whiteTurn)
+                whiteTimeOut = true;
+            else
+                blackTimeOut = true;
+            uiManager.winText.text = isEndGameCondition();
+            started = false;
+            ended = true;
+        }
+    }
     #endregion
 
     #region SynchronizedBoardActions
@@ -674,23 +712,7 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    private void Update()
-    {
-        //if (started)
-        //{
-        //    if (aiPendingSearchMove && !aiPendingComplete)
-        //    { }
-        //    else if (aiPendingSearchMove && aiPendingComplete)
-        //        checkPendingMove();
-        //    else if (newTurnFlag)
-        //        onNewTurn(board.lastMove, !board.whiteTurn);
-        //    else if (whiteAIPlaying && board.whiteTurn || blackAIPlaying && !board.whiteTurn)
-        //    {
-        //        if (useAIDelay && aiWaitingToMove)
-        //            playAIMove();
-        //    }
-        //}
-    }
+
 
 
 }

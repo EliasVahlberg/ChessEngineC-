@@ -539,7 +539,7 @@ public class Board
                     break;
             }
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
-            uiManager.gameText.text = s;
+            uiManager.GameText.text = s;
             PropriataryDataReset(); //*Prevents use of old state
             return true;
         }
@@ -1335,7 +1335,7 @@ public class Board
             if (reinstate)
                 uiManager.reinstatePiece(reinstateindex);
             string s = "Turn:" + (Turn + 1) + "\n" + "Color: " + (whiteTurn ? "White" : "Black") + "\n" + "Check: " + (Check ? (WhiteInCheck ? "White" : "Black") : "None");
-            uiManager.gameText.text = s;
+            uiManager.GameText.text = s;
             PropriataryDataReset();
 
             return true;
