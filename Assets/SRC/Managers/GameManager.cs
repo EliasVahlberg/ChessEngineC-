@@ -299,7 +299,7 @@ public class GameManager : MonoBehaviour
 
     public void RecivePendingMove(Move move)
     {
-        if (ended || !started)
+        if (ended || !started || isAIPaused)
             return;
         GameEventSystem.current.MoveRequestComplete(move);
     }

@@ -30,7 +30,6 @@ namespace ChessAI
         #region Public
         public AISettings Settings { get => settings; }
         public Move BestMove { get => bestMove; }
-        public bool IsSearching { get => isSearching; }
         public bool IsInitialized { get => isInitialized; }
         public string SearchLogText { get => searchLogText; }
         #endregion
@@ -86,6 +85,7 @@ namespace ChessAI
                 isSearching = true;
                 StartSearchNonThreaded();
                 SubmitMove(bestMove);
+                isSearching = false;
                 return;
             }
             else
@@ -129,6 +129,7 @@ namespace ChessAI
 
         public void SubmitMove(Move move)
         {
+            isSearching = false;
             GameManager.instance.RecivePendingMove(move);
         }
 
@@ -148,12 +149,17 @@ namespace ChessAI
 
         void StartSearchNonThreaded()
         {
+            isSearching = true;
             search.SearchRecurr();
             (bestMove, bestVal) = search.GetResult();
             searchLogText = "<color=yellow>" + search.LogDebugInfo() + "</color>";
             //TODO REIMPLEMENT
             //validate();
             isSearching = false;
+        }
+        public bool IsSearching()
+        {
+            return isSearching;
         }
     }
 }

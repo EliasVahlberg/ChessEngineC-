@@ -153,7 +153,8 @@ namespace ChessAI
         public void RequestMove(IAIPlayer ai)
         {
             //timeID = TimeUtills.Instance.startMeasurement();
-            ai.RequestMove();
+            if (!ai.IsSearching())
+                ai.RequestMove();
             //long td = TimeUtills.Instance.stopMeasurementMillis(timeID);
             //Debug.Log(ai.Name + " took :" + td + "ms");
             //ConsoleHistory.instance.addLogHistory("\t<color=yellow> " + ai.Name + " took : " + td + "ms</color>");

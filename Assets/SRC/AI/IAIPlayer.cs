@@ -11,6 +11,7 @@ namespace ChessAI
 
     public interface IAIPlayer
     {
+        bool IsSearching();
         string Name();
         void Initialize(Board board, AISettings settings);
 
