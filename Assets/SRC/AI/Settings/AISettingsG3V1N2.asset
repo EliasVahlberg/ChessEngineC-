@@ -13,15 +13,21 @@ MonoBehaviour:
   m_Name: AISettingsG3V1N2
   m_EditorClassIdentifier: 
   depth: 0
-  useIterativeDeepening: 0
-  useTranspositionTable: 0
+  useIterativeDeepening: 1
+  useTranspositionTable: 1
   useFixedDepthSearch: 0
-  searchTimeMillis: 1000
+  searchTimeMillis: 100
   clearTTEachMove: 0
   useQuiescenceSearch: 1
-  useBook: 0
-  book: {fileID: 0}
+  useBook: 1
+  useExternalBook: 0
+  book: {fileID: 4900000, guid: 5bb12a6ab517aa843a4f9ddca423a5bc, type: 3}
+  externalBookPath: 
   maxBookPly: 10
   useWeightMap: 1
-  weightMapWeight: 1
+  weightMapWeight: 3
   captureWeight: 100
+  useCheckValue: 1
+  checkValue: 50
+  useNumMovesWeight: 1
+  numMovesWeight: 1

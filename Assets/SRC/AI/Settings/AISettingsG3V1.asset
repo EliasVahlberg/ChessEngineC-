@@ -16,7 +16,7 @@ MonoBehaviour:
   useIterativeDeepening: 1
   useTranspositionTable: 1
   useFixedDepthSearch: 0
-  searchTimeMillis: 1000
+  searchTimeMillis: 100
   clearTTEachMove: 0
   useQuiescenceSearch: 1
   useBook: 1
@@ -27,3 +27,7 @@ MonoBehaviour:
   useWeightMap: 1
   weightMapWeight: 3
   captureWeight: 100
+  useCheckValue: 1
+  checkValue: 50
+  useNumMovesWeight: 1
+  numMovesWeight: 1

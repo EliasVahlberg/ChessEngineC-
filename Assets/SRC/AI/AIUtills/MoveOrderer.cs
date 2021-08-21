@@ -11,9 +11,10 @@ namespace ChessAI
     public class MoveOrderer
     {
         private TranspositionTable tt;
-        private const int CAPTURE_VAL_MULTIPLIER = 15;
+        private const int CAPTURE_VAL_MULTIPLIER = 10;
         private const int UNSAFE_POS_MULTIPLIER = 1;
         private const int CAPTURED_BY_PAWN_MULTIPLIER = 20;
+        private const int CHECK_VALUE = 100;
 
         public MoveOrderer(TranspositionTable tt)
         {
@@ -26,7 +27,7 @@ namespace ChessAI
             Move prevBest = Search.INVAL_MOVE;
             if (usePrevSearch)
             {
-                prevBest = tt.GetStoredMove();
+                prevBest = tt.GetStoredMove(); //PV-Move https://www.chessprogramming.org/PV-Move
             }
 
             int[] moveScoreEstimates = new int[board.Moves.Count];
@@ -39,7 +40,8 @@ namespace ChessAI
                 int capPieceT = Piece.PieceType(board.tiles[move.TargetSquare]);
                 if (capPieceT != 0)
                 {
-                    moveScoreEstimate = CAPTURE_VAL_MULTIPLIER * BoardScoreGenerator.pieceScore[capPieceT] - BoardScoreGenerator.pieceScore[movePieceT];
+                    //MVV-LVA  https://www.chessprogramming.org/MVV-LVA
+                    moveScoreEstimate = (CAPTURE_VAL_MULTIPLIER * BoardScoreGenerator.pieceScore[capPieceT]) - BoardScoreGenerator.pieceScore[movePieceT];
 
                 }
                 if (move.moveFlag == Move.Flag.PromoteToQueen)
@@ -55,9 +57,11 @@ namespace ChessAI
                     moveScoreEstimate -= BoardScoreGenerator.pieceScore[movePieceT] * UNSAFE_POS_MULTIPLIER;
                 if (BoardUtills.ContainsTile(board.MoveGenerator.currentPawnAttackMap, move.TargetSquare))
                     moveScoreEstimate -= CAPTURED_BY_PAWN_MULTIPLIER * BoardScoreGenerator.pieceScore[movePieceT];
-                moveScoreEstimates[ii] = moveScoreEstimate;
                 if (move.Equals(prevBest))
-                    moveScoreEstimates[ii] += 10000;
+                    moveScoreEstimate += 10000;
+
+                moveScoreEstimates[ii] = moveScoreEstimate;
+
 
             }
             //TODO Implement better sorting

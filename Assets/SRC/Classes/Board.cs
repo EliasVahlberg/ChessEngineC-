@@ -1610,7 +1610,7 @@ public class Board
     /*
     ? Should this be public or private?
     */
-    PieceTable GetPieceTable(int pieceType, int colourIndex)
+    public PieceTable GetPieceTable(int pieceType, int colourIndex)
     {
         if (pieceType == 0 || pieceType == 1 || pieceType == 4 || pieceType == 8 || pieceType == 9 || pieceType == 12 || pieceType < 0 || pieceType > 15)
             throw new ArgumentException("Illegal argument: {pieceType = " + pieceType + "}");

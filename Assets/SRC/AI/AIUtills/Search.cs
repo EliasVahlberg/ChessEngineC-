@@ -33,7 +33,7 @@ namespace ChessAI
         int bestValCurrentIteration;
         int currentSearchDepth;
         bool abortSearch;
-        SearchDiagnostics sD;
+        public SearchDiagnostics sD;
 
         #region SearchInfo
 
@@ -219,11 +219,12 @@ namespace ChessAI
                 alpha = val;
             board.generateNonQuietMoves();
             moveOrderer.Order(board, usePrevSearch: false);
+
             foreach (Move move in board.Moves)
             {
                 if (!board.useMove(move, isSearchMove: true))
                     throw new ArgumentException("FAIL MAKE");
-                val = -QuiescenceSearch(-beta, -alpha);
+                val = -QuiescenceSearch(-beta, -alpha); //+ evalModifier;
                 if (!board.UnmakeMove(isSearchMove: true))
                     throw new ArgumentException("FAIL UNMAKE");
                 nQNodes++;
@@ -239,6 +240,13 @@ namespace ChessAI
             }
 
             return alpha;
+        }
+        private int getEvalModifier()
+        {
+            int val = 0;
+            val += (settings.useCheckValue && board.CurPlayerInCheck) ? -settings.checkValue : 0;
+            val += (settings.useNumMovesWeight) ? board.Moves.Count * settings.numMovesWeight : 0;
+            return val;
         }
 
         void ResetSearchInfo()
@@ -258,10 +266,17 @@ namespace ChessAI
         public string LogDebugInfo()
         {
             AnnounceMate();
+            sD.numPositionsEvaluated = nNodes;
+            sD.numQPositionsEvaluated = nQNodes;
+            sD.numPrunes = nPrunes;
+            sD.numTPositions = nTPos;
 
             string str1 = "Depth reached: " + sD.lastCompletedDepth;
             str1 += "\n Best move: " + sD.move + " Eval: " + sD.eval + "Search time:" + searchStopwatch.ElapsedMilliseconds + " ms.";
-            str1 += "\n Num nodes: " + nNodes + "num Qnodes:" + nQNodes + "num cutoffs:" + nPrunes + "num TThits" + nTPos;
+            str1 += "\n Num nodes: " + sD.numPositionsEvaluated +
+             "num Qnodes:" + sD.numQPositionsEvaluated +
+             " num cutoffs:" + sD.numPrunes +
+             "num TThits" + sD.numTPositions;
             //ConsoleHistory.instance.addLogHistory("<color=yellow>" + str1 + "</color>");
             Debug.Log(str1);
             return str1;
@@ -303,6 +318,9 @@ namespace ChessAI
             public int eval;
             public bool isBook;
             public int numPositionsEvaluated;
+            public int numQPositionsEvaluated;
+            public int numTPositions;
+            public int numPrunes;
         }
 
     }

@@ -25,11 +25,15 @@ namespace ChessAI
         const int BLACK = 0b10000;
         const int COLOR_MASK = 0b11000;
         const int ENDGAME_START_VALUE = 16;      //4 pawns+  1 horse +  2 sliding;
+
+        private static readonly int[] wTableIndexes = { 2, 3, 5, 6, 7 };
+        private static readonly int[] bTableIndexes = { 10, 11, 13, 14, 15 };
         public static int[] pieceScoreArr = new int[]{
             0,
             1,//int.MaxValue/2,
             1,
             3,
+            1, //NOT SUPPOSED TO BE ACCESSED
             3,
             5,
             9
@@ -40,9 +44,9 @@ namespace ChessAI
             {0b001,0},
             {0b010,pieceScoreArr[2]},
             {0b011,pieceScoreArr[3]},
-            {0b101,pieceScoreArr[4]},
-            {0b110,pieceScoreArr[5]},
-            {0b111,pieceScoreArr[6]}
+            {0b101,pieceScoreArr[5]},
+            {0b110,pieceScoreArr[6]},
+            {0b111,pieceScoreArr[7]}
         };
         private static Dictionary<int, int> pieceScoreW = new Dictionary<int, int>()
         {
@@ -50,9 +54,9 @@ namespace ChessAI
             {0b01001,pieceScoreArr[1]},
             {0b01010,pieceScoreArr[2]},
             {0b01011,pieceScoreArr[3]},
-            {0b01101,pieceScoreArr[4]},
-            {0b01110,pieceScoreArr[5]},
-            {0b01111,pieceScoreArr[6]}
+            {0b01101,pieceScoreArr[5]},
+            {0b01110,pieceScoreArr[6]},
+            {0b01111,pieceScoreArr[7]}
         };
         private static Dictionary<int, int> pieceScoreB = new Dictionary<int, int>()
         {
@@ -60,9 +64,9 @@ namespace ChessAI
             {0b10001,pieceScoreArr[1]},
             {0b10010,pieceScoreArr[2]},
             {0b10011,pieceScoreArr[3]},
-            {0b10101,pieceScoreArr[4]},
-            {0b10110,pieceScoreArr[5]},
-            {0b10111,pieceScoreArr[6]}
+            {0b10101,pieceScoreArr[5]},
+            {0b10110,pieceScoreArr[6]},
+            {0b10111,pieceScoreArr[7]}
         };
         private static Dictionary<int, int> pieceScoreBW = new Dictionary<int, int>()
         {
@@ -70,15 +74,15 @@ namespace ChessAI
             {0b01001,pieceScoreArr[1]},
             {0b01010,pieceScoreArr[2]},
             {0b01011,pieceScoreArr[3]},
-            {0b01101,pieceScoreArr[4]},
-            {0b01110,pieceScoreArr[5]},
-            {0b01111,pieceScoreArr[6]},
+            {0b01101,pieceScoreArr[5]},
+            {0b01110,pieceScoreArr[6]},
+            {0b01111,pieceScoreArr[7]},
             {0b10001,-pieceScoreArr[1]},
             {0b10010,-pieceScoreArr[2]},
             {0b10011,-pieceScoreArr[3]},
-            {0b10101,-pieceScoreArr[4]},
-            {0b10110,-pieceScoreArr[5]},
-            {0b10111,-pieceScoreArr[6]}
+            {0b10101,-pieceScoreArr[5]},
+            {0b10110,-pieceScoreArr[6]},
+            {0b10111,-pieceScoreArr[7]}
         };
         private static readonly int[] pieceScoreBWArray =
         {
@@ -86,15 +90,15 @@ namespace ChessAI
         pieceScoreArr[1],
         pieceScoreArr[2],
         pieceScoreArr[3],
-        0,pieceScoreArr[4],
-        pieceScoreArr[5],
+        0,pieceScoreArr[5],
         pieceScoreArr[6],
+        pieceScoreArr[7],
         0,-pieceScoreArr[1],
         -pieceScoreArr[2],
         -pieceScoreArr[3],
-        0,-pieceScoreArr[4],
-        -pieceScoreArr[5],
-        -pieceScoreArr[6]
+        0,-pieceScoreArr[5],
+        -pieceScoreArr[6],
+        -pieceScoreArr[7]
         };
         //*Original
         //*Chris 100turn ms:{69, 58, 69, 65, 64, 65, 57, 55}
@@ -279,6 +283,45 @@ namespace ChessAI
             score += factor * pieceScoreBWArray[tiles[63]];
             return score;
 
+        }
+        public int V6CaptureScore(Board board)
+        {
+            //W  ;B 
+            int eval = 0;
+            int factor = board.whiteTurn ? 1 : -1;
+
+            eval += factor * board.allPieceTables[wTableIndexes[0]].Count * pieceScoreArr[wTableIndexes[0]];
+            eval += factor * board.allPieceTables[wTableIndexes[1]].Count * pieceScoreArr[wTableIndexes[1]];
+            eval += factor * board.allPieceTables[wTableIndexes[2]].Count * pieceScoreArr[wTableIndexes[2]];
+            eval += factor * board.allPieceTables[wTableIndexes[3]].Count * pieceScoreArr[wTableIndexes[3]];
+            eval += factor * board.allPieceTables[wTableIndexes[4]].Count * pieceScoreArr[wTableIndexes[4]];
+
+            eval -= factor * board.allPieceTables[bTableIndexes[0]].Count * pieceScoreArr[wTableIndexes[0]];
+            eval -= factor * board.allPieceTables[bTableIndexes[1]].Count * pieceScoreArr[wTableIndexes[1]];
+            eval -= factor * board.allPieceTables[bTableIndexes[2]].Count * pieceScoreArr[wTableIndexes[2]];
+            eval -= factor * board.allPieceTables[bTableIndexes[3]].Count * pieceScoreArr[wTableIndexes[3]];
+            eval -= factor * board.allPieceTables[bTableIndexes[4]].Count * pieceScoreArr[wTableIndexes[4]];
+            //try
+            //{
+            //
+            //    eval += factor * board.GetPieceTable(Piece.PAWN, 0).Count * pieceScoreArr[Piece.PAWN];
+            //    eval += factor * board.GetPieceTable(Piece.KNIGHT, 0).Count * pieceScoreArr[Piece.KNIGHT];
+            //    eval += factor * board.GetPieceTable(Piece.BISHOP, 0).Count * pieceScoreArr[Piece.BISHOP];
+            //    eval += factor * board.GetPieceTable(Piece.ROOK, 0).Count * pieceScoreArr[Piece.ROOK];
+            //    eval += factor * board.GetPieceTable(Piece.QUEEN, 0).Count * pieceScoreArr[Piece.QUEEN];
+            //
+            //    eval -= factor * board.GetPieceTable(Piece.PAWN, 1).Count * pieceScoreArr[Piece.PAWN];
+            //    eval -= factor * board.GetPieceTable(Piece.KNIGHT, 1).Count * pieceScoreArr[Piece.KNIGHT];
+            //    eval -= factor * board.GetPieceTable(Piece.BISHOP, 1).Count * pieceScoreArr[Piece.BISHOP];
+            //    eval -= factor * board.GetPieceTable(Piece.ROOK, 1).Count * pieceScoreArr[Piece.ROOK];
+            //    eval -= factor * board.GetPieceTable(Piece.QUEEN, 1).Count * pieceScoreArr[Piece.QUEEN];
+            //}
+            //catch (System.Exception _ex)
+            //{
+            //    UnityEngine.Debug.LogError(_ex);
+            //    throw _ex;
+            //}
+            return eval;
         }
 
         public int EndgameValue(int[] tiles, bool whiteTurn)

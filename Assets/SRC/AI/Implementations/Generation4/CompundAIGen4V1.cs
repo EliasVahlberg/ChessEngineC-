@@ -119,6 +119,7 @@ namespace ChessAI
                 //validate();
                 searchLogText = "<color=yellow>" + search.LogDebugInfo() + "</color>";
                 isSearching = false;
+                AIDebugger.instance.AddDebugInfo(search);
                 SubmitMove(bestMove);
             }
             else
@@ -129,6 +130,7 @@ namespace ChessAI
 
         public void SubmitMove(Move move)
         {
+
             isSearching = false;
             GameManager.instance.RecivePendingMove(move);
         }

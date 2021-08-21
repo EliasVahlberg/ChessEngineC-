@@ -65,6 +65,13 @@ namespace ChessAI
             //    Debug.Log(str);
             //}
             aIs = UnityUtills.GetAllEntitiesAsClasses<IAIPlayer>().ToArray();
+            List<IAIPlayer> aIs2 = new List<IAIPlayer>();
+            foreach (IAIPlayer iaiP in aIs)
+            {
+                aIs2.Add(iaiP);
+                aIs2.Add(iaiP);
+            }
+            aIs = aIs2.ToArray();
             //aISettings = UnityUtills.GetAllInstances<AISettings>();
 
             int ii = 0;

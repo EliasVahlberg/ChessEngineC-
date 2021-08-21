@@ -18233,6 +18233,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 693386061}
   m_CullTransparentMesh: 1
+--- !u!1 &701854079
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 701854081}
+  - component: {fileID: 701854080}
+  m_Layer: 0
+  m_Name: Debug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &701854080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701854079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67e77f8ea6a05bb4bb7c6cdb93c308a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outputPath: C:\Users\elias\SimpleChessDebug\debug1.txt
+--- !u!4 &701854081
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701854079}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.2308583, y: -1.0848688, z: -4.663312}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 23
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &711218320
 GameObject:
   m_ObjectHideFlags: 0
@@ -28851,7 +28895,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5ec9a8a5c18b9f4a8dab3af230588dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data: []
 --- !u!1 &1191678365
 GameObject:
   m_ObjectHideFlags: 0
@@ -42907,6 +42950,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   whiteTimeText: {fileID: 69579775}
   blackTimeText: {fileID: 373691328}
+  isActive: 0
+  isInitialized: 0
 --- !u!4 &1909414701
 Transform:
   m_ObjectHideFlags: 0
