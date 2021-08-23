@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 
 namespace ChessAI
 {
-    public class CompundAIGen4V1 : IAIPlayer
+    public class TestingAIGen4V1 : IAIPlayer
     {
         private static readonly string AI_NAME = "Ivan";
         #region State
 
+        private bool isBookMove = false;
         private bool isSearching = false;
         private bool isInitialized = false;
 
@@ -23,7 +24,7 @@ namespace ChessAI
         private Board board;
         private AISettings settings;
         private OppeningsBook oppeningsBook;
-        private Search search;
+        public Search search;
         private CancellationTokenSource cancelSearchTimer;
         #endregion
 
@@ -74,13 +75,14 @@ namespace ChessAI
             {
                 if (GetBookMove(board))
                 {
+                    isBookMove = true;
                     SubmitMove(bestMove);
                     return;
                 }
             }
             if (board.Moves.Count == 0 && board.HasGeneratedMoves)
                 throw new ArgumentNullException("board.Moves", "EndgameConditions are handeled by the game manager and not the AI");
-            else if (!settings.useIterativeDeepening)
+            else if (!settings.useIterativeDeepening || settings.useFixedDepthSearch)
             {
                 isSearching = true;
                 StartSearchNonThreaded();
@@ -115,11 +117,8 @@ namespace ChessAI
             {
                 search.StoppSearch();
                 (bestMove, bestVal) = search.GetResult();
-                //TODO REIMPLEMENT
-                //validate();
-                searchLogText = "<color=yellow>" + search.LogDebugInfo() + "</color>";
                 isSearching = false;
-                //AIDebugger.instance.AddDebugInfo(search);
+
                 SubmitMove(bestMove);
             }
             else
@@ -130,9 +129,12 @@ namespace ChessAI
 
         public void SubmitMove(Move move)
         {
-
+            //if (isBookMove)
+            //    AIDebugger.instance.AddDebugInfo(move);
+            //else
+            //    AIDebugger.instance.AddDebugInfo(search);
+            isBookMove = false;
             isSearching = false;
-            GameManager.instance.RecivePendingMove(move);
         }
 
         bool GetBookMove(Board board)
@@ -143,7 +145,6 @@ namespace ChessAI
             {
                 bestMove = oppeningsBook.GetRandomMove(board.ZobristKey);
                 bestVal = 0;
-                searchLogText = "<color=yellow> Book Move: " + bestMove.ToString() + "</color>";
                 return true;
             }
             return false;
@@ -154,9 +155,6 @@ namespace ChessAI
             isSearching = true;
             search.SearchRecurr();
             (bestMove, bestVal) = search.GetResult();
-            searchLogText = "<color=yellow>" + search.LogDebugInfo() + "</color>";
-            //TODO REIMPLEMENT
-            //validate();
             isSearching = false;
         }
         public bool IsSearching()

@@ -32,17 +32,11 @@ namespace ChessAI
         public int Evaluate(Board board)
         {
             int val = BSG_W * bsg.V6CaptureScore(board);
-            //val -= board.CurPlayerInCheck ? CHECK_W : 0;
+
             if (useBWM)
             {
-                int endgameVal = bsg.EndgameValue(board.tiles, board.whiteTurn);
-                if (endgameVal != 0)
-                {
-
-                    val += BoardWeightMap.Evaluate(board, endgameVal) * BWM_W;
-                }
-                else
-                    val += BoardWeightMap.Evaluate(board) * BWM_W;
+                int endgameVal = bsg.EndgameValueV2(board);
+                val += BoardWeightMap.EvaluateV3(board, endgameVal) * BWM_W;
             }
             return val;
         }

@@ -84,7 +84,7 @@ namespace ChessAI
             {0b10110,-pieceScoreArr[6]},
             {0b10111,-pieceScoreArr[7]}
         };
-        private static readonly int[] pieceScoreBWArray =
+        public static readonly int[] pieceScoreBWArray =
         {
         0,0,0,0,0,0,0,0,0,
         pieceScoreArr[1],
@@ -100,10 +100,16 @@ namespace ChessAI
         -pieceScoreArr[6],
         -pieceScoreArr[7]
         };
+
+        //! SHOULD ALWAYS USE THE BEST CAPTURE CALC VARIANT
+        public int CaptureScore(Board board)
+        {
+            return V6CaptureScore(board);
+        }
         //*Original
         //*Chris 100turn ms:{69, 58, 69, 65, 64, 65, 57, 55}
         //*SPEEDTST 100turn x 1000 ms: {2159, 2112, 2116, 2172, 2113, 2137, 2172}
-        public int CaptureScore(int[] tiles, bool whiteTurn)
+        public int V1CaptureScore(int[] tiles, bool whiteTurn)
         {
             int score = 0;
             foreach (int tile in tiles)
@@ -213,6 +219,8 @@ namespace ChessAI
             return score;
 
         }
+
+        //*Unrolled using ARRAY
         public int V5CaptureScore(int[] tiles, bool whiteTurn)
         {
             int score = 0;
@@ -284,9 +292,10 @@ namespace ChessAI
             return score;
 
         }
+
+        //*Unrolled using PieceTables
         public int V6CaptureScore(Board board)
         {
-            //W  ;B 
             int eval = 0;
             int factor = board.whiteTurn ? 1 : -1;
 
@@ -301,26 +310,6 @@ namespace ChessAI
             eval -= factor * board.allPieceTables[bTableIndexes[2]].Count * pieceScoreArr[wTableIndexes[2]];
             eval -= factor * board.allPieceTables[bTableIndexes[3]].Count * pieceScoreArr[wTableIndexes[3]];
             eval -= factor * board.allPieceTables[bTableIndexes[4]].Count * pieceScoreArr[wTableIndexes[4]];
-            //try
-            //{
-            //
-            //    eval += factor * board.GetPieceTable(Piece.PAWN, 0).Count * pieceScoreArr[Piece.PAWN];
-            //    eval += factor * board.GetPieceTable(Piece.KNIGHT, 0).Count * pieceScoreArr[Piece.KNIGHT];
-            //    eval += factor * board.GetPieceTable(Piece.BISHOP, 0).Count * pieceScoreArr[Piece.BISHOP];
-            //    eval += factor * board.GetPieceTable(Piece.ROOK, 0).Count * pieceScoreArr[Piece.ROOK];
-            //    eval += factor * board.GetPieceTable(Piece.QUEEN, 0).Count * pieceScoreArr[Piece.QUEEN];
-            //
-            //    eval -= factor * board.GetPieceTable(Piece.PAWN, 1).Count * pieceScoreArr[Piece.PAWN];
-            //    eval -= factor * board.GetPieceTable(Piece.KNIGHT, 1).Count * pieceScoreArr[Piece.KNIGHT];
-            //    eval -= factor * board.GetPieceTable(Piece.BISHOP, 1).Count * pieceScoreArr[Piece.BISHOP];
-            //    eval -= factor * board.GetPieceTable(Piece.ROOK, 1).Count * pieceScoreArr[Piece.ROOK];
-            //    eval -= factor * board.GetPieceTable(Piece.QUEEN, 1).Count * pieceScoreArr[Piece.QUEEN];
-            //}
-            //catch (System.Exception _ex)
-            //{
-            //    UnityEngine.Debug.LogError(_ex);
-            //    throw _ex;
-            //}
             return eval;
         }
 
@@ -335,7 +324,31 @@ namespace ChessAI
                 if (n < 0)
                     score -= n;
             }
+
             return score < ENDGAME_START_VALUE ? ENDGAME_START_VALUE - score : 0;
+        }
+
+        //*Unrolled using PieceTables
+        public int EndgameValueV2(Board board)
+        {
+            int eval = 0;
+            if (!board.whiteTurn)
+            {
+                eval += board.allPieceTables[wTableIndexes[0]].Count * pieceScoreArr[wTableIndexes[0]];
+                eval += board.allPieceTables[wTableIndexes[1]].Count * pieceScoreArr[wTableIndexes[1]];
+                eval += board.allPieceTables[wTableIndexes[2]].Count * pieceScoreArr[wTableIndexes[2]];
+                eval += board.allPieceTables[wTableIndexes[3]].Count * pieceScoreArr[wTableIndexes[3]];
+                eval += board.allPieceTables[wTableIndexes[4]].Count * pieceScoreArr[wTableIndexes[4]];
+            }
+            else
+            {
+                eval += board.allPieceTables[bTableIndexes[0]].Count * pieceScoreArr[wTableIndexes[0]];
+                eval += board.allPieceTables[bTableIndexes[1]].Count * pieceScoreArr[wTableIndexes[1]];
+                eval += board.allPieceTables[bTableIndexes[2]].Count * pieceScoreArr[wTableIndexes[2]];
+                eval += board.allPieceTables[bTableIndexes[3]].Count * pieceScoreArr[wTableIndexes[3]];
+                eval += board.allPieceTables[bTableIndexes[4]].Count * pieceScoreArr[wTableIndexes[4]];
+            }
+            return eval < ENDGAME_START_VALUE ? ENDGAME_START_VALUE - eval : 0;
         }
     }
 }

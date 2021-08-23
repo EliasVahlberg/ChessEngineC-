@@ -16,13 +16,13 @@ MonoBehaviour:
   useIterativeDeepening: 1
   useTranspositionTable: 1
   useFixedDepthSearch: 0
-  searchTimeMillis: 100
+  searchTimeMillis: 2000
   clearTTEachMove: 0
   useQuiescenceSearch: 1
   useBook: 1
   useExternalBook: 0
   book: {fileID: 4900000, guid: 5bb12a6ab517aa843a4f9ddca423a5bc, type: 3}
-  externalBookPath: 
+  externalBookPath: C:\Users\elias\SimpleChessV2\Assets\Resources\Books\Books\TestBook3.book
   maxBookPly: 10
   useWeightMap: 1
   weightMapWeight: 3

@@ -4465,7 +4465,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1246563574}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.81333333
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -18262,7 +18262,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67e77f8ea6a05bb4bb7c6cdb93c308a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numReCalculations: 10
+  settings: {fileID: 11400000, guid: 7200b9aa4926f18429616b5ccafd8c6e, type: 2}
+  testingFenPossitions:
+  - 'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - '
+  - '8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - '
+  - r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1
+  - 'r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 '
   outputPath: C:\Users\elias\SimpleChessDebug\debug1.txt
+  DebugNoteTime: ...
+  DebugNoteDepth: I D=4
+  DebugNoteEvalFunc: CapV6, Map3,Endgame2
+  DebugNoteMoveOrder: Standard + Weight + Base Multiplier
+  DebugNoteOther: Move Arr in move order
 --- !u!4 &701854081
 Transform:
   m_ObjectHideFlags: 0
@@ -28895,6 +28907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5ec9a8a5c18b9f4a8dab3af230588dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  data: []
 --- !u!1 &1191678365
 GameObject:
   m_ObjectHideFlags: 0

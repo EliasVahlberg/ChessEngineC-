@@ -32,7 +32,7 @@ namespace ChessAI
                 Move move = board.Moves[ii];
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
-                val = -bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn);
+                val = -bsGen.V1CaptureScore(newBoard.tiles, newBoard.whiteTurn);
                 if (newBoard.Moves.Count == 0)
                     return move; //IF can CheckMate
                 val += GetBoardBestValueMove(newBoard, true, bsGen)[0];
@@ -58,7 +58,7 @@ namespace ChessAI
                 Move move = board.Moves[ii];
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
-                val = bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn) * (otherPlayer ? 1 : -1);
+                val = bsGen.V1CaptureScore(newBoard.tiles, newBoard.whiteTurn) * (otherPlayer ? 1 : -1);
                 maxI = maxV > val ? maxI : ii;
                 maxV = maxV > val ? maxV : val;
                 ii++;

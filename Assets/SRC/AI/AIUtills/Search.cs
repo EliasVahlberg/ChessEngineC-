@@ -102,6 +102,10 @@ namespace ChessAI
                         sD.lastCompletedDepth = searchDepth;
                         sD.move = bestMove.ToString();
                         sD.eval = bestVal;
+                        sD.numPositionsEvaluated = nNodes;
+                        sD.numQPositionsEvaluated = nQNodes;
+                        sD.numPrunes = nPrunes;
+                        sD.numTPositions = nTPos;
                         //sD.moveVal = board.boardToFEN();//Chess.PGNCreator.NotationFromMove (FenUtility.CurrentFen (board), bestMove);
 
                         // Exit search if found a mate
@@ -114,10 +118,17 @@ namespace ChessAI
             }
             else
             {
-                Debug.Log("NON ITTERATIVE");
+
                 SearchRecurrRecurr(settings.depth, settings.depth, NEG_INF, POS_INF);
                 bestMove = bestMoveCurrentIteration;
                 bestVal = bestValCurrentIteration;
+                sD.lastCompletedDepth = settings.depth;
+                sD.move = bestMove.ToString();
+                sD.eval = bestVal;
+                sD.numPositionsEvaluated = nNodes;
+                sD.numQPositionsEvaluated = nQNodes;
+                sD.numPrunes = nPrunes;
+                sD.numTPositions = nTPos;
             }
             searchStopper?.Invoke(bestMove);
 
@@ -161,7 +172,7 @@ namespace ChessAI
             if (depth == 0)
                 return settings.useQuiescenceSearch ? QuiescenceSearch(alpha, beta) : evaluator.Evaluate(board, CoinToss());
 
-            moveOrderer.Order(board);
+            moveOrderer.Order(board, usePrevSearch: settings.useTranspositionTable, extendedOrdering: (maxDepth >= 4 && 2 > (maxDepth - depth)));
 
             if (board.Moves.Count == 0)
                 return board.CurrentInCheck ? -(DIRECT_MATE_SCORE - (maxDepth - depth)) : 0;
@@ -189,6 +200,7 @@ namespace ChessAI
                 }
                 if (val == alpha && useCoinToss)
                     val += (CoinToss() ? 1 : 0);
+
                 if (val > alpha)
                 {
                     evalType = TranspositionTable.Exact;

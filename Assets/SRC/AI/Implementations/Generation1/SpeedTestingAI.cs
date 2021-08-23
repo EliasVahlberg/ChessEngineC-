@@ -34,7 +34,7 @@ namespace ChessAI
                 Board newBoard = board.Clone();
                 newBoard.useMove(move);
                 for (int i = 0; i < nRecounts; i++)
-                    val = -bsGen.CaptureScore(newBoard.tiles, newBoard.whiteTurn);
+                    val = -bsGen.V1CaptureScore(newBoard.tiles, newBoard.whiteTurn);
                 if (ii != 0)
                     allSame &= maxV == val;
                 maxI = maxV > val ? maxI : ii;
