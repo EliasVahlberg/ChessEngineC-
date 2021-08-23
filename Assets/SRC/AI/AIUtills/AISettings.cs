@@ -34,10 +34,14 @@ namespace ChessAI
         public int weightMapWeight = 1;
 
         public int captureWeight = 100;
-        public bool useCheckValue;
-        public int checkValue = 150;
-        public bool useNumMovesWeight;
-        public int numMovesWeight = 1;
+        public bool usePawnStructureEval = false;
+        public int pawnStructureWeight = 5;
+        //public bool useCheckValue;
+        //public int checkValue = 150;
+        //public bool useNumMovesWeight;
+
+        //public int numMovesWeight = 1;
+
         //public MoveGenerator.PromotionMode promotionsToSearch;
 
         //public Search.SearchDiagnostics diagnostics;

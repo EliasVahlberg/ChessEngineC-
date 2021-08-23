@@ -350,5 +350,26 @@ namespace ChessAI
             }
             return eval < ENDGAME_START_VALUE ? ENDGAME_START_VALUE - eval : 0;
         }
+
+        public int PawnStructureValueV1(Board board)
+        {
+            int val = 0;
+            int colorIndex = (board.whiteTurn ? 0 : 1);
+            int leftAttack = (board.whiteTurn ? MoveData.PawnAttackLeftW : MoveData.PawnAttackLeftB);
+            int rightAttack = (board.whiteTurn ? MoveData.PawnAttackRightW : MoveData.PawnAttackRightB);
+            PieceTable pawns = board.pawns[colorIndex];
+            for (int ii = 0; ii < pawns.Count; ii++)
+            {
+                int l = MoveData.pawnMoveMap[pawns[ii]][leftAttack];
+                int r = MoveData.pawnMoveMap[pawns[ii]][rightAttack];
+                if (l != -1)
+                    val += pieceScoreArr[Piece.PieceType(board.tiles[l])];
+                if (r != -1)
+                    val += pieceScoreArr[Piece.PieceType(board.tiles[r])];
+
+            }
+            return val;
+
+        }
     }
 }

@@ -43,6 +43,11 @@ public static class MoveData
     public static readonly int[][] kingMovesMap;
     public static readonly int[][] knightMovesMap;
 
+
+    public const int PawnDoubleForwardW = 0, PawnAttackLeftW = 1, PawnAttackRightW = 2;
+    public const int PawnDoubleForwardB = 3, PawnAttackLeftB = 4, PawnAttackRightB = 5;
+    public static readonly int[][] pawnMoveMap;
+
     public static readonly ulong[] kingAttackBitboards;
     public static readonly ulong[] knightAttackBitboards;
     public static readonly ulong[][] pawnAttackBitboards;
@@ -61,6 +66,7 @@ public static class MoveData
         kingAttackBitboards = new ulong[64];
         knightAttackBitboards = new ulong[64];
         pawnAttackBitboards = new ulong[64][];
+        pawnMoveMap = new int[64][];
         for (int squareIndex = 0; squareIndex < 64; squareIndex++)
         {
 
@@ -138,6 +144,39 @@ public static class MoveData
                 {
                     pawnAttackBitboards[squareIndex][Board.BlackIndex] |= 1ul << (squareIndex - 7);
                 }
+            }
+            #endregion
+
+            #region PawnMoveMap
+            pawnMoveMap[squareIndex] = new int[6];
+            if (y == 1)
+                pawnMoveMap[squareIndex][PawnDoubleForwardB] = (squareIndex + 16);
+            if (y == 6)
+                pawnMoveMap[squareIndex][PawnDoubleForwardB] = (squareIndex - 16);
+
+            if (x > 0)
+            {
+                if (y < 7)
+                    pawnMoveMap[squareIndex][PawnAttackLeftW] = (squareIndex + 7);
+                else
+                    pawnMoveMap[squareIndex][PawnAttackLeftW] = -1;
+
+                if (y > 0)
+                    pawnMoveMap[squareIndex][PawnAttackLeftB] = (squareIndex - 9);
+                else
+                    pawnMoveMap[squareIndex][PawnAttackLeftB] = -1;
+            }
+            if (x < 7)
+            {
+                if (y < 7)
+                    pawnMoveMap[squareIndex][PawnAttackRightW] = (squareIndex + 9);
+                else
+                    pawnMoveMap[squareIndex][PawnAttackRightW] = -1;
+
+                if (y > 0)
+                    pawnMoveMap[squareIndex][PawnAttackRightB] = (squareIndex - 7);
+                else
+                    pawnMoveMap[squareIndex][PawnAttackRightB] = -1;
             }
             #endregion
 

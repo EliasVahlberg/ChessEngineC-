@@ -54,7 +54,11 @@ namespace ChessAI
             this.board = board;
             this.settings = settings;
 
-            evaluator = new Evaluator(settings.captureWeight, settings.weightMapWeight, settings.useWeightMap);
+            evaluator = new Evaluator(settings.captureWeight,
+             settings.weightMapWeight,
+              settings.useWeightMap,
+               settings.usePawnStructureEval,
+                settings.pawnStructureWeight);
             tt = new TranspositionTable(board, transpositionTableSize);
             moveOrderer = new MoveOrderer(tt);
             sD = new SearchDiagnostics();
@@ -256,8 +260,8 @@ namespace ChessAI
         private int getEvalModifier()
         {
             int val = 0;
-            val += (settings.useCheckValue && board.CurPlayerInCheck) ? -settings.checkValue : 0;
-            val += (settings.useNumMovesWeight) ? board.Moves.Count * settings.numMovesWeight : 0;
+            //val += (settings.useCheckValue && board.CurPlayerInCheck) ? -settings.checkValue : 0;
+            //val += (settings.useNumMovesWeight) ? board.Moves.Count * settings.numMovesWeight : 0;
             return val;
         }
 
